@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "SME-IntegracaoEOL-Institucional-MS"
-version = "0.1.0"
-description = "Microsserviço mock de Institucional - EOL"
+name = "SME-IntegracaoEOL-Institucional-Microsservico"
+version = "1.0.0"
+description = "Microsserviço institucional — SGP EOL"
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [{ name = "SME" }]
@@ -54,3 +54,33 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--tb=short -q --ds=config.settings_test"
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests/*", "*/conftest.py", "*/mock_data.py"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+
+[tool.importlinter]
+root_packages = ["apps"]
+
+[[tool.importlinter.contracts]]
+name = "DRE não importa UE internamente"
+type = "forbidden"
+source_modules = ["apps.dre"]
+forbidden_modules = ["apps.unidade_educacional.api", "apps.unidade_educacional.repositories", "apps.unidade_educacional.selectors", "apps.unidade_educacional.services"]
+
+[[tool.importlinter.contracts]]
+name = "UE não importa DRE internamente"
+type = "forbidden"
+source_modules = ["apps.unidade_educacional"]
+forbidden_modules = ["apps.dre.api", "apps.dre.repositories", "apps.dre.selectors", "apps.dre.services"]

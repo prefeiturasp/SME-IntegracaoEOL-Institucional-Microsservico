@@ -1,72 +1,92 @@
 # SME-IntegracaoEOL-Institucional-Microsservico
 
-Microsserviço **mock** do domínio Institucional (DREs e Unidades Educacionais) SME-SP.
+Microserviço do domínio **Institucional** (DREs e Unidades Educacionais) — SME-SP.
 
-Todos os endpoints retornam dados estáticos sem banco de dados, sem regras de negócio para uso em testes de integração.
+Consome dados do banco institucional populado pelo ETL `SME-SGP-MS-ETL/apps/institucional`.
+Disponibiliza rotas compatíveis com a API EOL legada para uso pelo **Transition Gateway**.
+
+> **Não persiste dados.** Todos os models usam `managed = False`.
 
 ---
 
-## Estrutura dos Apps
+## Estrutura
 
-| App | Responsabilidade | Endpoints | Prefixo API |
-|-----|-----------------|-----------|-------------|
-| `apps.dre` | Diretorias Regionais de Educação e Subprefeituras | D01-D11 (exceto D03) | `/api/dres/` |
-| `apps.unidade_educacional` | Unidades Educacionais (UEs), Equipamentos e Sincronização | E01-E27 (selecionados) | `/api/escolas/` |
-| `apps.core` | Autenticação por API key, dados mock compartilhados | — | — |
-
-### Modelos ETL Cobertos:
-
-- **dre**: `Dre`, `DreSubprefeitura`
-- **unidade_educacional**: `Escola` (Unidade Educacional), `Equipamento`, `SincronizacaoInstitucional`
+```
+apps/
+  core/                   ← autenticação, middleware, tipos compartilhados
+    authentication.py     ← ApiKeyAuthentication
+    middleware.py         ← PrefixMiddleware (APP_PREFIX para Ingress)
+    types.py              ← TypedDicts compartilhados entre domínios
+  dre/                    ← DRE, TipoEscola, SubPrefeitura
+    models.py             ← managed=False, leitura do banco institucional
+    contracts.py          ← TypedDicts do contrato EOL para DRE
+    selectors.py          ← queries otimizadas (sem N+1)
+    api/views.py          ← views D01-D11
+    api/urls.py
+    tests/
+  unidade_educacional/    ← UnidadeEducacional
+    models.py             ← managed=False
+    contracts.py          ← TypedDicts do contrato EOL para UE
+    selectors.py          ← queries otimizadas
+    api/views.py          ← views E01-E27 (institucionais + placeholders cross-domain)
+    api/urls.py
+    tests/
+tests/
+  test_domain_imports.py  ← lint estático: impede imports cruzados entre domínios
+docs/                     ← Sphinx + Markdown de referência
+```
 
 ---
 
 ## Pré-requisitos
 
-- Python 3.12+
-- Docker e Docker Compose (para rodar via container)
+- Docker e Docker Compose
 
 ---
 
-## Rodar localmente (sem Docker)
+## Variáveis de Ambiente
 
 ```bash
-# 1. Copiar o .env
 cp .env.example .env
-
-# 2. Instalar dependências
-pip install -r requirements/local.txt
-
-# 3. Aplicar migrations (SQLite, apenas tabelas internas do Django)
-python manage.py migrate
-
-# 4. Rodar o servidor
-python manage.py runserver 0.0.0.0:8001
 ```
 
-Acesse em: http://localhost:8001/api/docs/
+| Variável | Descrição | Padrão |
+|---|---|---|
+| `DJANGO_SECRET_KEY` | Chave secreta Django | — |
+| `DJANGO_DEBUG` | Debug mode | `1` |
+| `API_KEY` | Chave de autenticação da API | `dev-key-default` |
+| `API_KEY_HEADER` | Nome do header | `X-API-Key` |
+| `URL_BANCO_INSTITUCIONAL` | URL PostgreSQL do banco institucional | SQLite in-memory |
+| `APP_PREFIX` | Prefixo de path no Ingress (ex: `institucional`) | vazio |
+| `CACHE_TTL_DRE_SECONDS` | TTL de cache para DREs | `300` |
+| `CACHE_TTL_TIPO_ESCOLA_SECONDS` | TTL de cache para tipos de escola | `900` |
 
 ---
 
-## Rodar com Docker (desenvolvimento)
+## Executar com Docker
+
+### Produção
 
 ```bash
-cp .env.example .env
+docker compose up --build
+```
+
+### Desenvolvimento (com debugpy na porta 5679)
+
+```bash
 docker compose -f docker-compose-dev.yml up --build
 ```
 
-Acesse em: http://localhost:8001/api/docs/
+Acesse: `http://localhost:8002/api/docs/`
 
 ---
 
 ## Autenticação
 
-Todos os endpoints exigem o header `X-API-Key` com o valor configurado em `API_KEY` (`.env`).
-
-Valor padrão em desenvolvimento: `dev-key-default`
+Todos os endpoints exigem o header `X-API-Key`:
 
 ```bash
-curl -H "X-API-Key: dev-key-default" http://localhost:8001/api/dres/
+curl -H "X-API-Key: dev-key-default" http://localhost:8002/api/dres/
 ```
 
 ---
@@ -74,49 +94,131 @@ curl -H "X-API-Key: dev-key-default" http://localhost:8001/api/dres/
 ## Documentação da API
 
 | URL | Descrição |
-|-----|-----------|
+|---|---|
 | `/api/docs/` | Swagger UI interativo |
-| `/api/schema/` | Schema OpenAPI 3 (JSON/YAML) |
+| `/api/schema/` | Schema OpenAPI 3 |
+
+### Gerar schema estático
+
+```bash
+docker compose -f docker-compose-dev.yml exec institucional \
+  python manage.py spectacular --file schema.yml
+```
 
 ---
 
-## Endpoints Implementados
+## Testes
 
-### DREs
+Os testes usam SQLite in-memory isolado via `config.settings_test` — nunca tocam o banco de QA.
 
-| ID | Método | Path | Descrição |
-|----|--------|------|-----------|
-| D01 | GET | `/api/dres/` | Lista todas as DREs |
-| D02 | POST | `/api/dres/` | Filtra DREs por lista de códigos |
-| D04 | GET | `/api/dres/{codigoEolDRE}/` | Retorna uma DRE pelo código EOL |
-| D05 | GET | `/api/dres/{codigoEolDRE}/escolas/{tipoEscola}/` | Escolas filtradas por tipo |
-| D06 | GET | `/api/dres/{codigoEolDRE}/escola/` | Escolas vinculadas a uma DRE |
-| D07 | GET | `/api/dres/{codigoEolDRE}/subprefeituras/` | Subprefeituras de uma DRE |
-| D08 | GET | `/api/dres/{dreCodigo}/ues/` | Códigos de UEs de uma DRE |
-| D09 | GET | `/api/dres/{codigoEolDRE}/escola/Sigpae/` | Escolas para o sistema SIGPAE |
-| D10 | GET | `/api/dres/{dreCodigo}/unidades/` | Unidades de gestão predial |
-| D11 | GET | `/api/dres/{dreCodigo}/unidades/codigo-integracao/` | UEs com código de integração |
+```bash
+# Executar todos os testes com cobertura (≥95%)
+docker compose -f docker-compose-dev.yml exec \
+  -e DJANGO_SETTINGS_MODULE=config.settings_test institucional \
+  python -m pytest apps/ tests/ \
+  --cov=apps --cov-report=term-missing --cov-fail-under=95
 
-### Unidades Educacionais
+# Via Makefile (equivalente ao comando acima)
+make test
 
-| ID | Método | Path | Descrição |
-|----|--------|------|-----------|
-| E01 | GET | `/api/escolas/{ueCodigo}/administrador-sgp/` | Administradores SGP da UE |
-| E02 | GET | `/api/escolas/{codigoEscolaEol}/` | Dados básicos de uma UE |
-| E03 | GET | `/api/escolas/unidade-eol/{codigoEol}/` | UE por código EOL |
-| E04 | GET | `/api/escolas/dados/{codigoEscolaEol}/` | Dados completos de uma UE |
-| E06 | POST | `/api/escolas/` | Busca UEs por lista de códigos |
-| E10 | GET | `/api/escolas/tipos_unidade_educacao/` | Lista tipos de unidades |
-| E11 | GET | `/api/escolas/tiposEscolas/` | Código e sigla de tipos de escola |
-| E17 | GET | `/api/escolas/{codigoEscolaEol}/subprefeituras/` | Subprefeituras da unidade |
-| E23 | GET | `/api/escolas/{ueCodigo}/sincronizacoes-institucionais/` | Detalhes para sincronização |
-| E25 | GET | `/api/escolas/equipamentos/` | Equipamentos SME com filtro |
-| E26 | POST | `/api/escolas/unidades-parceiras/` | Unidades parceiras por códigos |
-| E27 | GET | `/api/escolas/todas-unidades/` | Lista todas as UEs |
+# Apenas os testes de DRE
+docker compose -f docker-compose-dev.yml exec \
+  -e DJANGO_SETTINGS_MODULE=config.settings_test institucional \
+  python -m pytest apps/dre/tests/ -v
+
+# Lint de imports e governança arquitetural
+docker compose -f docker-compose-dev.yml exec \
+  -e DJANGO_SETTINGS_MODULE=config.settings_test institucional \
+  python -m pytest tests/ -v
+```
+
+---
+
+## Lint e Qualidade
+
+```bash
+docker compose -f docker-compose-dev.yml exec institucional bash -c "
+  ruff check . &&
+  black --check . &&
+  isort --check-only . &&
+  mypy apps config
+"
+```
+
+---
+
+## Documentação Sphinx
+
+```bash
+docker compose -f docker-compose-dev.yml exec institucional bash -c "
+  pip install sphinx &&
+  sphinx-build -b html docs/ docs/_build/html
+"
+```
+
+---
+
+## Endpoints
+
+### DREs — `/api/dres/`
+
+| ID | Método | Path | Status |
+|---|---|---|---|
+| D01 | GET | `/api/dres/` | ✅ Banco real |
+| D02 | POST | `/api/dres/` | ✅ Banco real |
+| D03 | GET | `/api/dres/{codigoEolDRE}/supervisores/` | ⚠️ Cross-domain Professores (501) |
+| D04 | GET | `/api/dres/{codigoEolDRE}/` | ✅ Banco real |
+| D05 | GET | `/api/dres/{codigoEolDRE}/escolas/{tipoEscola}/` | ✅ Banco real |
+| D06 | GET | `/api/dres/{codigoEolDRE}/escola/` | ✅ Banco real |
+| D07 | GET | `/api/dres/{dreCodigo}/subprefeituras/` | ✅ Banco real |
+| D08 | GET | `/api/dres/{dreCodigo}/ues/` | ✅ Banco real |
+| D09 | GET | `/api/dres/{codigoEolDRE}/escola/Sigpae/` | ✅ Banco real |
+| D10 | GET | `/api/dres/{dreCodigo}/unidades/` | ✅ Banco real |
+| D11 | GET | `/api/dres/{dreCodigo}/unidades/codigo-integracao/` | ✅ Banco real |
+
+### Escola/UE — `/api/escolas/`
+
+| ID | Método | Path | Status |
+|---|---|---|---|
+| E01 | GET | `/api/escolas/{codigoUE}/administrador-sgp/` | ⚠️ Cross-domain Professores (501) |
+| E02 | GET | `/api/escolas/{codigoEscolaEol}/` | ✅ Banco real |
+| E03 | GET | `/api/escolas/unidade-eol/{codigoEol}/` | ✅ Banco real |
+| E04 | GET | `/api/escolas/dados/{codigoEscolaEol}/` | ✅ Banco real |
+| E05 | GET | `/api/escolas/{codigoEscola}/alunos/quantidade/` | ⚠️ Cross-domain Alunos (501) |
+| E06 | POST | `/api/escolas/` | ✅ Banco real |
+| E07-E08 | GET | `.../professores/...` | ⚠️ Cross-domain Professores (501) |
+| E09 | GET | `/api/escolas/modalidades_ensino/` | ⚠️ Cross-domain Pedagógico (501) |
+| E10 | GET | `/api/escolas/tipos_unidade_educacao/` | ✅ Banco real |
+| E11 | GET | `/api/escolas/tiposEscolas/` | ✅ Banco real |
+| E12 | GET | `.../salas/.../anos_letivos/...` | ⚠️ Cross-domain Pedagógico (501) |
+| E13-E16, E20-E22 | GET | `.../funcionarios/...` | ⚠️ Cross-domain Professores (501) |
+| E17 | GET | `/api/escolas/{codigoEscolaEol}/subprefeituras/` | ✅ Banco real |
+| E18-E19 | GET | `.../turmas/...` | ⚠️ Cross-domain Pedagógico (501) |
+| E23 | GET | `/api/escolas/{ueCodigo}/sincronizacoes-institucionais/` | ✅ Banco real |
+| E24 | GET | `.../aluno/.../matriculas/` | ⚠️ Cross-domain Alunos (501) |
+| E25 | GET | `/api/escolas/equipamentos/` | ✅ Banco real |
+| E26 | POST | `/api/escolas/unidades-parceiras/` | ✅ Banco real |
+| E27 | GET | `/api/escolas/todas-unidades/` | ✅ Banco real |
+
+Ver `docs/cross_domain_endpoints.md` para detalhes dos endpoints cross-domain.
+
+---
+
+## Status HTTP
+
+| Código | Significado |
+|---|---|
+| 200 | Sucesso com dados |
+| 204 | Consulta válida, sem registros |
+| 400 | Parâmetros inválidos |
+| 401/403 | API key ausente ou inválida |
+| 404 | Recurso não encontrado |
+| 501 | Endpoint de outro domínio (cross-domain) |
 
 ---
 
 ## Referências
 
-- Contrato completo: `../swagger_contrato_microsservico.md`
-- Projeto ETL de referência: `../SME-SGP-MS-ETL/`
+- ETL institucional: `SME-SGP-MS-ETL/apps/institucional`
+- Mapeamento de endpoints: `MAPEAMENTO_ENDPOINTS_API_EOL_DOMINIO_INSTITUCIONAL.pdf`
+- Microserviço Professores (padrão estrutural): `SME-IntegracaoEOL-Professores-Microsservico`

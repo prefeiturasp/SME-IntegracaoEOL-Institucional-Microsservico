@@ -1,0 +1,122 @@
+"""Contratos de resposta EOL para o domínio UE.
+
+Mapeiam campos internos (snake_case) para o contrato legado (camelCase).
+"""
+
+from typing import TypedDict
+
+
+class UeBasicaContract(TypedDict):
+    """Contrato E02/E06/E27 — dados básicos de UE."""
+
+    codigoEscola: str
+    nomeEscola: str
+    nomeDRE: str
+    siglaDRE: str
+    codigoDRE: str
+    tipoEscola: str
+    siglaTipoEscola: str
+    codigoTipoEscola: int
+    # Campos institucionais expandidos
+    tipoEscolaId: int | None
+    tipoUnidadeId: int | None
+    subprefeituraId: int | None
+    dreId: str
+    codigoIntegracao: str | None
+
+
+class UeEolContract(TypedDict):
+    """Contrato E03 — UE por código EOL genérico."""
+
+    codigo: str
+    sigla: str | None
+    nomeUnidade: str
+    tipo: int | None
+    codigoReferencia: str
+
+
+class UeCompletaContract(TypedDict):
+    """Contrato E04 — dados completos de UE."""
+
+    nomeDRE: str
+    siglaDRE: str
+    codigoDRE: str
+    codigoINEP: str | None
+    siglaTipoEscola: str | None
+    nome: str
+    nomeExibicao: str | None
+    codigo: str
+    tipoUnidade: str | None
+    email: str | None
+    telefone: str | None
+    tipoLogradouro: str | None
+    logradouro: str | None
+    numero: str | None
+    bairro: str | None
+    cep: int | None
+    municipio: str | None
+    uf: str
+    tipoUnidadeAdm: int | None
+    descTipoUnidadeAdm: str | None
+    # Campos institucionais expandidos
+    tipoEscolaId: int | None
+    tipoUnidadeId: int | None
+    subprefeituraId: int | None
+    dreId: str
+    codigoIntegracao: str | None
+
+
+class TipoEscolaContract(TypedDict):
+    """Contrato E11 — tipo de escola."""
+
+    codigo: int
+    descricaoSigla: str | None
+    dtAtualizacao: str | None
+
+
+class SincronizacaoUeContract(TypedDict):
+    """Contrato E23 — sincronização institucional da UE."""
+
+    ueCodigo: str
+    dataAtualizacao: str | None
+    dreCodigo: str
+    ueNome: str
+    tipoEscolaCodigo: int | None
+    # Campos institucionais expandidos
+    tipoEscolaId: int | None
+    tipoUnidadeId: int | None
+    subprefeituraId: int | None
+    dreId: str
+    codigoIntegracao: str | None
+
+
+class UnidadeParceirasContract(TypedDict):
+    """Contrato E26 — unidade parceira."""
+
+    codigo: str
+    nome: str
+    email: str | None
+
+
+class EquipamentoContract(TypedDict):
+    """Contrato E25 — equipamento/UE com filtros."""
+
+    codigoEol: str
+    nomeEscola: str
+    nomeDRE: str
+    siglaDRE: str
+    codigoDRE: str
+    tipoEscola: str | None
+    siglaTipoEscola: str | None
+    codigoSubprefeitura: str | None
+    nomeSubprefeitura: str | None
+    tipoLogradouro: str | None
+    logradouro: str | None
+    numero: str | None
+    bairro: str | None
+    # Campos institucionais expandidos
+    tipoEscolaId: int | None
+    tipoUnidadeId: int | None
+    subprefeituraId: int | None
+    dreId: str
+    codigoIntegracao: str | None

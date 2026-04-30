@@ -16,7 +16,6 @@ COPY pyproject.toml README.md manage.py /app/
 COPY config /app/config
 COPY apps /app/apps
 COPY requirements /app/requirements
-COPY scripts /app/scripts
 
 RUN pip install --upgrade pip \
     && pip install -r /app/requirements/base.txt

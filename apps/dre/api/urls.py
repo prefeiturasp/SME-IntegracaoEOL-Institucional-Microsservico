@@ -1,17 +1,22 @@
+"""URLs do domínio DRE."""
+
 from django.urls import path
-from .views import (
-    DreListView,
+
+from apps.dre.api.views import (
+    DreCodigosIntegracaoView,
     DreDetalheView,
+    DreEscolasSigpaeView,
     DreEscolasTipoView,
     DreEscolasView,
+    DreListView,
+    DreSupervisoresView,
     DreSubprefeiturasView,
     DreUesView,
-    DreEscolasSigpaeView,
     DreUnidadesView,
-    DreCodigosIntegracaoView,
 )
 
 urlpatterns = [
+    # Rotas específicas antes das genéricas com parâmetros
     path(
         "<str:codigoEolDRE>/escolas/<str:tipoEscola>/",
         DreEscolasTipoView.as_view(),
@@ -26,6 +31,11 @@ urlpatterns = [
         "<str:codigoEolDRE>/escola/",
         DreEscolasView.as_view(),
         name="dre-escolas",
+    ),
+    path(
+        "<str:codigoEolDRE>/supervisores/",
+        DreSupervisoresView.as_view(),
+        name="dre-supervisores",
     ),
     path(
         "<str:dreCodigo>/unidades/codigo-integracao/",
