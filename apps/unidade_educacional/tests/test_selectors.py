@@ -6,6 +6,8 @@ pytestmark = pytest.mark.django_db
 
 
 class TestListarUesBasicas:
+    """Cobre listar_ues_basicas(): lista total, filtro por códigos e UE sem DRE."""
+
     def test_sem_ues_retorna_vazio(self, db):
         from apps.unidade_educacional.selectors import listar_ues_basicas
         assert listar_ues_basicas() == []
@@ -39,6 +41,8 @@ class TestListarUesBasicas:
 
 
 class TestObterUeBasicaPorCodigo:
+    """Cobre obter_ue_basica_por_codigo(): contrato E02, UE sem tipo e campos de ID institucional."""
+
     def test_nao_encontrada_retorna_none(self, db):
         from apps.unidade_educacional.selectors import obter_ue_basica_por_codigo
         assert obter_ue_basica_por_codigo("000000") is None

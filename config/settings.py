@@ -1,4 +1,25 @@
-"""Configurações Django do SME-IntegracaoEOL-Institucional-Microsservico."""
+"""
+Configurações Django do microserviço Institucional.
+
+Lê todas as variáveis sensíveis de variáveis de ambiente — nenhum valor fixo
+em produção. Em desenvolvimento, valores padrão seguros são aplicados para
+permitir `runserver` sem configuração adicional.
+
+Variáveis obrigatórias em produção:
+  - DJANGO_SECRET_KEY: chave secreta do Django (obrigatória quando DJANGO_DEBUG=0)
+  - URL_BANCO_INSTITUCIONAL: URL postgres do banco populado pelo ETL institucional
+    Formato: postgres://usuario:senha@host:5432/nome_banco
+  - API_KEY: chave usada pelo header x-api-eol-key para autenticar todas as rotas
+  - DJANGO_ALLOWED_HOSTS: hosts permitidos, separados por vírgula
+
+Variáveis opcionais relevantes:
+  - APP_PREFIX: prefixo de path removido pelo PrefixMiddleware (ex.: /institucional)
+  - NIVEL_LOG: nível de logging (padrão INFO)
+  - CACHE_TTL_DRE_SECONDS / CACHE_TTL_TIPO_ESCOLA_SECONDS: TTL de cache por domínio
+
+O banco usa connection pooling via dj-db-conn-pool (pool de 5 conexões, sem overflow).
+Sem URL_BANCO_INSTITUCIONAL, cai para SQLite in-memory — válido apenas em testes.
+"""
 
 import os
 import urllib.parse
@@ -138,7 +159,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-_openapi_server_url = SCRIPT_PREFIX if SCRIPT_PREFIX else "/institucional"
+_openapi_server_url = SCRIPT_PREFIX if SCRIPT_PREFIX else ""
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "SME-IntegracaoEOL-Institucional-Microsservico API",

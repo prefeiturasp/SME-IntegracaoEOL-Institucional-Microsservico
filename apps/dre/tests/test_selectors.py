@@ -6,6 +6,8 @@ pytestmark = pytest.mark.django_db
 
 
 class TestListarDres:
+    """Cobre listar_dres(): lista completa e tratamento de sigla nula."""
+
     def test_retorna_lista_vazia_sem_dres(self, db):
         from apps.dre.selectors import listar_dres
         assert listar_dres() == []
@@ -25,6 +27,8 @@ class TestListarDres:
 
 
 class TestFiltrarDresPorCodigos:
+    """Cobre filtrar_dres_por_codigos(): filtragem por lista de códigos EOL."""
+
     def test_codigos_nao_encontrados(self, db):
         from apps.dre.selectors import filtrar_dres_por_codigos
         assert filtrar_dres_por_codigos(["999999"]) == []
@@ -39,6 +43,8 @@ class TestFiltrarDresPorCodigos:
 
 
 class TestObterDrePorCodigo:
+    """Cobre obter_dre_por_codigo(): retorno de DRE existente e ausente."""
+
     def test_retorna_none_se_nao_existir(self, db):
         from apps.dre.selectors import obter_dre_por_codigo
         assert obter_dre_por_codigo("000000") is None
@@ -52,6 +58,8 @@ class TestObterDrePorCodigo:
 
 
 class TestListarSubprefeiturasPorDre:
+    """Cobre listar_subprefeituras_por_dre(): exclusão de UEs sem subprefeitura."""
+
     def test_dre_sem_ues_retorna_vazio(self, db):
         from apps.dre.selectors import listar_subprefeituras_por_dre
         assert listar_subprefeituras_por_dre("000000") == []
@@ -74,6 +82,8 @@ class TestListarSubprefeiturasPorDre:
 
 
 class TestListarEscolasPorDre:
+    """Cobre listar_escolas_por_dre(): filtro por tipo, UE sem tipo/subprefeitura."""
+
     def test_dre_nao_existente_retorna_vazio(self, db):
         from apps.dre.selectors import listar_escolas_por_dre
         assert listar_escolas_por_dre("999999") == []
