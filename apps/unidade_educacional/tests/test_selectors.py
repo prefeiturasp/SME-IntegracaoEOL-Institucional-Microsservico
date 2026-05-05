@@ -213,7 +213,7 @@ class TestListarUnidadesParceiras:
 
     def test_retorna_apenas_parceiras(self, ue_factory):
         from apps.unidade_educacional.selectors import listar_unidades_parceiras
-        ue = ue_factory(codigo_ue="019251", organizacao_parceira=True)
+        ue_factory(codigo_ue="019251", organizacao_parceira=True)
         resultado = listar_unidades_parceiras(["019251"])
         assert len(resultado) == 1
         assert resultado[0]["codigo"] == "019251"

@@ -107,29 +107,32 @@ def test_contracts_usam_apenas_typed_dict() -> None:
     )
 
 
+def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
+    try:
+        tree = ast.parse(contracts_file.read_text(encoding="utf-8"))
+    except SyntaxError:
+        return []
+    violacoes: list[str] = []
+    rel = contracts_file.relative_to(ROOT)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ClassDef):
+            continue
+        for item in node.body:
+            if not (isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name)):
+                continue
+            campo = item.target.id
+            if "_" in campo and not campo.startswith("_") and campo != campo.upper():
+                violacoes.append(f"{rel}: campo '{campo}' não é camelCase")
+    return violacoes
+
+
 def test_campos_contratos_sao_camel_case() -> None:
     """Campos dos TypedDicts de contratos devem ser camelCase (contrato EOL legado)."""
     violacoes: list[str] = []
     for dominio in ["dre", "unidade_educacional"]:
         contracts_file = APPS / dominio / "contracts.py"
-        if not contracts_file.exists():
-            continue
-        try:
-            tree = ast.parse(contracts_file.read_text(encoding="utf-8"))
-        except SyntaxError:
-            continue
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef):
-                for item in node.body:
-                    if isinstance(item, ast.AnnAssign) and isinstance(
-                        item.target, ast.Name
-                    ):
-                        campo = item.target.id
-                        # snake_case puro com underscore (ex: meu_campo) é violação
-                        # camelCase e nomes de uma palavra são ok
-                        if "_" in campo and not campo.startswith("_") and campo != campo.upper():
-                            rel = contracts_file.relative_to(ROOT)
-                            violacoes.append(f"{rel}: campo '{campo}' não é camelCase")
+        if contracts_file.exists():
+            violacoes.extend(_campos_snake_case_em_arquivo(contracts_file))
     assert not violacoes, (
         "Campos snake_case encontrados em contratos (devem ser camelCase):\n"
         + "\n".join(violacoes)
@@ -155,27 +158,37 @@ def test_sem_imports_de_microsservicos_externos() -> None:
 
 # ─── Views ────────────────────────────────────────────────────────────────────
 
+def _nome_base(b: ast.expr) -> str:
+    if isinstance(b, ast.Name):
+        return b.id
+    if isinstance(b, ast.Attribute):
+        return b.attr
+    return ""
+
+
+def _violacoes_heranca_em_views(views_file: pathlib.Path) -> list[str]:
+    try:
+        tree = ast.parse(views_file.read_text(encoding="utf-8"))
+    except SyntaxError:
+        return []
+    rel = views_file.relative_to(ROOT)
+    violacoes: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ClassDef) or not node.bases:
+            continue
+        bases = [_nome_base(b) for b in node.bases]
+        if "BaseAPIView" not in bases and "APIView" not in bases:
+            violacoes.append(f"{rel}: {node.name} não herda de BaseAPIView")
+    return violacoes
+
+
 def test_views_herdam_de_base_api_view() -> None:
     """Todas as views de domínio devem herdar de BaseAPIView."""
     violacoes: list[str] = []
     for dominio in _DOMINIOS:
         views_file = APPS / dominio / "api" / "views.py"
-        if not views_file.exists():
-            continue
-        try:
-            tree = ast.parse(views_file.read_text(encoding="utf-8"))
-        except SyntaxError:
-            continue
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef):
-                bases = [
-                    (b.id if isinstance(b, ast.Name) else
-                     b.attr if isinstance(b, ast.Attribute) else "")
-                    for b in node.bases
-                ]
-                if node.bases and "BaseAPIView" not in bases and "APIView" not in bases:
-                    rel = views_file.relative_to(ROOT)
-                    violacoes.append(f"{rel}: {node.name} não herda de BaseAPIView")
+        if views_file.exists():
+            violacoes.extend(_violacoes_heranca_em_views(views_file))
     assert not violacoes, (
         "Views sem herança de BaseAPIView:\n" + "\n".join(violacoes)
     )

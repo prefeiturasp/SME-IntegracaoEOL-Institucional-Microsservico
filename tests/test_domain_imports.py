@@ -62,28 +62,38 @@ def _dominio_para_path(dominio: str) -> pathlib.Path | None:
     return p if p.exists() else None
 
 
+def _violacoes_em_arquivo(
+    py_file: pathlib.Path, proibidos: list[str], dominio_fonte: str
+) -> list[str]:
+    imports = _coletar_imports(py_file)
+    rel = py_file.relative_to(ROOT.parent)
+    return [
+        f"{rel}: importa '{imp}' (proibido para '{dominio_fonte}')"
+        for imp in imports
+        for proibido in proibidos
+        if imp == proibido or imp.startswith(proibido + ".")
+    ]
+
+
+def _violacoes_em_dominio(
+    dominio_fonte: str, proibidos: list[str]
+) -> list[str]:
+    fonte_path = _dominio_para_path(dominio_fonte)
+    if fonte_path is None:
+        return []
+    violacoes: list[str] = []
+    for py_file in fonte_path.rglob("*.py"):
+        if "tests" in py_file.parts or "test_" in py_file.name:
+            continue
+        violacoes.extend(_violacoes_em_arquivo(py_file, proibidos, dominio_fonte))
+    return violacoes
+
+
 def test_sem_imports_cruzados_entre_dominios() -> None:
     """Nenhum domínio deve importar implementação interna de outro."""
     violacoes: list[str] = []
-
     for dominio_fonte, proibidos in REGRAS_PROIBIDAS:
-        fonte_path = _dominio_para_path(dominio_fonte)
-        if fonte_path is None:
-            continue
-
-        for py_file in fonte_path.rglob("*.py"):
-            # ignora testes — eles podem importar qualquer coisa para fixture
-            if "tests" in py_file.parts or "test_" in py_file.name:
-                continue
-            imports = _coletar_imports(py_file)
-            for imp in imports:
-                for proibido in proibidos:
-                    if imp == proibido or imp.startswith(proibido + "."):
-                        rel = py_file.relative_to(ROOT.parent)
-                        violacoes.append(
-                            f"{rel}: importa '{imp}' (proibido para '{dominio_fonte}')"
-                        )
-
+        violacoes.extend(_violacoes_em_dominio(dominio_fonte, proibidos))
     assert not violacoes, (
         "Imports entre domínios detectados:\n" + "\n".join(violacoes)
     )

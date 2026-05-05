@@ -268,13 +268,13 @@ class TestE25Equipamentos:
         assert resp.data == []
 
     def test_filtro_por_nome_escola(self, api_client, ue_factory):
-        ue = ue_factory(nome="EMEF TESTE ESPECIAL")
+        ue_factory(nome="EMEF TESTE ESPECIAL")
         resp = api_client.get("/api/escolas/equipamentos/?nomeEscola=ESPECIAL")
         assert resp.status_code == 200
         assert any(e["nomeEscola"] == "EMEF TESTE ESPECIAL" for e in resp.data)
 
     def test_filtro_por_codigo_eol(self, api_client, ue_factory):
-        ue = ue_factory(codigo_ue="019251")
+        ue_factory(codigo_ue="019251")
         resp = api_client.get("/api/escolas/equipamentos/?codigoEol=019251")
         assert resp.status_code == 200
         assert len(resp.data) == 1

@@ -8,7 +8,7 @@ permitir `runserver` sem configuração adicional.
 Variáveis obrigatórias em produção:
   - DJANGO_SECRET_KEY: chave secreta do Django (obrigatória quando DJANGO_DEBUG=0)
   - URL_BANCO_INSTITUCIONAL: URL postgres do banco populado pelo ETL institucional
-    Formato: postgres://usuario:senha@host:5432/nome_banco
+    Formato: postgres://<usuario>:<senha>@<host>:5432/<nome_banco>
   - API_KEY: chave usada pelo header x-api-eol-key para autenticar todas as rotas
   - DJANGO_ALLOWED_HOSTS: hosts permitidos, separados por vírgula
 
@@ -22,6 +22,7 @@ Sem URL_BANCO_INSTITUCIONAL, cai para SQLite in-memory — válido apenas em tes
 """
 
 import os
+import secrets
 import urllib.parse
 from pathlib import Path
 from typing import Any
@@ -69,7 +70,7 @@ if not SECRET_KEY:
         raise ImproperlyConfigured(
             "A variável DJANGO_SECRET_KEY é obrigatória em produção."
         )
-    SECRET_KEY = os.getenv("HOSTNAME", "dev-secret-key-fallback")
+    SECRET_KEY = secrets.token_hex(32)
 
 DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
 ALLOWED_HOSTS = [
