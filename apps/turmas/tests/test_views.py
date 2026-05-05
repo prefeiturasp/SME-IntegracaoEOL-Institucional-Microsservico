@@ -10,13 +10,13 @@ class TestT01SincronizacoesTurma:
 
     def test_retorna_501(self, api_client, db):
         resp = api_client.get(
-            "/api/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.status_code == 501
 
     def test_shape_cross_domain(self, api_client, db):
         resp = api_client.get(
-            "/api/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.data["dominio"] == "pedagogico"
         assert resp.data["transitionGateway"] is True
@@ -24,21 +24,21 @@ class TestT01SincronizacoesTurma:
 
     def test_detail_sem_ponto_final(self, api_client, db):
         resp = api_client.get(
-            "/api/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert not resp.data["detail"].endswith(".")
 
     def test_requer_autenticacao(self, db):
         from rest_framework.test import APIClient
         resp = APIClient().get(
-            "/api/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.status_code in (401, 403)
 
     def test_rota_legacy_retorna_501(self, api_client, db):
         """[LEGACY COMPATIBILITY ROUTE] /api/turmas/{ueCodigo}/turmas/... retorna 501."""
         resp = api_client.get(
-            "/api/turmas/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/turmas/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.status_code == 501
         assert resp.data["dominio"] == "pedagogico"
@@ -50,7 +50,7 @@ class TestT01SincronizacoesTurma:
         client = APIClient()
         client.credentials(HTTP_X_API_EOL_KEY=settings.API_KEY)
         resp = client.get(
-            "/api/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.status_code == 501
 
@@ -60,13 +60,13 @@ class TestT02AnosLetivosSincronizacao:
 
     def test_retorna_501(self, api_client, db):
         resp = api_client.get(
-            "/api/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert resp.status_code == 501
 
     def test_shape_cross_domain(self, api_client, db):
         resp = api_client.get(
-            "/api/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert resp.data["dominio"] == "pedagogico"
         assert resp.data["transitionGateway"] is True
@@ -74,21 +74,21 @@ class TestT02AnosLetivosSincronizacao:
 
     def test_detail_sem_ponto_final(self, api_client, db):
         resp = api_client.get(
-            "/api/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert not resp.data["detail"].endswith(".")
 
     def test_requer_autenticacao(self, db):
         from rest_framework.test import APIClient
         resp = APIClient().get(
-            "/api/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert resp.status_code in (401, 403)
 
     def test_rota_legacy_retorna_501(self, api_client, db):
         """[LEGACY COMPATIBILITY ROUTE] /api/ues/ue/{ueCodigo}/... retorna 501."""
         resp = api_client.get(
-            "/api/ues/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/ues/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert resp.status_code == 501
         assert resp.data["dominio"] == "pedagogico"
@@ -100,7 +100,7 @@ class TestT02AnosLetivosSincronizacao:
         client = APIClient()
         client.credentials(HTTP_X_API_EOL_KEY=settings.API_KEY)
         resp = client.get(
-            "/api/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert resp.status_code == 501
 
@@ -110,20 +110,20 @@ class TestRotasCanonicase:
 
     def test_t01_canonico_retorna_501(self, api_client, db):
         resp = api_client.get(
-            "/api/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.status_code == 501
 
     def test_t02_canonico_retorna_501(self, api_client, db):
         resp = api_client.get(
-            "/api/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert resp.status_code == 501
 
     def test_t01_legacy_retorna_501(self, api_client, db):
         """[LEGACY COMPATIBILITY ROUTE] alias de T01."""
         resp = api_client.get(
-            "/api/turmas/019251/turmas/ABC123/sincronizacoes-institucionais/"
+            "/api/v1/institucional/turmas/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.status_code == 501
         assert resp.data["dominio"] == "pedagogico"
@@ -131,7 +131,7 @@ class TestRotasCanonicase:
     def test_t02_legacy_retorna_501(self, api_client, db):
         """[LEGACY COMPATIBILITY ROUTE] alias de T02."""
         resp = api_client.get(
-            "/api/ues/ue/019251/sincronizacoes-institucionais/anos-letivos/"
+            "/api/v1/institucional/ues/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
         assert resp.status_code == 501
         assert resp.data["dominio"] == "pedagogico"
