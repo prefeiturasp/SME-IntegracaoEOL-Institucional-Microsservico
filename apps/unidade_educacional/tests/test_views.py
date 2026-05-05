@@ -586,15 +586,15 @@ class TestSwaggerFidelity:
     """Valida que o schema OpenAPI é gerado sem erros."""
 
     def test_schema_retorna_200(self, api_client, db):
-        resp = api_client.get("/api/schema/")
+        resp = api_client.get("/institucional/api/schema/")
         assert resp.status_code == 200
 
     def test_swagger_ui_retorna_200(self, api_client, db):
-        resp = api_client.get("/api/docs/")
+        resp = api_client.get("/institucional/api/docs/")
         assert resp.status_code == 200
 
     def test_schema_contem_server_institucional(self, api_client, db):
-        resp = api_client.get("/api/schema/", HTTP_ACCEPT="application/json")
+        resp = api_client.get("/institucional/api/schema/", HTTP_ACCEPT="application/json")
         assert resp.status_code == 200
         content = resp.content.decode()
         assert "institucional" in content
@@ -602,14 +602,14 @@ class TestSwaggerFidelity:
     def test_schema_contem_security_scheme_x_api_eol_key(
         self, api_client, db
     ):
-        resp = api_client.get("/api/schema/", HTTP_ACCEPT="application/json")
+        resp = api_client.get("/institucional/api/schema/", HTTP_ACCEPT="application/json")
         assert resp.status_code == 200
         content = resp.content.decode()
         assert "x-api-eol-key" in content
 
     def test_schema_nao_contem_schema_vazio(self, api_client, db):
         """Garante que não há schema: {} no YAML gerado."""
-        resp = api_client.get("/api/schema/", HTTP_ACCEPT="application/yaml")
+        resp = api_client.get("/institucional/api/schema/", HTTP_ACCEPT="application/yaml")
         assert resp.status_code == 200
         content = resp.content.decode()
         assert "schema: {}" not in content

@@ -9,7 +9,7 @@ class TestObservabilidadeMiddleware:
     """Verifica injeção de correlation-id e tempo de resposta nos headers."""
 
     def test_injeta_correlation_id_nos_headers(self, api_client, db):
-        resp = api_client.get("/api/health/live/")
+        resp = api_client.get("/institucional/api/health/live/")
         assert "X-Correlation-Id" in resp
         assert len(resp["X-Correlation-Id"]) == 36  # UUID4 format
 
@@ -18,12 +18,12 @@ class TestObservabilidadeMiddleware:
 
         client = APIClient()
         resp = client.get(
-            "/api/health/live/", HTTP_X_CORRELATION_ID="meu-id-customizado"
+            "/institucional/api/health/live/", HTTP_X_CORRELATION_ID="meu-id-customizado"
         )
         assert resp["X-Correlation-Id"] == "meu-id-customizado"
 
     def test_injeta_response_time_ms(self, api_client, db):
-        resp = api_client.get("/api/health/live/")
+        resp = api_client.get("/institucional/api/health/live/")
         assert "X-Response-Time-Ms" in resp
         assert float(resp["X-Response-Time-Ms"]) >= 0
 
@@ -32,7 +32,7 @@ class TestPrefixMiddleware:
     """Verifica que rotas funcionam com e sem prefixo."""
 
     def test_rota_sem_prefixo_funciona(self, api_client, db):
-        resp = api_client.get("/api/health/live/")
+        resp = api_client.get("/institucional/api/health/live/")
         assert resp.status_code == 200
 
 

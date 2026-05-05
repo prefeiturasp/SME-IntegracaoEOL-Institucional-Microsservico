@@ -6,23 +6,23 @@ pytestmark = pytest.mark.django_db
 
 
 class TestLiveness:
-    """GET /api/health/live/"""
+    """GET /institucional/api/health/live/"""
 
     def test_retorna_200_sem_autenticacao(self, db):
         from rest_framework.test import APIClient
 
-        resp = APIClient().get("/api/health/live/")
+        resp = APIClient().get("/institucional/api/health/live/")
         assert resp.status_code == 200
         assert resp.data["status"] == "ok"
 
 
 class TestReadiness:
-    """GET /api/health/ready/"""
+    """GET /institucional/api/health/ready/"""
 
     def test_retorna_200_com_banco_ok(self, db):
         from rest_framework.test import APIClient
 
-        resp = APIClient().get("/api/health/ready/")
+        resp = APIClient().get("/institucional/api/health/ready/")
         assert resp.status_code == 200
         assert resp.data["status"] == "ok"
         assert "checks" in resp.data
@@ -33,17 +33,17 @@ class TestReadiness:
     def test_sem_autenticacao(self, db):
         from rest_framework.test import APIClient
 
-        resp = APIClient().get("/api/health/ready/")
+        resp = APIClient().get("/institucional/api/health/ready/")
         assert resp.status_code in (200, 503)
 
 
 class TestHealth:
-    """GET /api/health/"""
+    """GET /institucional/api/health/"""
 
     def test_retorna_200_com_versao(self, db):
         from rest_framework.test import APIClient
 
-        resp = APIClient().get("/api/health/")
+        resp = APIClient().get("/institucional/api/health/")
         assert resp.status_code in (200, 503)
         assert "version" in resp.data
         assert "checks" in resp.data
@@ -51,5 +51,5 @@ class TestHealth:
     def test_sem_autenticacao(self, db):
         from rest_framework.test import APIClient
 
-        resp = APIClient().get("/api/health/")
+        resp = APIClient().get("/institucional/api/health/")
         assert resp.status_code in (200, 503)
