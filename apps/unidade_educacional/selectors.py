@@ -237,6 +237,48 @@ def obter_sincronizacao_ue(codigo: str) -> SincronizacaoUeContract | None:
     )
 
 
+def _aplicar_filtros_equipamentos(qs, codigos_subprefeitura, codigos_dre, tipos_unidade, tipos_escola, nome_escola, codigo_eol):
+    if codigos_subprefeitura:
+        qs = qs.filter(codigo_sub_prefeitura__in=codigos_subprefeitura)
+    if codigos_dre:
+        qs = qs.filter(codigo_dre__in=codigos_dre)
+    if tipos_unidade:
+        qs = qs.filter(codigo_tipo_escola__in=tipos_unidade)
+    if tipos_escola:
+        qs = qs.filter(codigo_tipo_escola__in=tipos_escola)
+    if nome_escola:
+        qs = qs.filter(nome__icontains=nome_escola)
+    if codigo_eol:
+        qs = qs.filter(codigo_ue=codigo_eol)
+    return qs
+
+
+def _build_equipamento(r: dict, dres: dict, tipos: dict, subs: dict) -> EquipamentoContract:
+    dre = dres.get(r["codigo_dre"])
+    tipo = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
+    sub = subs.get(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None
+    return EquipamentoContract(
+        codigoEol=r["codigo_ue"],
+        nomeEscola=r["nome"],
+        nomeDRE=dre.nome if dre else "",
+        siglaDRE=dre.sigla or "" if dre else "",
+        codigoDRE=r["codigo_dre"],
+        tipoEscola=tipo.descricao if tipo else None,
+        siglaTipoEscola=tipo.sigla if tipo else None,
+        codigoSubprefeitura=str(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None,
+        nomeSubprefeitura=sub.nome if sub else None,
+        tipoLogradouro=r["tipo_logradouro"],
+        logradouro=r["logradouro"],
+        numero=r["numero"],
+        bairro=r["bairro"],
+        tipoEscolaId=r["codigo_tipo_escola"],
+        tipoUnidadeId=r["codigo_tipo_escola"],
+        subprefeituraId=r["codigo_sub_prefeitura"],
+        dreId=r["codigo_dre"],
+        codigoIntegracao=r["codigo_ue_integracao"],
+    )
+
+
 def listar_equipamentos(
     codigos_subprefeitura: list[int] | None = None,
     codigos_dre: list[str] | None = None,
@@ -252,58 +294,17 @@ def listar_equipamentos(
         "tipo_logradouro", "logradouro", "numero", "bairro",
         "codigo_ue_integracao",
     )
-    if codigos_subprefeitura:
-        qs = qs.filter(codigo_sub_prefeitura__in=codigos_subprefeitura)
-    if codigos_dre:
-        qs = qs.filter(codigo_dre__in=codigos_dre)
-    if tipos_unidade:
-        qs = qs.filter(codigo_tipo_escola__in=tipos_unidade)
-    if tipos_escola:
-        qs = qs.filter(codigo_tipo_escola__in=tipos_escola)
-    if nome_escola:
-        qs = qs.filter(nome__icontains=nome_escola)
-    if codigo_eol:
-        qs = qs.filter(codigo_ue=codigo_eol)
-
+    qs = _aplicar_filtros_equipamentos(
+        qs, codigos_subprefeitura, codigos_dre, tipos_unidade, tipos_escola, nome_escola, codigo_eol
+    )
     rows = list(qs.order_by("nome"))
     if not rows:
         return []
 
-    dre_ids = {r["codigo_dre"] for r in rows}
-    tipo_ids = {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
-    sub_ids = {r["codigo_sub_prefeitura"] for r in rows if r["codigo_sub_prefeitura"]}
-    dres = _lookup_dres(dre_ids)
-    tipos = _lookup_tipos(tipo_ids)
-    subs = _lookup_subs(sub_ids)
-
-    result: list[EquipamentoContract] = []
-    for r in rows:
-        dre = dres.get(r["codigo_dre"])
-        tipo = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
-        sub = subs.get(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None
-        result.append(
-            EquipamentoContract(
-                codigoEol=r["codigo_ue"],
-                nomeEscola=r["nome"],
-                nomeDRE=dre.nome if dre else "",
-                siglaDRE=dre.sigla or "" if dre else "",
-                codigoDRE=r["codigo_dre"],
-                tipoEscola=tipo.descricao if tipo else None,
-                siglaTipoEscola=tipo.sigla if tipo else None,
-                codigoSubprefeitura=str(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None,
-                nomeSubprefeitura=sub.nome if sub else None,
-                tipoLogradouro=r["tipo_logradouro"],
-                logradouro=r["logradouro"],
-                numero=r["numero"],
-                bairro=r["bairro"],
-                tipoEscolaId=r["codigo_tipo_escola"],
-                tipoUnidadeId=r["codigo_tipo_escola"],
-                subprefeituraId=r["codigo_sub_prefeitura"],
-                dreId=r["codigo_dre"],
-                codigoIntegracao=r["codigo_ue_integracao"],
-            )
-        )
-    return result
+    dres = _lookup_dres({r["codigo_dre"] for r in rows})
+    tipos = _lookup_tipos({r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]})
+    subs = _lookup_subs({r["codigo_sub_prefeitura"] for r in rows if r["codigo_sub_prefeitura"]})
+    return [_build_equipamento(r, dres, tipos, subs) for r in rows]
 
 
 def listar_unidades_parceiras(codigos: list[str]) -> list[UnidadeParceirasContract]:

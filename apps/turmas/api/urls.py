@@ -21,13 +21,13 @@ from apps.turmas.api.views import (
 # Registrado sob api/ues/ em config/urls.py
 urlpatterns_ues = [
     path(
-        "<str:ueCodigo>/turmas/<str:turmaCodigo>/sincronizacoes-institucionais/",
+        "<str:ue_codigo>/turmas/<str:turma_codigo>/sincronizacoes-institucionais/",
         SincronizacoesTurmaView.as_view(),
         name="turmas-sincronizacao-turma",
     ),
     # [LEGACY COMPATIBILITY ROUTE]
     path(
-        "ue/<str:ueCodigo>/sincronizacoes-institucionais/anos-letivos/",
+        "ue/<str:ue_codigo>/sincronizacoes-institucionais/anos-letivos/",
         AnosLetivosSincronizacaoTurmaLegacyView.as_view(),
         name="turmas-anos-letivos-sincronizacao-legacy",
     ),
@@ -36,13 +36,13 @@ urlpatterns_ues = [
 # Registrado sob api/turmas/ em config/urls.py
 urlpatterns_turmas = [
     path(
-        "ue/<str:ueCodigo>/sincronizacoes-institucionais/anos-letivos/",
+        "ue/<str:ue_codigo>/sincronizacoes-institucionais/anos-letivos/",
         AnosLetivosSincronizacaoTurmaView.as_view(),
         name="turmas-anos-letivos-sincronizacao",
     ),
     # [LEGACY COMPATIBILITY ROUTE]
     path(
-        "<str:ueCodigo>/turmas/<str:turmaCodigo>/sincronizacoes-institucionais/",
+        "<str:ue_codigo>/turmas/<str:turma_codigo>/sincronizacoes-institucionais/",
         SincronizacoesTurmaLegacyView.as_view(),
         name="turmas-sincronizacao-turma-legacy",
     ),

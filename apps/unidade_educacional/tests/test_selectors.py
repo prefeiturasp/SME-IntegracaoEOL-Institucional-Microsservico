@@ -14,7 +14,7 @@ class TestListarUesBasicas:
 
     def test_com_codigos_especificos(self, ue_factory):
         from apps.unidade_educacional.selectors import listar_ues_basicas
-        ue = ue_factory(codigo_ue="019251")
+        ue_factory(codigo_ue="019251")
         resultado = listar_ues_basicas(["019251"])
         assert len(resultado) == 1
         assert resultado[0]["codigoEscola"] == "019251"
@@ -49,7 +49,7 @@ class TestObterUeBasicaPorCodigo:
 
     def test_retorna_contrato_correto(self, ue_factory):
         from apps.unidade_educacional.selectors import obter_ue_basica_por_codigo
-        ue = ue_factory(codigo_ue="019251", nome="EMEF TESTE")
+        ue_factory(codigo_ue="019251", nome="EMEF TESTE")
         resultado = obter_ue_basica_por_codigo("019251")
         assert resultado is not None
         assert resultado["nomeEscola"] == "EMEF TESTE"
@@ -75,7 +75,7 @@ class TestObterUeBasicaPorCodigo:
 
     def test_contem_campos_ids_institucionais(self, ue_factory):
         from apps.unidade_educacional.selectors import obter_ue_basica_por_codigo
-        ue = ue_factory(codigo_ue="019254")
+        ue_factory(codigo_ue="019254")
         resultado = obter_ue_basica_por_codigo("019254")
         assert resultado is not None
         assert "tipoEscolaId" in resultado
@@ -84,7 +84,7 @@ class TestObterUeBasicaPorCodigo:
 
     def test_tipo_escola_id_coincide_com_codigo_tipo_escola(self, ue_factory):
         from apps.unidade_educacional.selectors import obter_ue_basica_por_codigo
-        ue = ue_factory(codigo_ue="019255")
+        ue_factory(codigo_ue="019255")
         resultado = obter_ue_basica_por_codigo("019255")
         assert resultado is not None
         assert resultado["tipoEscolaId"] == resultado["codigoTipoEscola"]
@@ -97,7 +97,7 @@ class TestObterUeEol:
 
     def test_retorna_contrato_correto(self, ue_factory):
         from apps.unidade_educacional.selectors import obter_ue_eol
-        ue = ue_factory(codigo_ue="019251")
+        ue_factory(codigo_ue="019251")
         resultado = obter_ue_eol("019251")
         assert resultado is not None
         assert resultado["codigo"] == "019251"

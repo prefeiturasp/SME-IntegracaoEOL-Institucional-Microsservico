@@ -18,47 +18,47 @@ from apps.dre.api.views import (
 urlpatterns = [
     # Rotas específicas antes das genéricas com parâmetros
     path(
-        "<str:codigoEolDRE>/escolas/<str:tipoEscola>/",
+        "<str:codigo_eol_dre>/escolas/<str:tipo_escola>/",
         DreEscolasTipoView.as_view(),
         name="dre-escolas-tipo",
     ),
     path(
-        "<str:codigoEolDRE>/escola/Sigpae/",
+        "<str:codigo_eol_dre>/escola/Sigpae/",
         DreEscolasSigpaeView.as_view(),
         name="dre-escolas-sigpae",
     ),
     path(
-        "<str:codigoEolDRE>/escola/",
+        "<str:codigo_eol_dre>/escola/",
         DreEscolasView.as_view(),
         name="dre-escolas",
     ),
     path(
-        "<str:codigoEolDRE>/supervisores/",
+        "<str:codigo_eol_dre>/supervisores/",
         DreSupervisoresView.as_view(),
         name="dre-supervisores",
     ),
     path(
-        "<str:dreCodigo>/unidades/codigo-integracao/",
+        "<str:dre_codigo>/unidades/codigo-integracao/",
         DreCodigosIntegracaoView.as_view(),
         name="dre-codigos-integracao",
     ),
     path(
-        "<str:dreCodigo>/subprefeituras/",
+        "<str:dre_codigo>/subprefeituras/",
         DreSubprefeiturasView.as_view(),
         name="dre-subprefeituras",
     ),
     path(
-        "<str:dreCodigo>/ues/",
+        "<str:dre_codigo>/ues/",
         DreUesView.as_view(),
         name="dre-ues",
     ),
     path(
-        "<str:dreCodigo>/unidades/",
+        "<str:dre_codigo>/unidades/",
         DreUnidadesView.as_view(),
         name="dre-unidades",
     ),
     path(
-        "<str:codigoEolDRE>/",
+        "<str:codigo_eol_dre>/",
         DreDetalheView.as_view(),
         name="dre-detalhe",
     ),

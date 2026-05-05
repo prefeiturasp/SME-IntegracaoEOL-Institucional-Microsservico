@@ -22,27 +22,27 @@ class SincronizacoesTurmaView(BaseAPIView):
         operation_id="T01_sincronizacoes_turma",
     )
     def get(
-        self, _request: Request, ueCodigo: str, turmaCodigo: str
+        self, _request: Request, ue_codigo: str, turma_codigo: str
     ) -> Response:
         """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")
 
 
 class SincronizacoesTurmaLegacyView(BaseAPIView):
-    """T01 [LEGACY COMPATIBILITY ROUTE] — alias /api/turmas/{ueCodigo}/turmas/{turmaCodigo}/..."""
+    """T01 [LEGACY COMPATIBILITY ROUTE] — alias /api/turmas/{ue_codigo}/turmas/{turma_codigo}/..."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
         description=(
             "Sincronizações institucionais de uma turma (T01). "
-            "[LEGACY COMPATIBILITY ROUTE] Use /api/ues/{ueCodigo}/turmas/{turmaCodigo}/sincronizacoes-institucionais/. "
+            "[LEGACY COMPATIBILITY ROUTE] Use /api/ues/{ue_codigo}/turmas/{turma_codigo}/sincronizacoes-institucionais/. "
             "[CROSS-DOMAIN] Competência do microserviço Pedagógico."
         ),
         tags=_TAG_CD,
         operation_id="T01_sincronizacoes_turma_legacy",
     )
     def get(
-        self, _request: Request, ueCodigo: str, turmaCodigo: str
+        self, _request: Request, ue_codigo: str, turma_codigo: str
     ) -> Response:
         """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")
@@ -60,24 +60,24 @@ class AnosLetivosSincronizacaoTurmaView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="T02_anos_letivos_sincronizacao_turma",
     )
-    def get(self, _request: Request, ueCodigo: str) -> Response:
+    def get(self, _request: Request, ue_codigo: str) -> Response:
         """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")
 
 
 class AnosLetivosSincronizacaoTurmaLegacyView(BaseAPIView):
-    """T02 [LEGACY COMPATIBILITY ROUTE] — alias /api/ues/ue/{ueCodigo}/..."""
+    """T02 [LEGACY COMPATIBILITY ROUTE] — alias /api/ues/ue/{ue_codigo}/..."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
         description=(
             "Anos letivos com sincronizações de turmas de uma UE (T02). "
-            "[LEGACY COMPATIBILITY ROUTE] Use /api/turmas/ue/{ueCodigo}/sincronizacoes-institucionais/anos-letivos/. "
+            "[LEGACY COMPATIBILITY ROUTE] Use /api/turmas/ue/{ue_codigo}/sincronizacoes-institucionais/anos-letivos/. "
             "[CROSS-DOMAIN] Competência do microserviço Pedagógico."
         ),
         tags=_TAG_CD,
         operation_id="T02_anos_letivos_sincronizacao_turma_legacy",
     )
-    def get(self, _request: Request, ueCodigo: str) -> Response:
+    def get(self, _request: Request, ue_codigo: str) -> Response:
         """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")

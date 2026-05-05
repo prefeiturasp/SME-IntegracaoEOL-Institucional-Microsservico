@@ -148,7 +148,7 @@ class TestE06BuscaUesPorLista:
     """E06 — POST /api/escolas/"""
 
     def test_retorna_200_com_ues(self, api_client, ue_factory):
-        ue = ue_factory(codigo_ue="019251")
+        ue_factory(codigo_ue="019251")
         resp = api_client.post("/api/escolas/", ["019251"], format="json")
         assert resp.status_code == 200
         assert isinstance(resp.data, list)

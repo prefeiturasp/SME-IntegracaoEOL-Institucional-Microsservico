@@ -200,9 +200,9 @@ class DreDetalheView(BaseAPIView):
             )
         ],
     )
-    def get(self, _request: Request, codigoEolDRE: str) -> Response:
+    def get(self, _request: Request, codigo_eol_dre: str) -> Response:
         """Resposta 200 ou 404 se não encontrada."""
-        dre = obter_dre_por_codigo(codigoEolDRE)
+        dre = obter_dre_por_codigo(codigo_eol_dre)
         if dre is None:
             raise NotFound("DRE não encontrada.")
         return Response(dre)
@@ -226,13 +226,13 @@ class DreEscolasTipoView(BaseAPIView):
     def get(
         self,
         _request: Request,
-        codigoEolDRE: str,
-        tipoEscola: str,
+        codigo_eol_dre: str,
+        tipo_escola: str,
     ) -> Response:
         """Resposta 200 com escolas filtradas ou lista vazia."""
-        if not codigoEolDRE.strip():
+        if not codigo_eol_dre.strip():
             raise ValidationError("Código EOL da DRE é obrigatório.")
-        escolas = listar_escolas_por_dre(codigoEolDRE, tipoEscola)
+        escolas = listar_escolas_por_dre(codigo_eol_dre, tipo_escola)
         return Response(escolas)
 
 
@@ -252,9 +252,9 @@ class DreEscolasView(BaseAPIView):
         tags=_TAG_DRE,
         operation_id="D06_escolas_vinculadas_dre",
     )
-    def get(self, _request: Request, codigoEolDRE: str) -> Response:
+    def get(self, _request: Request, codigo_eol_dre: str) -> Response:
         """Resposta 200 ou 204 se a DRE não possuir escolas."""
-        escolas = listar_escolas_por_dre(codigoEolDRE)
+        escolas = listar_escolas_por_dre(codigo_eol_dre)
         if not escolas:
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(escolas)
@@ -275,11 +275,11 @@ class DreSubprefeiturasView(BaseAPIView):
         tags=_TAG_DRE,
         operation_id="D07_subprefeituras_dre",
     )
-    def get(self, _request: Request, dreCodigo: str) -> Response:
+    def get(self, _request: Request, dre_codigo: str) -> Response:
         """Resposta 200 com subprefeituras."""
-        if not dreCodigo.strip():
+        if not dre_codigo.strip():
             raise ValidationError("Código da DRE é obrigatório.")
-        return Response(listar_subprefeituras_por_dre(dreCodigo))
+        return Response(listar_subprefeituras_por_dre(dre_codigo))
 
 
 class DreUesView(BaseAPIView):
@@ -298,11 +298,11 @@ class DreUesView(BaseAPIView):
         tags=_TAG_DRE,
         operation_id="D08_codigos_ues_dre",
     )
-    def get(self, _request: Request, dreCodigo: str) -> Response:
+    def get(self, _request: Request, dre_codigo: str) -> Response:
         """Resposta 200 com lista de códigos."""
-        if not dreCodigo.strip():
+        if not dre_codigo.strip():
             raise ValidationError("Código da DRE é obrigatório.")
-        return Response(listar_codigos_ues_por_dre(dreCodigo))
+        return Response(listar_codigos_ues_por_dre(dre_codigo))
 
 
 class DreEscolasSigpaeView(BaseAPIView):
@@ -321,11 +321,11 @@ class DreEscolasSigpaeView(BaseAPIView):
         tags=_TAG_DRE,
         operation_id="D09_escolas_sigpae",
     )
-    def get(self, _request: Request, codigoEolDRE: str) -> Response:
+    def get(self, _request: Request, codigo_eol_dre: str) -> Response:
         """Resposta 200 ou 204 se não houver escolas."""
-        if not codigoEolDRE.strip():
+        if not codigo_eol_dre.strip():
             raise ValidationError("Código EOL da DRE é obrigatório.")
-        escolas = listar_escolas_por_dre(codigoEolDRE)
+        escolas = listar_escolas_por_dre(codigo_eol_dre)
         if not escolas:
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(escolas)
@@ -346,9 +346,9 @@ class DreUnidadesView(BaseAPIView):
         tags=_TAG_DRE,
         operation_id="D10_unidades_gestao_predial",
     )
-    def get(self, _request: Request, dreCodigo: str) -> Response:
+    def get(self, _request: Request, dre_codigo: str) -> Response:
         """Resposta 200 com dados completos das unidades."""
-        return Response(listar_unidades_por_dre(dreCodigo))
+        return Response(listar_unidades_por_dre(dre_codigo))
 
 
 class DreCodigosIntegracaoView(BaseAPIView):
@@ -366,9 +366,9 @@ class DreCodigosIntegracaoView(BaseAPIView):
         tags=_TAG_DRE,
         operation_id="D11_ues_codigo_integracao",
     )
-    def get(self, _request: Request, dreCodigo: str) -> Response:
+    def get(self, _request: Request, dre_codigo: str) -> Response:
         """Resposta 200 com códigos de integração."""
-        return Response(listar_codigos_integracao_por_dre(dreCodigo))
+        return Response(listar_codigos_integracao_por_dre(dre_codigo))
 
 
 class DreSupervisoresView(BaseAPIView):
@@ -387,6 +387,6 @@ class DreSupervisoresView(BaseAPIView):
         tags=_TAG_DRE,
         operation_id="D03_supervisores_dre",
     )
-    def get(self, _request: Request, codigoEolDRE: str) -> Response:
+    def get(self, _request: Request, codigo_eol_dre: str) -> Response:
         """Retorna 501 — rota de competência do domínio Professores."""
         return self.cross_domain("professores")

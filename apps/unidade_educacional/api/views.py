@@ -37,6 +37,8 @@ from apps.unidade_educacional.selectors import (
 _TAG_UE = ["Escola"]
 _TAG_CD = ["CrossDomain"]
 
+_MSG_UNIDADE_NAO_ENCONTRADA = "Unidade não encontrada."
+
 # Dicts de fields para reutilização nos inline_serializer com many=True
 _UE_BASICA_FIELDS = {
     "codigoEscola": serializers.CharField(),
@@ -160,7 +162,7 @@ class UnidadeEducacionalAdminSgpView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E01_administrador_sgp",
     )
-    def get(self, _request: Request, codigoUE: str) -> Response:
+    def get(self, _request: Request, codigo_ue: str) -> Response:
         """Retorna 501 — competência de outro domínio."""
         return self.cross_domain("professores")
 
@@ -197,13 +199,13 @@ class UnidadeEducacionalDetalheView(BaseAPIView):
             )
         ],
     )
-    def get(self, _request: Request, codigoEscolaEol: str) -> Response:
+    def get(self, _request: Request, codigo_escola_eol: str) -> Response:
         """Resposta 200 ou 404."""
-        if not codigoEscolaEol.strip():
+        if not codigo_escola_eol.strip():
             raise ValidationError("Código da unidade EOL é obrigatório.")
-        ue = obter_ue_basica_por_codigo(codigoEscolaEol)
+        ue = obter_ue_basica_por_codigo(codigo_escola_eol)
         if ue is None:
-            raise NotFound("Unidade não encontrada.")
+            raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
         return Response([ue])
 
 
@@ -233,9 +235,9 @@ class UnidadeEolView(BaseAPIView):
             )
         ],
     )
-    def get(self, _request: Request, codigoEol: str) -> Response:
+    def get(self, _request: Request, codigo_eol: str) -> Response:
         """Resposta 200 ou 404."""
-        ue = obter_ue_eol(codigoEol)
+        ue = obter_ue_eol(codigo_eol)
         if ue is None:
             raise NotFound("Unidade EOL não encontrada.")
         return Response(ue)
@@ -282,9 +284,9 @@ class DadosUnidadeEducacionalView(BaseAPIView):
             )
         ],
     )
-    def get(self, _request: Request, codigoEscolaEol: str) -> Response:
+    def get(self, _request: Request, codigo_escola_eol: str) -> Response:
         """Resposta 200 ou 404."""
-        dados = obter_ue_completa(codigoEscolaEol)
+        dados = obter_ue_completa(codigo_escola_eol)
         if dados is None:
             raise NotFound("Dados da unidade não encontrados.")
         return Response(dados)
@@ -302,7 +304,7 @@ class QuantidadeAlunosView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E05_quantidade_alunos_ue",
     )
-    def get(self, _request: Request, codigoEscola: str) -> Response:
+    def get(self, _request: Request, codigo_escola: str) -> Response:
         """Retorna 501 — competência do domínio Alunos."""
         return self.cross_domain("alunos")
 
@@ -360,7 +362,7 @@ class ProfessoresEscolaAnoView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E07_professores_escola_ano",
     )
-    def get(self, _request: Request, codigoEolEscola: str, anoLetivo: str) -> Response:
+    def get(self, _request: Request, codigo_eol_escola: str, ano_letivo: str) -> Response:
         return self.cross_domain("professores")
 
 
@@ -373,7 +375,7 @@ class ProfessoresEscolaView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E08_professores_escola",
     )
-    def get(self, _request: Request, codigoEolEscola: str) -> Response:
+    def get(self, _request: Request, codigo_eol_escola: str) -> Response:
         return self.cross_domain("professores")
 
 
@@ -444,9 +446,9 @@ class SalasAnoLetivoView(BaseAPIView):
     def get(
         self,
         _request: Request,
-        codigoUE: str,
-        tipoSala: str,
-        anoLetivo: str,
+        codigo_ue: str,
+        tipo_sala: str,
+        ano_letivo: str,
     ) -> Response:
         return self.cross_domain("pedagogico")
 
@@ -460,7 +462,7 @@ class FuncionariosUeView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E13_funcionarios_ue",
     )
-    def get(self, _request: Request, codigoUE: str) -> Response:
+    def get(self, _request: Request, codigo_ue: str) -> Response:
         return self.cross_domain("professores")
 
 
@@ -474,7 +476,7 @@ class FuncionariosCargoView(BaseAPIView):
         operation_id="E14_funcionarios_cargo",
     )
     def get(
-        self, _request: Request, codigoUE: str, codigoCargo: str
+        self, _request: Request, codigo_ue: str, codigo_cargo: str
     ) -> Response:
         return self.cross_domain("professores")
 
@@ -489,7 +491,7 @@ class FuncionariosFuncaoExternaView(BaseAPIView):
         operation_id="E15_funcionarios_funcao_externa",
     )
     def get(
-        self, _request: Request, codigoUE: str, codigoFuncaoExterna: str
+        self, _request: Request, codigo_ue: str, codigo_funcao_externa: str
     ) -> Response:
         return self.cross_domain("professores")
 
@@ -504,7 +506,7 @@ class FuncionariosFuncaoAtividadeView(BaseAPIView):
         operation_id="E16_funcionarios_funcao_atividade",
     )
     def get(
-        self, _request: Request, codigoUE: str, codigoFuncaoAtividade: str
+        self, _request: Request, codigo_ue: str, codigo_funcao_atividade: str
     ) -> Response:
         return self.cross_domain("professores")
 
@@ -523,11 +525,11 @@ class SubprefeituraUnidadeEducacionalView(BaseAPIView):
         tags=_TAG_UE,
         operation_id="E17_subprefeituras_ue",
     )
-    def get(self, _request: Request, codigoEscolaEol: str) -> Response:
+    def get(self, _request: Request, codigo_escola_eol: str) -> Response:
         """Resposta 200 ou 404."""
-        subs = obter_subprefeituras_ue(codigoEscolaEol)
+        subs = obter_subprefeituras_ue(codigo_escola_eol)
         if subs is None:
-            raise NotFound("Unidade não encontrada.")
+            raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
         return Response(subs)
 
 
@@ -540,7 +542,7 @@ class TurmasAnoLetivoView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E18_turmas_ue_ano_letivo",
     )
-    def get(self, _request: Request, codigoUE: str, anoLetivo: str) -> Response:
+    def get(self, _request: Request, codigo_ue: str, ano_letivo: str) -> Response:
         return self.cross_domain("pedagogico")
 
 
@@ -553,7 +555,7 @@ class TurmasSondagemAnoLetivoView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E19_turmas_sondagem_ue_ano_letivo",
     )
-    def get(self, _request: Request, codigoUE: str, anoLetivo: str) -> Response:
+    def get(self, _request: Request, codigo_ue: str, ano_letivo: str) -> Response:
         return self.cross_domain("pedagogico")
 
 
@@ -574,7 +576,7 @@ class FuncionariosCargosListView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E20_funcionarios_cargos_lista",
     )
-    def get(self, _request: Request, ueCodigo: str) -> Response:
+    def get(self, _request: Request, ue_codigo: str) -> Response:
         return self.cross_domain("professores")
 
 
@@ -595,7 +597,7 @@ class FuncionariosFuncoesAtividadesListView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E21_funcionarios_funcoes_atividades_lista",
     )
-    def get(self, _request: Request, ueCodigo: str) -> Response:
+    def get(self, _request: Request, ue_codigo: str) -> Response:
         return self.cross_domain("professores")
 
 
@@ -616,7 +618,7 @@ class FuncionariosFuncoesExternasListView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E22_funcionarios_funcoes_externas_lista",
     )
-    def get(self, _request: Request, ueCodigo: str) -> Response:
+    def get(self, _request: Request, ue_codigo: str) -> Response:
         return self.cross_domain("professores")
 
 
@@ -648,11 +650,11 @@ class SincronizacaoUnidadeEducacionalView(BaseAPIView):
             )
         ],
     )
-    def get(self, _request: Request, ueCodigo: str) -> Response:
+    def get(self, _request: Request, ue_codigo: str) -> Response:
         """Resposta 200 ou 404."""
-        dados = obter_sincronizacao_ue(ueCodigo)
+        dados = obter_sincronizacao_ue(ue_codigo)
         if dados is None:
-            raise NotFound("Unidade não encontrada.")
+            raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
         return Response(dados)
 
 
@@ -666,7 +668,7 @@ class MatriculasAlunoView(BaseAPIView):
         operation_id="E24_matriculas_aluno_escola",
     )
     def get(
-        self, _request: Request, codigoEscola: str, codigoAluno: str
+        self, _request: Request, codigo_escola: str, codigo_aluno: str
     ) -> Response:
         return self.cross_domain("alunos")
 
