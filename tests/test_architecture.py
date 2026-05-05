@@ -141,16 +141,22 @@ def test_campos_contratos_sao_camel_case() -> None:
 
 # ─── Imports proibidos globalmente ────────────────────────────────────────────
 
+def _imports_proibidos_em_arquivo(py_file: pathlib.Path) -> list[str]:
+    rel = py_file.relative_to(ROOT)
+    return [
+        f"{rel}: importa '{imp}'"
+        for imp in _coletar_imports(py_file)
+        for proibido in _IMPORTS_PROIBIDOS_GLOBAL
+        if imp == proibido or imp.startswith(proibido + ".")
+    ]
+
+
 def test_sem_imports_de_microsservicos_externos() -> None:
     """Nenhum arquivo de produção pode importar módulos de outro microserviço."""
     violacoes: list[str] = []
     for dominio in _DOMINIOS:
         for py_file in _py_files_dominio(dominio, excluir_testes=True):
-            for imp in _coletar_imports(py_file):
-                for proibido in _IMPORTS_PROIBIDOS_GLOBAL:
-                    if imp == proibido or imp.startswith(proibido + "."):
-                        rel = py_file.relative_to(ROOT)
-                        violacoes.append(f"{rel}: importa '{imp}'")
+            violacoes.extend(_imports_proibidos_em_arquivo(py_file))
     assert not violacoes, (
         "Imports proibidos encontrados:\n" + "\n".join(violacoes)
     )
