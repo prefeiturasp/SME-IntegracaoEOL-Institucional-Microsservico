@@ -97,22 +97,26 @@ class TestD04DetalheDre:
 
 
 class TestD05EscolasTipo:
-    """D05 — GET /api/dres/{codigoEolDRE}/escolas/{tipoEscola}/"""
+    """D05 — GET /api/dres/{codigoEolDRE}/escolas/{tipoEscolaId}/."""
 
     def test_retorna_escolas_filtradas(self, api_client, ue_factory):
         ue = ue_factory(codigo_ue="019251")
-        resp = api_client.get(f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/EMEF/")
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/{ue.codigo_tipo_escola}/"
+        )
         assert resp.status_code == 200
         assert isinstance(resp.data, list)
+        assert len(resp.data) >= 1
 
     def test_tipo_inexistente_retorna_lista_vazia(self, api_client, ue_factory):
         ue = ue_factory()
-        resp = api_client.get(f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/TIPONULL/")
+        url = f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/999999/"
+        resp = api_client.get(url)
         assert resp.status_code == 200
         assert resp.data == []
 
     def test_codigo_dre_vazio_retorna_400(self, api_client, db):
-        resp = api_client.get("/api/v1/institucional/dres/%20/escolas/EMEF/")
+        resp = api_client.get("/api/v1/institucional/dres/%20/escolas/1/")
         assert resp.status_code == 400
 
 
@@ -305,7 +309,10 @@ class TestD05D06D09CamposExpandidos:
 
     def test_d05_contem_campos_ids_institucionais(self, api_client, ue_factory):
         ue = ue_factory()
-        resp = api_client.get(f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/EMEF1/")
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}"
+            f"/escolas/{ue.codigo_tipo_escola}/"
+        )
         assert resp.status_code == 200
 
     def test_d09_contem_campos_ids_institucionais(self, api_client, ue_factory):

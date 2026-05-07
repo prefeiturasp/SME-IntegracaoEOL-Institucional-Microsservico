@@ -96,13 +96,14 @@ class TestListarEscolasPorDre:
     def test_com_filtro_de_tipo(self, ue_factory):
         from apps.dre.selectors import listar_escolas_por_dre
         ue = ue_factory()
-        resultado = listar_escolas_por_dre(ue.codigo_dre, "EMEF")
+        resultado = listar_escolas_por_dre(ue.codigo_dre, ue.codigo_tipo_escola)
         assert isinstance(resultado, list)
+        assert len(resultado) >= 1
 
     def test_tipo_sem_match_retorna_vazio(self, ue_factory):
         from apps.dre.selectors import listar_escolas_por_dre
         ue = ue_factory()
-        resultado = listar_escolas_por_dre(ue.codigo_dre, "TIPONEXISTENTE")
+        resultado = listar_escolas_por_dre(ue.codigo_dre, 999999)
         assert resultado == []
 
     def test_ue_sem_tipo_escola(self, dre_factory, db):

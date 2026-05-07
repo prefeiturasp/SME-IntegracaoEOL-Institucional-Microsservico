@@ -89,7 +89,7 @@ def listar_subprefeituras_por_dre(
 
 
 def _ue_rows_por_dre(
-    codigo_dre: str, tipo_escola_sigla: str | None = None
+    codigo_dre: str, tipo_escola_id: int | None = None
 ) -> Any:
     """QuerySet de UEs por DRE com todos os dados de join em memória."""
     qs = UnidadeEducacional.objects.filter(codigo_dre=codigo_dre).values(
@@ -100,19 +100,13 @@ def _ue_rows_por_dre(
         "codigo_sub_prefeitura",
         "codigo_ue_integracao",
     )
-    if tipo_escola_sigla:
-        # join via subquery de TipoEscola
-        from apps.dre.models import TipoEscola
-
-        ids = TipoEscola.objects.filter(
-            sigla__iexact=tipo_escola_sigla
-        ).values_list("codigo_tipo_escola", flat=True)
-        qs = qs.filter(codigo_tipo_escola__in=ids)
+    if tipo_escola_id is not None:
+        qs = qs.filter(codigo_tipo_escola=tipo_escola_id)
     return qs
 
 
 def listar_escolas_por_dre(
-    codigo_dre: str, tipo_escola_sigla: str | None = None
+    codigo_dre: str, tipo_escola_id: int | None = None
 ) -> list[EscolaPorDreContract]:
     """Escolas de uma DRE com dados de TipoEscola, DRE e SubPrefeitura."""
     from apps.dre.models import TipoEscola
@@ -125,7 +119,7 @@ def listar_escolas_por_dre(
     except DRE.DoesNotExist:
         return []
 
-    rows = list(_ue_rows_por_dre(codigo_dre, tipo_escola_sigla))
+    rows = list(_ue_rows_por_dre(codigo_dre, tipo_escola_id))
     if not rows:
         return []
 
