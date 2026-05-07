@@ -206,13 +206,14 @@ class TestListarEquipamentos:
 
 
 class TestListarUnidadesParceiras:
-    def test_codigos_nao_existentes_retornam_vazio(self, db):
+    def test_sem_parceiras_retorna_vazio(self, ue_factory):
         from apps.unidade_educacional.selectors import listar_unidades_parceiras
-        assert listar_unidades_parceiras(["000000"]) == []
+        ue = ue_factory(organizacao_parceira=False)
+        assert listar_unidades_parceiras([ue.codigo_ue]) == []
 
-    def test_retorna_ues_pelos_codigos_informados(self, ue_factory):
+    def test_retorna_apenas_parceiras(self, ue_factory):
         from apps.unidade_educacional.selectors import listar_unidades_parceiras
-        ue_factory(codigo_ue="019251")
+        ue_factory(codigo_ue="019251", organizacao_parceira=True)
         resultado = listar_unidades_parceiras(["019251"])
         assert len(resultado) == 1
         assert resultado[0]["codigo"] == "019251"

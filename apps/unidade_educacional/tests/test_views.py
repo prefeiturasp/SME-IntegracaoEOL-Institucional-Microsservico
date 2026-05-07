@@ -362,10 +362,11 @@ class TestE26UnidadesParceiras:
         assert resp.status_code == 200
         assert isinstance(resp.data, list)
 
-    def test_codigo_inexistente_retorna_vazio(self, api_client, db):
+    def test_filtra_apenas_parceiras(self, api_client, ue_factory):
+        nao_parceira = ue_factory(codigo_ue="019251", organizacao_parceira=False)
         resp = api_client.post(
             "/api/v1/institucional/escolas/unidades-parceiras/",
-            ["000000"],
+            [nao_parceira.codigo_ue],
             format="json",
         )
         assert resp.status_code == 200

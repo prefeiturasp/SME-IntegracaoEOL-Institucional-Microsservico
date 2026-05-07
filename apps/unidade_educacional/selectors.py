@@ -374,15 +374,16 @@ def _nome_com_tipo(nome: str, tipo: "TipoEscola | None") -> str:
 
 
 def listar_unidades_parceiras(codigos: list[str]) -> list[UnidadeParceirasContract]:
-    """UEs filtradas por lista de códigos (E26).
+    """UEs parceiras filtradas por lista de códigos (E26).
 
     Compatibilidade EOL: nome retornado com sigla do tipo de escola no prefixo
-    (ex: "EMEF CASARAO"). O filtro organizacao_parceira foi removido pois o
-    campo não é populado pelo ETL.
+    (ex: "EMEF CASARAO"). Retorna apenas UEs com organizacao_parceira=True,
+    alinhado ao contrato original do EOL.
     """
     rows = list(
-        UnidadeEducacional.objects.filter(codigo_ue__in=codigos)
-        .values("codigo_ue", "nome", "email", "codigo_tipo_escola")
+        UnidadeEducacional.objects.filter(
+            codigo_ue__in=codigos, organizacao_parceira=True
+        ).values("codigo_ue", "nome", "email", "codigo_tipo_escola")
     )
     if not rows:
         return []
