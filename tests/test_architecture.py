@@ -114,6 +114,17 @@ _CONTRATOS_SCHEMA_LEGADO = {
 }
 
 
+def _campos_snake_case_em_classe(node: ast.ClassDef, rel: pathlib.Path) -> list[str]:
+    violacoes: list[str] = []
+    for item in node.body:
+        if not (isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name)):
+            continue
+        campo = item.target.id
+        if "_" in campo and not campo.startswith("_") and campo != campo.upper():
+            violacoes.append(f"{rel}: campo '{campo}' não é camelCase")
+    return violacoes
+
+
 def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
     try:
         tree = ast.parse(contracts_file.read_text(encoding="utf-8"))
@@ -126,12 +137,7 @@ def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
             continue
         if node.name in _CONTRATOS_SCHEMA_LEGADO:
             continue
-        for item in node.body:
-            if not (isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name)):
-                continue
-            campo = item.target.id
-            if "_" in campo and not campo.startswith("_") and campo != campo.upper():
-                violacoes.append(f"{rel}: campo '{campo}' não é camelCase")
+        violacoes.extend(_campos_snake_case_em_classe(node, rel))
     return violacoes
 
 

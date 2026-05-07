@@ -306,7 +306,6 @@ def _build_equipamento(r: dict, dres: dict, tipos: dict, subs: dict) -> Equipame
     tipo = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
     sub = subs.get(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None
     dre_sigla = (dre.sigla or "").strip() if dre else ""
-    dre_nome = dre.nome if dre else ""
     tipo_sigla = tipo.sigla.strip() if tipo and tipo.sigla else None
     tipo_desc = tipo.descricao if tipo else None
     return EquipamentoContract(
