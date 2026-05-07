@@ -151,9 +151,7 @@ def obter_ue_completa(codigo: str) -> UeCompletaContract | None:
     )
     dre = dres.get(r["codigo_dre"])
     tipo = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
-    # Compatibilidade EOL: sigla sem padding (MSSQL usa CHAR com espaços)
     sigla_tipo = tipo.sigla.strip() if tipo and tipo.sigla else None
-    # Compatibilidade EOL: telefone sem DDD formatado — retorna somente o número
     telefone_raw = r["telefone_1"]
     if telefone_raw:
         import re as _re
@@ -249,9 +247,8 @@ def _coluna_existe(tabela: str, coluna: str) -> bool:
 def obter_sincronizacao_ue(codigo: str) -> SincronizacaoUeContract | None:
     """Dados de sincronização institucional da UE (E23).
 
-    Compatibilidade EOL:
-      - dreCodigo retornado como int (EOL usa inteiro)
-      - dataAtualizacao lido de data_atualizacao quando a coluna existir no banco
+    dreCodigo é convertido para int; dataAtualizacao é lido de data_atualizacao
+    quando a coluna existir no banco.
     """
     campos = [
         "codigo_ue", "nome", "codigo_dre", "codigo_tipo_escola",
@@ -375,9 +372,8 @@ def _nome_com_tipo(nome: str, tipo: "TipoEscola | None") -> str:
 def listar_unidades_parceiras(codigos: list[str]) -> list[UnidadeParceirasContract]:
     """UEs parceiras filtradas por lista de códigos (E26).
 
-    Compatibilidade EOL: nome retornado com sigla do tipo de escola no prefixo
-    (ex: "EMEF CASARAO"). Retorna apenas UEs com organizacao_parceira=True,
-    alinhado ao contrato original do EOL.
+    Nome retornado com a sigla do tipo de escola no prefixo (ex: "EMEF CASARAO").
+    Filtra apenas UEs com organizacao_parceira=True.
     """
     rows = list(
         UnidadeEducacional.objects.filter(

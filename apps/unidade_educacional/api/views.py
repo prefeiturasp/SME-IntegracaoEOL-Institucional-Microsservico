@@ -172,7 +172,7 @@ class UnidadeEducacionalAdminSgpView(BaseAPIView):
 class UnidadeEducacionalDetalheView(BaseAPIView):
     """Dados básicos de uma UE por código EOL (E02).
 
-    Compatibilidade EOL: retorna objeto único, não array.
+    Retorna objeto único identificado pelo código da UE.
     """
 
     @extend_schema(
@@ -400,8 +400,9 @@ class ModalidadesEnsinoView(BaseAPIView):
 class TiposUnidadeEducacaoView(BaseAPIView):
     """Tipos de unidade de educação (E10).
 
-    Contrato EOL: array de strings com os nomes completos dos 38 tipos de escola,
-    equivalente à lista retornada por /api/escolas/tiposEscolas mas só com a descrição.
+    Retorna array de strings com os nomes completos dos tipos de escola
+    (somente descrição).
+
     """
 
     @extend_schema(
@@ -415,7 +416,7 @@ class TiposUnidadeEducacaoView(BaseAPIView):
         operation_id="E10_tipos_unidade_educacional",
     )
     def get(self, _request: Request) -> Response:
-        """Retorna lista de nomes de tipos de escola (compatível com contrato EOL)."""
+        """Retorna lista de nomes de tipos de escola."""
         from apps.dre.models import TipoEscola
 
         descricoes = (

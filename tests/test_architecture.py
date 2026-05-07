@@ -107,9 +107,8 @@ def test_contracts_usam_apenas_typed_dict() -> None:
     )
 
 
-_CONTRATOS_SCHEMA_LEGADO = {
-    # EquipamentoContract usa nomenclatura prefixada do EOL (cd_*, nm_*, dc_*, sg_*)
-    # intencionalmente — alinhado ao contrato legado E25.
+_CONTRATOS_SCHEMA_PREFIXADO = {
+    # EquipamentoContract usa nomenclatura prefixada (cd_*, nm_*, dc_*, sg_*) conforme contrato E25.
     "EquipamentoContract",
 }
 
@@ -135,14 +134,14 @@ def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
     for node in ast.walk(tree):
         if not isinstance(node, ast.ClassDef):
             continue
-        if node.name in _CONTRATOS_SCHEMA_LEGADO:
+        if node.name in _CONTRATOS_SCHEMA_PREFIXADO:
             continue
         violacoes.extend(_campos_snake_case_em_classe(node, rel))
     return violacoes
 
 
 def test_campos_contratos_sao_camel_case() -> None:
-    """Campos dos TypedDicts de contratos devem ser camelCase (contrato EOL legado)."""
+    """Campos dos TypedDicts de contratos devem ser camelCase."""
     violacoes: list[str] = []
     for dominio in ["dre", "unidade_educacional"]:
         contracts_file = APPS / dominio / "contracts.py"

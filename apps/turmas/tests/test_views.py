@@ -35,8 +35,8 @@ class TestT01SincronizacoesTurma:
         )
         assert resp.status_code in (401, 403)
 
-    def test_rota_legacy_retorna_501(self, api_client, db):
-        """[LEGACY COMPATIBILITY ROUTE] /api/turmas/{ueCodigo}/turmas/... retorna 501."""
+    def test_rota_alternativa_retorna_501(self, api_client, db):
+        """Rota alternativa /api/turmas/{ueCodigo}/turmas/... retorna 501."""
         resp = api_client.get(
             "/api/v1/institucional/turmas/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
@@ -85,8 +85,8 @@ class TestT02AnosLetivosSincronizacao:
         )
         assert resp.status_code in (401, 403)
 
-    def test_rota_legacy_retorna_501(self, api_client, db):
-        """[LEGACY COMPATIBILITY ROUTE] /api/ues/ue/{ueCodigo}/... retorna 501."""
+    def test_rota_alternativa_retorna_501(self, api_client, db):
+        """Rota alternativa /api/ues/ue/{ueCodigo}/... retorna 501."""
         resp = api_client.get(
             "/api/v1/institucional/ues/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )
@@ -106,7 +106,7 @@ class TestT02AnosLetivosSincronizacao:
 
 
 class TestRotasCanonicase:
-    """Valida rotas canônicas e aliases legados de T01/T02."""
+    """Valida rotas canônicas e aliases alternativos de T01/T02."""
 
     def test_t01_canonico_retorna_501(self, api_client, db):
         resp = api_client.get(
@@ -120,16 +120,16 @@ class TestRotasCanonicase:
         )
         assert resp.status_code == 501
 
-    def test_t01_legacy_retorna_501(self, api_client, db):
-        """[LEGACY COMPATIBILITY ROUTE] alias de T01."""
+    def test_t01_alternativo_retorna_501(self, api_client, db):
+        """Alias alternativo de T01."""
         resp = api_client.get(
             "/api/v1/institucional/turmas/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
         assert resp.status_code == 501
         assert resp.data["dominio"] == "pedagogico"
 
-    def test_t02_legacy_retorna_501(self, api_client, db):
-        """[LEGACY COMPATIBILITY ROUTE] alias de T02."""
+    def test_t02_alternativo_retorna_501(self, api_client, db):
+        """Alias alternativo de T02."""
         resp = api_client.get(
             "/api/v1/institucional/ues/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )

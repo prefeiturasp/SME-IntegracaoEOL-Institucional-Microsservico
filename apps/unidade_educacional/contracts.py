@@ -1,6 +1,6 @@
-"""Contratos de resposta EOL para o domínio UE.
+"""Contratos de resposta do domínio UE.
 
-Mapeiam campos internos (snake_case) para o contrato legado (camelCase).
+Mapeiam campos internos (snake_case) para a representação de saída (camelCase).
 """
 
 from typing import TypedDict
@@ -77,9 +77,7 @@ class TipoEscolaContract(TypedDict):
 class SincronizacaoUeContract(TypedDict):
     """Contrato E23 — sincronização institucional da UE.
 
-    Compatibilidade EOL:
-      - dreCodigo: int (EOL retorna inteiro, não string)
-      - dataAtualizacao: datetime ISO 8601 ou null
+    dreCodigo é int; dataAtualizacao é datetime ISO 8601 ou null.
     """
 
     ueCodigo: str
@@ -106,8 +104,8 @@ class UnidadeParceirasContract(TypedDict):
 class EquipamentoContract(TypedDict):
     """Contrato E25 — equipamento/UE com filtros.
 
-    Schema alinhado ao EOL legado: nomenclatura prefixada (cd_*, nm_*, dc_*, sg_*)
-    com campos específicos de equipamento SME.
+    Campos com nomenclatura prefixada (cd_*, nm_*, dc_*, sg_*) conforme
+    definição do contrato E25.
     """
 
     cd_equipamento: str

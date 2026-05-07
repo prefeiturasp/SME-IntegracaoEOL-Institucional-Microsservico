@@ -176,7 +176,9 @@ class DreListView(BaseAPIView):
 class DreDetalheView(BaseAPIView):
     """Retorna uma DRE pelo código EOL (D04).
 
-    Compatibilidade EOL: o legado retorna array[1], não objeto único.
+    Resposta em array com um único elemento para consistência com os demais
+    endpoints de listagem.
+
     """
 
     @extend_schema(
