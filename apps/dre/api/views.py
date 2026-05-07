@@ -233,12 +233,12 @@ class DreEscolasTipoView(BaseAPIView):
         self,
         _request: Request,
         codigo_eol_dre: str,
-        tipo_escola: str,
+        tipo_escola_id: int,
     ) -> Response:
         """Resposta 200 com escolas filtradas ou lista vazia."""
         if not codigo_eol_dre.strip():
             raise ValidationError("Código EOL da DRE é obrigatório.")
-        escolas = listar_escolas_por_dre(codigo_eol_dre, tipo_escola)
+        escolas = listar_escolas_por_dre(codigo_eol_dre, tipo_escola_id)
         return Response(escolas)
 
 
