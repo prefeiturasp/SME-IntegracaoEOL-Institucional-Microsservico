@@ -12,6 +12,7 @@ class TipoEscola(models.Model):
     codigo_tipo_escola = models.IntegerField(primary_key=True)
     sigla = models.CharField(max_length=20, null=True, blank=True)
     descricao = models.CharField(max_length=200)
+    data_atualizacao = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "tipo_escola"

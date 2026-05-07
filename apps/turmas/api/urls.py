@@ -4,7 +4,7 @@ Rotas canônicas:
   T01 — /api/ues/{ueCodigo}/turmas/{turmaCodigo}/sincronizacoes-institucionais/
   T02 — /api/turmas/ue/{ueCodigo}/sincronizacoes-institucionais/anos-letivos/
 
-Aliases legados [LEGACY COMPATIBILITY ROUTE]:
+Aliases alternativos:
   T01 — /api/turmas/{ueCodigo}/turmas/{turmaCodigo}/sincronizacoes-institucionais/
   T02 — /api/ues/ue/{ueCodigo}/sincronizacoes-institucionais/anos-letivos/
 """
@@ -18,14 +18,12 @@ from apps.turmas.api.views import (
     SincronizacoesTurmaView,
 )
 
-# Registrado sob api/ues/ em config/urls.py
 urlpatterns_ues = [
     path(
         "<str:ue_codigo>/turmas/<str:turma_codigo>/sincronizacoes-institucionais/",
         SincronizacoesTurmaView.as_view(),
         name="turmas-sincronizacao-turma",
     ),
-    # [LEGACY COMPATIBILITY ROUTE]
     path(
         "ue/<str:ue_codigo>/sincronizacoes-institucionais/anos-letivos/",
         AnosLetivosSincronizacaoTurmaLegacyView.as_view(),
@@ -40,7 +38,6 @@ urlpatterns_turmas = [
         AnosLetivosSincronizacaoTurmaView.as_view(),
         name="turmas-anos-letivos-sincronizacao",
     ),
-    # [LEGACY COMPATIBILITY ROUTE]
     path(
         "<str:ue_codigo>/turmas/<str:turma_codigo>/sincronizacoes-institucionais/",
         SincronizacoesTurmaLegacyView.as_view(),

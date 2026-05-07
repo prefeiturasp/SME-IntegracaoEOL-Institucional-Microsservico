@@ -86,9 +86,10 @@ class TestD04DetalheDre:
         dre_factory(codigo_dre="108100", nome="DRE IPIRANGA", sigla="DRE-IP")
         resp = api_client.get("/api/v1/institucional/dres/108100/")
         assert resp.status_code == 200
-        assert resp.data["codigoDRE"] == "108100"
-        assert resp.data["nomeDRE"] == "DRE IPIRANGA"
-        assert resp.data["siglaDRE"] == "DRE-IP"
+        assert isinstance(resp.data, list) and len(resp.data) == 1
+        assert resp.data[0]["codigoDRE"] == "108100"
+        assert resp.data[0]["nomeDRE"] == "DRE IPIRANGA"
+        assert resp.data[0]["siglaDRE"] == "DRE-IP"
 
     def test_nao_encontrada_retorna_404(self, api_client, db):
         resp = api_client.get("/api/v1/institucional/dres/999999/")

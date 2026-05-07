@@ -39,7 +39,8 @@ class UnidadeEducacional(models.Model):
     codigo_ue_integracao = models.CharField(
         max_length=50, null=True, blank=True
     )
-    # FKs referenciando tabelas do ETL (via db_column para compatibilidade)
+    data_atualizacao = models.DateTimeField(null=True, blank=True)
+    eh_ceu = models.BooleanField(default=False)
     codigo_dre = models.CharField(max_length=20, db_column="codigo_dre")
     codigo_tipo_escola = models.IntegerField(
         null=True, blank=True, db_column="codigo_tipo_escola"

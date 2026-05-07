@@ -29,13 +29,13 @@ class SincronizacoesTurmaView(BaseAPIView):
 
 
 class SincronizacoesTurmaLegacyView(BaseAPIView):
-    """T01 [LEGACY COMPATIBILITY ROUTE] — alias /api/turmas/{ue_codigo}/turmas/{turma_codigo}/..."""
+    """T01 — alias /api/turmas/{ue_codigo}/turmas/{turma_codigo}/..."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
         description=(
             "Sincronizações institucionais de uma turma (T01). "
-            "[LEGACY COMPATIBILITY ROUTE] Use /api/ues/{ue_codigo}/turmas/{turma_codigo}/sincronizacoes-institucionais/. "
+            "Use /api/ues/{ue_codigo}/turmas/{turma_codigo}/sincronizacoes-institucionais/. "
             "[CROSS-DOMAIN] Competência do microserviço Pedagógico."
         ),
         tags=_TAG_CD,
@@ -66,13 +66,13 @@ class AnosLetivosSincronizacaoTurmaView(BaseAPIView):
 
 
 class AnosLetivosSincronizacaoTurmaLegacyView(BaseAPIView):
-    """T02 [LEGACY COMPATIBILITY ROUTE] — alias /api/ues/ue/{ue_codigo}/..."""
+    """T02 — alias /api/ues/ue/{ue_codigo}/..."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
         description=(
             "Anos letivos com sincronizações de turmas de uma UE (T02). "
-            "[LEGACY COMPATIBILITY ROUTE] Use /api/turmas/ue/{ue_codigo}/sincronizacoes-institucionais/anos-letivos/. "
+            "Use /api/turmas/ue/{ue_codigo}/sincronizacoes-institucionais/anos-letivos/. "
             "[CROSS-DOMAIN] Competência do microserviço Pedagógico."
         ),
         tags=_TAG_CD,

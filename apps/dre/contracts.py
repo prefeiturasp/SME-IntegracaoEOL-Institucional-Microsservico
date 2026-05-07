@@ -1,6 +1,6 @@
-"""Contratos de resposta EOL para o domínio DRE.
+"""Contratos de resposta do domínio DRE.
 
-Mapeiam campos internos (snake_case) para o contrato legado (camelCase).
+Mapeiam campos internos (snake_case) para a representação de saída (camelCase).
 """
 
 from typing import TypedDict

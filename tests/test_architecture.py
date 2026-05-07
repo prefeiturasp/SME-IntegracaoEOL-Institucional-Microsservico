@@ -107,6 +107,23 @@ def test_contracts_usam_apenas_typed_dict() -> None:
     )
 
 
+_CONTRATOS_SCHEMA_PREFIXADO = {
+    # EquipamentoContract usa nomenclatura prefixada (cd_*, nm_*, dc_*, sg_*) conforme contrato E25.
+    "EquipamentoContract",
+}
+
+
+def _campos_snake_case_em_classe(node: ast.ClassDef, rel: pathlib.Path) -> list[str]:
+    violacoes: list[str] = []
+    for item in node.body:
+        if not (isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name)):
+            continue
+        campo = item.target.id
+        if "_" in campo and not campo.startswith("_") and campo != campo.upper():
+            violacoes.append(f"{rel}: campo '{campo}' não é camelCase")
+    return violacoes
+
+
 def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
     try:
         tree = ast.parse(contracts_file.read_text(encoding="utf-8"))
@@ -117,17 +134,14 @@ def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
     for node in ast.walk(tree):
         if not isinstance(node, ast.ClassDef):
             continue
-        for item in node.body:
-            if not (isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name)):
-                continue
-            campo = item.target.id
-            if "_" in campo and not campo.startswith("_") and campo != campo.upper():
-                violacoes.append(f"{rel}: campo '{campo}' não é camelCase")
+        if node.name in _CONTRATOS_SCHEMA_PREFIXADO:
+            continue
+        violacoes.extend(_campos_snake_case_em_classe(node, rel))
     return violacoes
 
 
 def test_campos_contratos_sao_camel_case() -> None:
-    """Campos dos TypedDicts de contratos devem ser camelCase (contrato EOL legado)."""
+    """Campos dos TypedDicts de contratos devem ser camelCase."""
     violacoes: list[str] = []
     for dominio in ["dre", "unidade_educacional"]:
         contracts_file = APPS / dominio / "contracts.py"

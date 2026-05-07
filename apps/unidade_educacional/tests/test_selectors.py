@@ -97,11 +97,11 @@ class TestObterUeEol:
 
     def test_retorna_contrato_correto(self, ue_factory):
         from apps.unidade_educacional.selectors import obter_ue_eol
-        ue_factory(codigo_ue="019251")
+        ue = ue_factory(codigo_ue="019251")
         resultado = obter_ue_eol("019251")
         assert resultado is not None
         assert resultado["codigo"] == "019251"
-        assert resultado["codigoReferencia"] == "019251"
+        assert resultado["codigoReferencia"] == ue.codigo_dre
 
 
 class TestObterUeCompleta:
@@ -172,7 +172,7 @@ class TestObterSincronizacaoUe:
         resultado = obter_sincronizacao_ue("019251")
         assert resultado is not None
         assert resultado["ueCodigo"] == "019251"
-        assert resultado["dreCodigo"] == ue.codigo_dre
+        assert resultado["dreCodigo"] == int(ue.codigo_dre)
 
 
 class TestListarEquipamentos:

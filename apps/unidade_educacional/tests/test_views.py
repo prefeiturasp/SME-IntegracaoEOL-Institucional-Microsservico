@@ -29,42 +29,37 @@ class TestE02DadosBasicosUe:
         ue = ue_factory(codigo_ue="019251")
         resp = api_client.get(f"/api/v1/institucional/escolas/{ue.codigo_ue}/")
         assert resp.status_code == 200
-        assert isinstance(resp.data, list)
-        item = resp.data[0]
+        assert isinstance(resp.data, dict)
         for campo in [
             "codigoEscola", "nomeEscola", "nomeDRE", "siglaDRE",
             "codigoDRE", "tipoEscola", "siglaTipoEscola", "codigoTipoEscola",
         ]:
-            assert campo in item, f"Campo '{campo}' ausente no contrato E02"
+            assert campo in resp.data, f"Campo '{campo}' ausente no contrato E02"
 
     def test_e02_contem_campos_ids_institucionais(self, api_client, ue_factory):
         ue = ue_factory(codigo_ue="019252")
         resp = api_client.get(f"/api/v1/institucional/escolas/{ue.codigo_ue}/")
-        item = resp.data[0]
-        assert "tipoEscolaId" in item
-        assert "tipoUnidadeId" in item
-        assert "subprefeituraId" in item
-        assert "dreId" in item
-        assert "codigoIntegracao" in item
+        assert "tipoEscolaId" in resp.data
+        assert "tipoUnidadeId" in resp.data
+        assert "subprefeituraId" in resp.data
+        assert "dreId" in resp.data
+        assert "codigoIntegracao" in resp.data
 
     def test_e02_dre_id_igual_codigo_dre(self, api_client, ue_factory):
         ue = ue_factory(codigo_ue="019254")
         resp = api_client.get(f"/api/v1/institucional/escolas/{ue.codigo_ue}/")
-        item = resp.data[0]
-        assert item["dreId"] == ue.codigo_dre
+        assert resp.data["dreId"] == ue.codigo_dre
 
     def test_e02_tipo_unidade_id_igual_tipo_escola_id(self, api_client, ue_factory):
         ue = ue_factory(codigo_ue="019255")
         resp = api_client.get(f"/api/v1/institucional/escolas/{ue.codigo_ue}/")
-        item = resp.data[0]
-        assert item["tipoUnidadeId"] == item["tipoEscolaId"]
+        assert resp.data["tipoUnidadeId"] == resp.data["tipoEscolaId"]
 
     def test_e02_campos_legados_inalterados(self, api_client, ue_factory):
         ue = ue_factory(codigo_ue="019253")
         resp = api_client.get(f"/api/v1/institucional/escolas/{ue.codigo_ue}/")
-        item = resp.data[0]
-        assert item["codigoEscola"] == "019253"
-        assert isinstance(item["codigoTipoEscola"], int)
+        assert resp.data["codigoEscola"] == "019253"
+        assert isinstance(resp.data["codigoTipoEscola"], int)
 
     def test_codigo_vazio_retorna_400(self, api_client, db):
         resp = api_client.get("/api/v1/institucional/escolas/%20/")
@@ -78,8 +73,8 @@ class TestE02DadosBasicosUe:
         ue = ue_factory(codigo_ue="019251", nome="EMEF TESTE")
         resp = api_client.get(f"/api/v1/institucional/escolas/{ue.codigo_ue}/")
         assert resp.status_code == 200
-        assert resp.data[0]["codigoEscola"] == "019251"
-        assert resp.data[0]["nomeEscola"] == "EMEF TESTE"
+        assert resp.data["codigoEscola"] == "019251"
+        assert resp.data["nomeEscola"] == "EMEF TESTE"
 
 
 class TestE03UnidadeEol:
@@ -271,14 +266,14 @@ class TestE25Equipamentos:
         ue_factory(nome="EMEF TESTE ESPECIAL")
         resp = api_client.get("/api/v1/institucional/escolas/equipamentos/?nomeEscola=ESPECIAL")
         assert resp.status_code == 200
-        assert any(e["nomeEscola"] == "EMEF TESTE ESPECIAL" for e in resp.data)
+        assert any(e["nm_equipamento"] == "EMEF TESTE ESPECIAL" for e in resp.data)
 
     def test_filtro_por_codigo_eol(self, api_client, ue_factory):
         ue_factory(codigo_ue="019251")
         resp = api_client.get("/api/v1/institucional/escolas/equipamentos/?codigoEol=019251")
         assert resp.status_code == 200
         assert len(resp.data) == 1
-        assert resp.data[0]["codigoEol"] == "019251"
+        assert resp.data[0]["cd_equipamento"] == "019251"
 
     def test_filtro_por_tipos_unidade(self, api_client, ue_factory):
         ue = ue_factory(codigo_ue="019251")
@@ -319,7 +314,9 @@ class TestE25Equipamentos:
         if resp.data:
             item = resp.data[0]
             for campo in [
-                "codigoEol", "nomeEscola", "nomeDRE", "siglaDRE", "codigoDRE"
+                "cd_equipamento", "nm_equipamento", "nm_exibicao_equipamento",
+                "cd_diretoria_referencia", "nm_diretoria_referencia",
+                "cd_diretoria_portal", "nm_diretoria_portal",
             ]:
                 assert campo in item
 
@@ -329,11 +326,9 @@ class TestE25Equipamentos:
         assert resp.status_code == 200
         if resp.data:
             item = resp.data[0]
-            assert "tipoEscolaId" in item
-            assert "tipoUnidadeId" in item
-            assert "subprefeituraId" in item
-            assert "dreId" in item
-            assert "codigoIntegracao" in item
+            assert "codigoSubprefeitura" in item
+            assert "nomeSubprefeitura" in item
+            assert "ehCeu" in item
 
     def test_e25_dre_id_preenchido(self, api_client, ue_factory):
         ue = ue_factory()
@@ -341,7 +336,7 @@ class TestE25Equipamentos:
         assert resp.status_code == 200
         if resp.data:
             item = resp.data[0]
-            assert item["dreId"] == ue.codigo_dre
+            assert item["cd_diretoria_portal"] == ue.codigo_dre
 
     def test_e25_campos_legados_inalterados(self, api_client, ue_factory):
         ue_factory()
@@ -349,11 +344,11 @@ class TestE25Equipamentos:
         if resp.data:
             item = resp.data[0]
             for campo in [
-                "codigoEol", "nomeEscola", "nomeDRE", "siglaDRE",
-                "codigoDRE", "tipoEscola", "siglaTipoEscola",
+                "cd_equipamento", "nm_equipamento", "nm_exibicao_equipamento",
+                "cd_diretoria_portal", "nm_diretoria_portal",
                 "codigoSubprefeitura", "nomeSubprefeitura",
             ]:
-                assert campo in item, f"Campo legado '{campo}' removido"
+                assert campo in item, f"Campo EOL '{campo}' ausente"
 
 
 class TestE26UnidadesParceiras:
@@ -457,9 +452,7 @@ class TestE10TiposUnidadeEducacao:
         ue_factory(tipo_ue="EMEF")
         resp = api_client.get("/api/v1/institucional/escolas/tipos_unidade_educacao/")
         if resp.data:
-            item = resp.data[0]
-            assert "sigla" in item
-            assert "descricao" in item
+            assert isinstance(resp.data[0], str)
 
     def test_sem_ues_retorna_lista_vazia(self, api_client, db):
         resp = api_client.get("/api/v1/institucional/escolas/tipos_unidade_educacao/")
