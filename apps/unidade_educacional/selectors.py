@@ -1,5 +1,7 @@
 """Selectors do domínio UE — queries otimizadas, sem N+1."""
 
+from zoneinfo import ZoneInfo
+
 from apps.core.types import SubPrefeiturarContract
 from apps.dre.models import DRE, SubPrefeitura, TipoEscola
 from apps.unidade_educacional.contracts import (
@@ -262,7 +264,14 @@ def obter_sincronizacao_ue(codigo: str) -> SincronizacaoUeContract | None:
         return None
     r = rows[0]
     dt = r.get("data_atualizacao")
-    data_iso = dt.isoformat() if dt is not None else None
+    if dt is not None:
+        dt = dt.astimezone(ZoneInfo("America/Sao_Paulo"))
+        data_iso = (
+            dt.strftime("%Y-%m-%dT%H:%M:%S.")
+            + f"{dt.microsecond // 1000:03d}"
+        )
+    else:
+        data_iso = None
     try:
         dre_int: int | None = int(r["codigo_dre"]) if r["codigo_dre"] else None
     except (ValueError, TypeError):
