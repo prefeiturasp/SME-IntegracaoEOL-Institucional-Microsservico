@@ -174,13 +174,17 @@ class DreListView(BaseAPIView):
 
 
 class DreDetalheView(BaseAPIView):
-    """Retorna uma DRE pelo código EOL (D04)."""
+    """Retorna uma DRE pelo código EOL (D04).
+
+    Compatibilidade EOL: o legado retorna array[1], não objeto único.
+    """
 
     @extend_schema(
         responses={
             200: inline_serializer(
                 name="DreResumoDetalhe",
                 fields=_DRE_FIELDS,
+                many=True,
             ),
             404: _PROBLEM_DETAILS_SCHEMA,
         },
@@ -190,22 +194,22 @@ class DreDetalheView(BaseAPIView):
         examples=[
             OpenApiExample(
                 "Resposta D04",
-                value={
+                value=[{
                     "codigoDRE": "108100",
                     "nomeDRE": "DRE IPIRANGA",
                     "siglaDRE": "DRE-IP",
-                },
+                }],
                 response_only=True,
                 status_codes=["200"],
             )
         ],
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
-        """Resposta 200 ou 404 se não encontrada."""
+        """Resposta 200 (array[1]) ou 404 se não encontrada."""
         dre = obter_dre_por_codigo(codigo_eol_dre)
         if dre is None:
             raise NotFound("DRE não encontrada.")
-        return Response(dre)
+        return Response([dre])
 
 
 class DreEscolasTipoView(BaseAPIView):

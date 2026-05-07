@@ -107,6 +107,13 @@ def test_contracts_usam_apenas_typed_dict() -> None:
     )
 
 
+_CONTRATOS_SCHEMA_LEGADO = {
+    # EquipamentoContract usa nomenclatura prefixada do EOL (cd_*, nm_*, dc_*, sg_*)
+    # intencionalmente — alinhado ao contrato legado E25.
+    "EquipamentoContract",
+}
+
+
 def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
     try:
         tree = ast.parse(contracts_file.read_text(encoding="utf-8"))
@@ -116,6 +123,8 @@ def _campos_snake_case_em_arquivo(contracts_file: pathlib.Path) -> list[str]:
     rel = contracts_file.relative_to(ROOT)
     for node in ast.walk(tree):
         if not isinstance(node, ast.ClassDef):
+            continue
+        if node.name in _CONTRATOS_SCHEMA_LEGADO:
             continue
         for item in node.body:
             if not (isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name)):

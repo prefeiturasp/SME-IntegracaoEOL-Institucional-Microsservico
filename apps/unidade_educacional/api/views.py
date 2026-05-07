@@ -106,7 +106,7 @@ _SUBPREFEITURA_FIELDS = {
 _SINCRONIZACAO_UE_FIELDS = {
     "ueCodigo": serializers.CharField(),
     "dataAtualizacao": serializers.CharField(allow_null=True),
-    "dreCodigo": serializers.CharField(),
+    "dreCodigo": serializers.IntegerField(allow_null=True),
     "ueNome": serializers.CharField(),
     "tipoEscolaCodigo": serializers.IntegerField(allow_null=True),
     "tipoEscolaId": serializers.IntegerField(allow_null=True),
@@ -117,24 +117,26 @@ _SINCRONIZACAO_UE_FIELDS = {
 }
 
 _EQUIPAMENTO_FIELDS = {
-    "codigoEol": serializers.CharField(),
-    "nomeEscola": serializers.CharField(),
-    "nomeDRE": serializers.CharField(),
-    "siglaDRE": serializers.CharField(),
-    "codigoDRE": serializers.CharField(),
-    "tipoEscola": serializers.CharField(allow_null=True),
-    "siglaTipoEscola": serializers.CharField(allow_null=True),
+    "cd_equipamento": serializers.CharField(),
+    "nm_exibicao_equipamento": serializers.CharField(),
+    "nm_equipamento": serializers.CharField(),
+    "cd_tp_equipamento": serializers.IntegerField(allow_null=True),
+    "dc_tp_equipamento": serializers.CharField(allow_null=True),
+    "cd_tp_escola": serializers.IntegerField(allow_null=True),
+    "dc_tipo_escola": serializers.CharField(allow_null=True),
+    "sg_tp_escola": serializers.CharField(allow_null=True),
+    "cd_diretoria_referencia": serializers.CharField(),
+    "nm_diretoria_referencia": serializers.CharField(),
+    "cd_diretoria_portal": serializers.CharField(),
+    "nm_diretoria_portal": serializers.CharField(),
+    "nm_exibicao_diretoria_portal": serializers.CharField(allow_null=True),
+    "nm_exibicao_diretoria_referencia": serializers.CharField(allow_null=True),
+    "cd_logradouro": serializers.CharField(allow_null=True),
+    "logradouro": serializers.CharField(allow_null=True),
+    "bairro": serializers.CharField(allow_null=True),
     "codigoSubprefeitura": serializers.CharField(allow_null=True),
     "nomeSubprefeitura": serializers.CharField(allow_null=True),
-    "tipoLogradouro": serializers.CharField(allow_null=True),
-    "logradouro": serializers.CharField(allow_null=True),
-    "numero": serializers.CharField(allow_null=True),
-    "bairro": serializers.CharField(allow_null=True),
-    "tipoEscolaId": serializers.IntegerField(allow_null=True),
-    "tipoUnidadeId": serializers.IntegerField(allow_null=True),
-    "subprefeituraId": serializers.IntegerField(allow_null=True),
-    "dreId": serializers.CharField(),
-    "codigoIntegracao": serializers.CharField(allow_null=True),
+    "ehCeu": serializers.BooleanField(),
 }
 
 _UNIDADE_PARCEIRA_FIELDS = {
@@ -168,12 +170,15 @@ class UnidadeEducacionalAdminSgpView(BaseAPIView):
 
 
 class UnidadeEducacionalDetalheView(BaseAPIView):
-    """Dados básicos de uma UE por código EOL (E02)."""
+    """Dados básicos de uma UE por código EOL (E02).
+
+    Compatibilidade EOL: retorna objeto único, não array.
+    """
 
     @extend_schema(
         responses={
             200: inline_serializer(
-                "UeBasicaList", fields=_UE_BASICA_FIELDS, many=True
+                "UeBasicaDetalhe", fields=_UE_BASICA_FIELDS
             ),
             400: _PROBLEM_DETAILS_SCHEMA,
             404: _PROBLEM_DETAILS_SCHEMA,
@@ -184,7 +189,7 @@ class UnidadeEducacionalDetalheView(BaseAPIView):
         examples=[
             OpenApiExample(
                 "Resposta E02",
-                value=[{
+                value={
                     "codigoEscola": "019251",
                     "nomeEscola": "EMEF EXEMPLO",
                     "nomeDRE": "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
@@ -193,20 +198,20 @@ class UnidadeEducacionalDetalheView(BaseAPIView):
                     "tipoEscola": "ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL",
                     "siglaTipoEscola": "EMEF",
                     "codigoTipoEscola": 1,
-                }],
+                },
                 response_only=True,
                 status_codes=["200"],
             )
         ],
     )
     def get(self, _request: Request, codigo_escola_eol: str) -> Response:
-        """Resposta 200 ou 404."""
+        """Resposta 200 (objeto único) ou 404."""
         if not codigo_escola_eol.strip():
             raise ValidationError("Código da unidade EOL é obrigatório.")
         ue = obter_ue_basica_por_codigo(codigo_escola_eol)
         if ue is None:
             raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
-        return Response([ue])
+        return Response(ue)
 
 
 class UnidadeEolView(BaseAPIView):
@@ -393,29 +398,32 @@ class ModalidadesEnsinoView(BaseAPIView):
 
 
 class TiposUnidadeEducacaoView(BaseAPIView):
-    """Tipos de unidade de educação (E10)."""
+    """Tipos de unidade de educação (E10).
+
+    Contrato EOL: array de strings com os nomes completos dos 38 tipos de escola,
+    equivalente à lista retornada por /api/escolas/tiposEscolas mas só com a descrição.
+    """
 
     @extend_schema(
         responses={200: inline_serializer(
             "TipoUnidadeEducacao",
-            fields=_TIPO_UNIDADE_EDUCACAO_FIELDS,
+            fields={"$value": serializers.CharField()},
             many=True,
         )},
-        description="Tipos de unidade de educação (E10).",
+        description="Tipos de unidade de educação (E10). Retorna array de strings com nomes dos tipos de escola.",
         tags=_TAG_UE,
         operation_id="E10_tipos_unidade_educacional",
     )
     def get(self, _request: Request) -> Response:
-        """Retorna tipos distintos de UE."""
-        from apps.unidade_educacional.models import UnidadeEducacional
+        """Retorna lista de nomes de tipos de escola (compatível com contrato EOL)."""
+        from apps.dre.models import TipoEscola
 
-        tipos = (
-            UnidadeEducacional.objects.exclude(tipo_ue__isnull=True)
-            .values_list("tipo_ue", flat=True)
-            .distinct()
-            .order_by("tipo_ue")
+        descricoes = (
+            TipoEscola.objects.exclude(descricao__isnull=True)
+            .values_list("descricao", flat=True)
+            .order_by("codigo_tipo_escola")
         )
-        return Response([{"sigla": t, "descricao": t} for t in tipos])
+        return Response(list(descricoes))
 
 
 class TiposEscolasView(BaseAPIView):

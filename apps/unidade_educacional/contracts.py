@@ -75,11 +75,16 @@ class TipoEscolaContract(TypedDict):
 
 
 class SincronizacaoUeContract(TypedDict):
-    """Contrato E23 — sincronização institucional da UE."""
+    """Contrato E23 — sincronização institucional da UE.
+
+    Compatibilidade EOL:
+      - dreCodigo: int (EOL retorna inteiro, não string)
+      - dataAtualizacao: datetime ISO 8601 ou null
+    """
 
     ueCodigo: str
     dataAtualizacao: str | None
-    dreCodigo: str
+    dreCodigo: int | None
     ueNome: str
     tipoEscolaCodigo: int | None
     # Campos institucionais expandidos
@@ -99,24 +104,29 @@ class UnidadeParceirasContract(TypedDict):
 
 
 class EquipamentoContract(TypedDict):
-    """Contrato E25 — equipamento/UE com filtros."""
+    """Contrato E25 — equipamento/UE com filtros.
 
-    codigoEol: str
-    nomeEscola: str
-    nomeDRE: str
-    siglaDRE: str
-    codigoDRE: str
-    tipoEscola: str | None
-    siglaTipoEscola: str | None
+    Schema alinhado ao EOL legado: nomenclatura prefixada (cd_*, nm_*, dc_*, sg_*)
+    com campos específicos de equipamento SME.
+    """
+
+    cd_equipamento: str
+    nm_exibicao_equipamento: str
+    nm_equipamento: str
+    cd_tp_equipamento: int | None
+    dc_tp_equipamento: str | None
+    cd_tp_escola: int | None
+    dc_tipo_escola: str | None
+    sg_tp_escola: str | None
+    cd_diretoria_referencia: str
+    nm_diretoria_referencia: str
+    cd_diretoria_portal: str
+    nm_diretoria_portal: str
+    nm_exibicao_diretoria_portal: str | None
+    nm_exibicao_diretoria_referencia: str | None
+    cd_logradouro: str | None
+    logradouro: str | None
+    bairro: str | None
     codigoSubprefeitura: str | None
     nomeSubprefeitura: str | None
-    tipoLogradouro: str | None
-    logradouro: str | None
-    numero: str | None
-    bairro: str | None
-    # Campos institucionais expandidos
-    tipoEscolaId: int | None
-    tipoUnidadeId: int | None
-    subprefeituraId: int | None
-    dreId: str
-    codigoIntegracao: str | None
+    ehCeu: bool

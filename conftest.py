@@ -13,7 +13,8 @@ def django_db_setup(django_test_environment, django_db_blocker):
         CREATE TABLE IF NOT EXISTS tipo_escola (
             codigo_tipo_escola INTEGER PRIMARY KEY,
             sigla VARCHAR(20),
-            descricao VARCHAR(200) NOT NULL
+            descricao VARCHAR(200) NOT NULL,
+            data_atualizacao DATETIME
         );
         CREATE TABLE IF NOT EXISTS dre (
             codigo_dre VARCHAR(20) PRIMARY KEY,
@@ -57,7 +58,9 @@ def django_db_setup(django_test_environment, django_db_blocker):
             codigo_ue_integracao VARCHAR(50),
             codigo_dre VARCHAR(20) NOT NULL,
             codigo_tipo_escola INTEGER,
-            codigo_sub_prefeitura INTEGER
+            codigo_sub_prefeitura INTEGER,
+            data_atualizacao DATETIME,
+            eh_ceu BOOLEAN NOT NULL DEFAULT 0
         );
         """
         with connection.cursor() as cursor:
