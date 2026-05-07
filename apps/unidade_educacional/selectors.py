@@ -200,10 +200,18 @@ def listar_tipos_escolas() -> list[TipoEscolaContract]:
     result = []
     for t in TipoEscola.objects.only(*campos).order_by("codigo_tipo_escola"):
         dt = getattr(t, "data_atualizacao", None) if tem_dt else None
+        if dt is not None:
+            dt = dt.astimezone(ZoneInfo("America/Sao_Paulo"))
+            dt_iso = (
+                dt.strftime("%Y-%m-%dT%H:%M:%S.")
+                + f"{dt.microsecond // 1000:03d}"
+            )
+        else:
+            dt_iso = None
         result.append(TipoEscolaContract(
             codigo=t.codigo_tipo_escola,
             descricaoSigla=t.sigla.strip() if t.sigla else None,
-            dtAtualizacao=dt.isoformat() if dt is not None else None,
+            dtAtualizacao=dt_iso,
         ))
     return result
 
