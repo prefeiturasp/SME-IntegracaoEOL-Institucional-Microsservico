@@ -15,6 +15,7 @@ class UnidadeEducacional(models.Model):
     nome_nao_oficial = models.CharField(max_length=200, null=True, blank=True)
     tipo_ue = models.CharField(max_length=200, null=True, blank=True)
     tipo_logradouro = models.CharField(max_length=100, null=True, blank=True)
+    codigo_logradouro = models.IntegerField(null=True, blank=True)
     logradouro = models.CharField(max_length=200, null=True, blank=True)
     numero = models.CharField(max_length=20, null=True, blank=True)
     bairro = models.CharField(max_length=100, null=True, blank=True)
@@ -36,6 +37,8 @@ class UnidadeEducacional(models.Model):
     quantidade_funcionarios = models.IntegerField(default=0)
     status = models.CharField(max_length=10, null=True, blank=True)
     codigo_inep = models.IntegerField(null=True, blank=True)
+    codigo_tp_equipamento = models.IntegerField(null=True, blank=True)
+    codigo_tipo_unidade_educacao = models.IntegerField(null=True, blank=True)
     codigo_ue_integracao = models.CharField(
         max_length=50, null=True, blank=True
     )

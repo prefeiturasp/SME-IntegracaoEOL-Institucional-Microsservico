@@ -10,18 +10,23 @@ class TestListarUesBasicas:
 
     def test_sem_ues_retorna_vazio(self, db):
         from apps.unidade_educacional.selectors import listar_ues_basicas
-        assert listar_ues_basicas() == []
+        items, total = listar_ues_basicas()
+        assert items == []
+        assert total == 0
 
     def test_com_codigos_especificos(self, ue_factory):
         from apps.unidade_educacional.selectors import listar_ues_basicas
         ue_factory(codigo_ue="019251")
-        resultado = listar_ues_basicas(["019251"])
-        assert len(resultado) == 1
-        assert resultado[0]["codigoEscola"] == "019251"
+        items, total = listar_ues_basicas(["019251"])
+        assert len(items) == 1
+        assert items[0]["codigoEscola"] == "019251"
+        assert total == 1
 
     def test_codigos_nao_encontrados_retorna_vazio(self, db):
         from apps.unidade_educacional.selectors import listar_ues_basicas
-        assert listar_ues_basicas(["999999"]) == []
+        items, total = listar_ues_basicas(["999999"])
+        assert items == []
+        assert total == 0
 
     def test_ue_sem_dre_retorna_strings_vazias(self, db):
         from apps.unidade_educacional.models import UnidadeEducacional
@@ -35,9 +40,10 @@ class TestListarUesBasicas:
             vagas_intermediario=0, vagas_integral=0, vagas_total=0,
             quantidade_funcionarios=0,
         )
-        resultado = listar_ues_basicas()
-        assert resultado[0]["nomeDRE"] == ""
-        assert resultado[0]["siglaDRE"] == ""
+        items, total = listar_ues_basicas()
+        assert items[0]["nomeDRE"] == ""
+        assert items[0]["siglaDRE"] == ""
+        assert total == 1
 
 
 class TestObterUeBasicaPorCodigo:
