@@ -44,11 +44,11 @@ class TestT01SincronizacoesTurma:
         assert resp.data["dominio"] == "pedagogico"
 
     def test_header_autenticacao_correto(self, db):
-        """Valida que x-api-eol-key é o header aceito."""
+        """Valida que X-API-Key é o header aceito."""
         from django.conf import settings
         from rest_framework.test import APIClient
         client = APIClient()
-        client.credentials(HTTP_X_API_EOL_KEY=settings.API_KEY)
+        client.credentials(HTTP_X_API_KEY=settings.API_KEY)
         resp = client.get(
             "/api/v1/institucional/ues/019251/turmas/ABC123/sincronizacoes-institucionais/"
         )
@@ -94,11 +94,11 @@ class TestT02AnosLetivosSincronizacao:
         assert resp.data["dominio"] == "pedagogico"
 
     def test_header_autenticacao_correto(self, db):
-        """Valida que x-api-eol-key é o header aceito."""
+        """Valida que X-API-Key é o header aceito."""
         from django.conf import settings
         from rest_framework.test import APIClient
         client = APIClient()
-        client.credentials(HTTP_X_API_EOL_KEY=settings.API_KEY)
+        client.credentials(HTTP_X_API_KEY=settings.API_KEY)
         resp = client.get(
             "/api/v1/institucional/turmas/ue/019251/sincronizacoes-institucionais/anos-letivos/"
         )

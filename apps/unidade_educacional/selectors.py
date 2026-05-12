@@ -76,23 +76,38 @@ def _build_ue_basica(
     )
 
 
-def listar_ues_basicas(codigos: list[str] | None = None) -> list[UeBasicaContract]:
-    """Lista UEs com dados básicos. Se `codigos` for None, retorna todas."""
+def listar_ues_basicas(
+    codigos: list[str] | None = None,
+    limite: int | None = None,
+    offset: int = 0,
+) -> tuple[list[UeBasicaContract], int]:
+    """Lista UEs com dados básicos.
+
+    Retorna (items, total). Se `codigos` for passado ignora paginação e
+    retorna todos os itens filtrados (uso interno — POST E06).
+    """
     qs = UnidadeEducacional.objects.values(
         "codigo_ue", "nome", "codigo_dre", "codigo_tipo_escola",
         "codigo_sub_prefeitura", "codigo_ue_integracao",
-    )
+    ).order_by("nome")
     if codigos is not None:
         qs = qs.filter(codigo_ue__in=codigos)
-    rows = list(qs.order_by("nome"))
+        rows = list(qs)
+        total = len(rows)
+    else:
+        total = qs.count()
+        if limite is not None:
+            qs = qs[offset: offset + limite]
+        rows = list(qs)
+
     if not rows:
-        return []
+        return [], total
 
     dre_ids = {r["codigo_dre"] for r in rows}
     tipo_ids = {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
     dres = _lookup_dres(dre_ids)
     tipos = _lookup_tipos(tipo_ids)
-    return [_build_ue_basica(r, dres, tipos) for r in rows]
+    return [_build_ue_basica(r, dres, tipos) for r in rows], total
 
 
 def obter_ue_basica_por_codigo(codigo: str) -> UeBasicaContract | None:
@@ -116,11 +131,13 @@ def obter_ue_eol(codigo: str) -> UeEolContract | None:
 
     Contrato EOL:
       - sigla: nome abreviado/não-oficial da UE (campo nome_nao_oficial)
+      - tipo: código numérico do tipo de unidade educacional (tp_unidade_educacao)
       - codigoReferencia: código da DRE à qual a UE pertence
     """
     try:
         ue = UnidadeEducacional.objects.only(
-            "codigo_ue", "nome", "nome_nao_oficial", "codigo_tipo_escola", "codigo_dre"
+            "codigo_ue", "nome", "nome_nao_oficial",
+            "codigo_tipo_unidade_educacao", "codigo_dre",
         ).get(codigo_ue=codigo)
     except UnidadeEducacional.DoesNotExist:
         return None
@@ -128,7 +145,7 @@ def obter_ue_eol(codigo: str) -> UeEolContract | None:
         codigo=ue.codigo_ue,
         sigla=ue.nome_nao_oficial,
         nomeUnidade=ue.nome,
-        tipo=ue.codigo_tipo_escola,
+        tipo=ue.codigo_tipo_unidade_educacao,
         codigoReferencia=ue.codigo_dre,
     )
 
@@ -314,31 +331,50 @@ def _aplicar_filtros_equipamentos(qs, codigos_subprefeitura, codigos_dre, tipos_
     return qs
 
 
+def _montar_logradouro(r: dict) -> str | None:
+    """Concatena tipo + logradouro + número no formato EOL: 'RUA APUCARANA Nº 215'."""
+    partes = []
+    if r.get("tipo_logradouro"):
+        partes.append(r["tipo_logradouro"].strip().upper())
+    if r.get("logradouro"):
+        partes.append(r["logradouro"].strip().upper())
+    if r.get("numero"):
+        partes.append(f"Nº {r['numero'].strip()}")
+    return " ".join(partes) if partes else None
+
+
 def _build_equipamento(r: dict, dres: dict, tipos: dict, subs: dict) -> EquipamentoContract:
     """Monta equipamento com schema alinhado ao EOL (cd_*, nm_*, dc_*, sg_*, ehCeu)."""
     dre = dres.get(r["codigo_dre"])
-    tipo = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
+    # cd_tp_equipamento = vcue.tp_unidade_educacao (tipo_unidade_educacao.tp_unidade_educacao)
+    # dc_tp_equipamento = tipo_ue (tipo_unidade_educacao.dc_tipo_unidade_educacao)
+    # cd_tp_escola = codigo_tipo_escola (join com tabela tipo_escola)
+    cd_tp_eq = r.get("codigo_tipo_unidade_educacao")
+    dc_tp_eq = r.get("tipo_ue")
+    tipo_escola = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
     sub = subs.get(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None
+    dre_nome = dre.nome if dre else ""
     dre_sigla = (dre.sigla or "").strip() if dre else ""
-    tipo_sigla = tipo.sigla.strip() if tipo and tipo.sigla else None
-    tipo_desc = tipo.descricao if tipo else None
+    tipo_sigla = tipo_escola.sigla.strip() if tipo_escola and tipo_escola.sigla else ""
+    tipo_desc = tipo_escola.descricao if tipo_escola else ""
+    cd_tp_escola = r["codigo_tipo_escola"] if r["codigo_tipo_escola"] is not None else 0
     return EquipamentoContract(
         cd_equipamento=r["codigo_ue"],
         nm_exibicao_equipamento=r["nome_nao_oficial"] or r["nome"],
         nm_equipamento=r["nome"],
-        cd_tp_equipamento=1,           # tipo "ESCOLA" — valor fixo do EOL para UEs
-        dc_tp_equipamento="ESCOLA",
-        cd_tp_escola=r["codigo_tipo_escola"],
+        cd_tp_equipamento=cd_tp_eq,
+        dc_tp_equipamento=dc_tp_eq,
+        cd_tp_escola=cd_tp_escola,
         dc_tipo_escola=tipo_desc,
         sg_tp_escola=tipo_sigla,
         cd_diretoria_referencia=r["codigo_dre"],
-        nm_diretoria_referencia=dre_sigla,
+        nm_diretoria_referencia=dre_nome,
         cd_diretoria_portal=r["codigo_dre"],
-        nm_diretoria_portal=dre_sigla,
+        nm_diretoria_portal=dre_nome,
         nm_exibicao_diretoria_portal=dre_sigla or None,
         nm_exibicao_diretoria_referencia=dre_sigla or None,
-        cd_logradouro=r["tipo_logradouro"],
-        logradouro=r["logradouro"],
+        cd_logradouro=r.get("codigo_logradouro"),
+        logradouro=_montar_logradouro(r),
         bairro=r["bairro"],
         codigoSubprefeitura=str(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None,
         nomeSubprefeitura=sub.nome if sub else None,
@@ -356,9 +392,9 @@ def listar_equipamentos(
 ) -> list[EquipamentoContract]:
     """Lista equipamentos/UEs com filtros (E25) — schema alinhado ao EOL."""
     campos_eq = [
-        "codigo_ue", "nome", "nome_nao_oficial", "codigo_dre",
-        "codigo_tipo_escola", "codigo_sub_prefeitura",
-        "tipo_logradouro", "logradouro", "bairro",
+        "codigo_ue", "nome", "nome_nao_oficial", "tipo_ue", "codigo_dre",
+        "codigo_tipo_escola", "codigo_tipo_unidade_educacao", "codigo_sub_prefeitura",
+        "tipo_logradouro", "codigo_logradouro", "logradouro", "numero", "bairro",
     ]
     if _coluna_existe("unidade_educacional", "eh_ceu"):
         campos_eq.append("eh_ceu")

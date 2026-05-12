@@ -102,7 +102,7 @@ def _ue_rows_por_dre(
     )
     if tipo_escola_id is not None:
         qs = qs.filter(codigo_tipo_escola=tipo_escola_id)
-    return qs
+    return qs.order_by("codigo_ue")
 
 
 def listar_escolas_por_dre(

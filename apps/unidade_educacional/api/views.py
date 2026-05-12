@@ -315,19 +315,37 @@ class QuantidadeAlunosView(BaseAPIView):
 
 
 class UnidadeEducacionalListPostView(BaseAPIView):
-    """Busca UEs: GET lista todas (E27 alternativo), POST filtra por lista (E06)."""
+    """Busca UEs: GET lista todas paginado (E27b), POST filtra por lista (E06)."""
 
     @extend_schema(
+        parameters=[
+            OpenApiParameter("limite", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Itens por página (padrão 100)."),
+            OpenApiParameter("offset", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Posição inicial (padrão 0)."),
+        ],
         responses={200: inline_serializer(
-            "UeBasicaRaiz", fields=_UE_BASICA_FIELDS, many=True
+            "UeBasicaRaizPaginado",
+            fields={
+                "count": serializers.IntegerField(),
+                "results": inline_serializer("UeBasicaRaiz", fields=_UE_BASICA_FIELDS, many=True),
+            },
         )},
-        description="Lista todas as UEs (GET raiz).",
+        description="Lista todas as UEs paginadas (GET raiz). Use `limite` e `offset` para navegar.",
         tags=_TAG_UE,
         operation_id="E27b_lista_todas_ues_raiz",
     )
-    def get(self, _request: Request) -> Response:
-        """Resposta 200 com todas as unidades."""
-        return Response(listar_ues_basicas())
+    def get(self, request: Request) -> Response:
+        """Resposta 200 com página de unidades e total."""
+        try:
+            limite = int(request.query_params.get("limite", 100))
+            offset = int(request.query_params.get("offset", 0))
+        except (ValueError, TypeError):
+            raise ValidationError("Os parâmetros 'limite' e 'offset' devem ser inteiros.")
+        if limite < 1 or limite > 1000:
+            raise ValidationError("O parâmetro 'limite' deve estar entre 1 e 1000.")
+        if offset < 0:
+            raise ValidationError("O parâmetro 'offset' não pode ser negativo.")
+        items, total = listar_ues_basicas(limite=limite, offset=offset)
+        return Response({"count": total, "results": items})
 
     @extend_schema(
         request={"application/json": {"type": "array", "items": {"type": "string"}}},
@@ -355,7 +373,8 @@ class UnidadeEducacionalListPostView(BaseAPIView):
             raise ValidationError(
                 "Lista de códigos é obrigatória e não pode ser vazia."
             )
-        return Response(listar_ues_basicas(codigos))
+        items, _ = listar_ues_basicas(codigos)
+        return Response(items)
 
 
 class ProfessoresEscolaAnoView(BaseAPIView):
@@ -787,20 +806,36 @@ class UnidadesParceirasView(BaseAPIView):
 
 
 class TodasUnidadesView(BaseAPIView):
-    """Todas as UEs (E27)."""
+    """Todas as UEs (E27) — paginado por limite/offset."""
 
     @extend_schema(
+        parameters=[
+            OpenApiParameter("limite", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Itens por página (padrão 100)."),
+            OpenApiParameter("offset", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Posição inicial (padrão 0)."),
+        ],
         responses={
             200: inline_serializer(
-                "UeBasicaTodasList",
-                fields=_UE_BASICA_FIELDS,
-                many=True,
+                "UeBasicaTodasPaginado",
+                fields={
+                    "count": serializers.IntegerField(),
+                    "results": inline_serializer("UeBasicaTodasList", fields=_UE_BASICA_FIELDS, many=True),
+                },
             )
         },
-        description="Lista todas as UEs (E27).",
+        description="Lista todas as UEs paginadas (E27). Use `limite` e `offset` para navegar.",
         tags=_TAG_UE,
         operation_id="E27_lista_todas_ues",
     )
-    def get(self, _request: Request) -> Response:
-        """Resposta 200 com todas as unidades."""
-        return Response(listar_ues_basicas())
+    def get(self, request: Request) -> Response:
+        """Resposta 200 com página de unidades e total."""
+        try:
+            limite = int(request.query_params.get("limite", 100))
+            offset = int(request.query_params.get("offset", 0))
+        except (ValueError, TypeError):
+            raise ValidationError("Os parâmetros 'limite' e 'offset' devem ser inteiros.")
+        if limite < 1 or limite > 1000:
+            raise ValidationError("O parâmetro 'limite' deve estar entre 1 e 1000.")
+        if offset < 0:
+            raise ValidationError("O parâmetro 'offset' não pode ser negativo.")
+        items, total = listar_ues_basicas(limite=limite, offset=offset)
+        return Response({"count": total, "results": items})

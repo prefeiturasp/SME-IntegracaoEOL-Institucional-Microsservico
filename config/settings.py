@@ -9,7 +9,7 @@ Variáveis obrigatórias em produção:
   - DJANGO_SECRET_KEY: chave secreta do Django (obrigatória quando DJANGO_DEBUG=0)
   - URL_BANCO_INSTITUCIONAL: URL postgres do banco populado pelo ETL institucional
     Formato: postgres://<usuario>:<senha>@<host>:5432/<nome_banco>
-  - API_KEY: chave usada pelo header x-api-eol-key para autenticar todas as rotas
+  - API_KEY: chave usada pelo header X-API-Key para autenticar todas as rotas
   - DJANGO_ALLOWED_HOSTS: hosts permitidos, separados por vírgula
 
 Variáveis opcionais relevantes:
@@ -144,7 +144,7 @@ AMBIENTE_APLICACAO = os.getenv("AMBIENTE_APLICACAO", "local")
 NIVEL_LOG = os.getenv("NIVEL_LOG", "INFO")
 
 API_KEY = os.getenv("API_KEY", "dev-key-default")
-API_KEY_HEADER = os.getenv("API_KEY_HEADER", "x-api-eol-key")
+API_KEY_HEADER = os.getenv("API_KEY_HEADER", "X-API-Key")
 
 CACHE_TTL_DRE_SECONDS = int(os.getenv("CACHE_TTL_DRE_SECONDS", "300"))
 CACHE_TTL_TIPO_ESCOLA_SECONDS = int(

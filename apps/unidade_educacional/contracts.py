@@ -122,7 +122,7 @@ class EquipamentoContract(TypedDict):
     nm_diretoria_portal: str
     nm_exibicao_diretoria_portal: str | None
     nm_exibicao_diretoria_referencia: str | None
-    cd_logradouro: str | None
+    cd_logradouro: int | None
     logradouro: str | None
     bairro: str | None
     codigoSubprefeitura: str | None

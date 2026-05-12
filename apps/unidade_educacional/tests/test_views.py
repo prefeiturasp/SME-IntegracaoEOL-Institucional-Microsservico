@@ -395,12 +395,31 @@ class TestE27TodasUnidades:
         ue_factory()
         resp = api_client.get("/api/v1/institucional/escolas/todas-unidades/")
         assert resp.status_code == 200
-        assert isinstance(resp.data, list)
+        assert "count" in resp.data
+        assert "results" in resp.data
+        assert isinstance(resp.data["results"], list)
 
     def test_retorna_lista_vazia_sem_ues(self, api_client, db):
         resp = api_client.get("/api/v1/institucional/escolas/todas-unidades/")
         assert resp.status_code == 200
-        assert resp.data == []
+        assert resp.data["count"] == 0
+        assert resp.data["results"] == []
+
+    def test_paginacao_limite_offset(self, api_client, ue_factory):
+        for i in range(5):
+            ue_factory()
+        resp = api_client.get("/api/v1/institucional/escolas/todas-unidades/?limite=2&offset=0")
+        assert resp.status_code == 200
+        assert resp.data["count"] == 5
+        assert len(resp.data["results"]) == 2
+
+    def test_limite_invalido_retorna_400(self, api_client, db):
+        resp = api_client.get("/api/v1/institucional/escolas/todas-unidades/?limite=0")
+        assert resp.status_code == 400
+
+    def test_limite_acima_do_maximo_retorna_400(self, api_client, db):
+        resp = api_client.get("/api/v1/institucional/escolas/todas-unidades/?limite=1001")
+        assert resp.status_code == 400
 
 
 class TestCrossDomainUe:
@@ -430,13 +449,15 @@ class TestCrossDomainUe:
 
 
 class TestGetRaizEscolas:
-    """GET /api/escolas/ — deve retornar todas as UEs."""
+    """GET /api/escolas/ — retorna todas as UEs paginadas."""
 
-    def test_get_raiz_retorna_lista(self, api_client, ue_factory):
+    def test_get_raiz_retorna_paginado(self, api_client, ue_factory):
         ue_factory()
         resp = api_client.get("/api/v1/institucional/escolas/")
         assert resp.status_code == 200
-        assert isinstance(resp.data, list)
+        assert "count" in resp.data
+        assert "results" in resp.data
+        assert isinstance(resp.data["results"], list)
 
 
 class TestE10TiposUnidadeEducacao:
@@ -461,7 +482,7 @@ class TestE10TiposUnidadeEducacao:
 
 
 class TestAutenticacaoHeader:
-    """Valida que o header correto é x-api-eol-key."""
+    """Valida que o header correto é X-API-Key."""
 
     def test_sem_api_key_retorna_401(self, db):
         from rest_framework.test import APIClient
@@ -478,20 +499,20 @@ class TestAutenticacaoHeader:
         resp = client.get("/api/v1/institucional/escolas/tiposEscolas/")
         assert resp.status_code in (401, 403)
 
-    def test_header_x_api_eol_key_e_aceito(self, db):
+    def test_header_x_api_key_e_aceito(self, db):
         from django.conf import settings
         from rest_framework.test import APIClient
-        assert settings.API_KEY_HEADER == "x-api-eol-key"
+        assert settings.API_KEY_HEADER == "X-API-Key"
         client = APIClient()
-        client.credentials(HTTP_X_API_EOL_KEY=settings.API_KEY)
+        client.credentials(HTTP_X_API_KEY=settings.API_KEY)
         resp = client.get("/api/v1/institucional/escolas/tiposEscolas/")
         assert resp.status_code == 200
 
-    def test_header_antigo_x_api_key_nao_funciona(self, db):
+    def test_header_antigo_x_api_eol_key_nao_funciona(self, db):
         from django.conf import settings
         from rest_framework.test import APIClient
         client = APIClient()
-        client.credentials(HTTP_X_API_KEY=settings.API_KEY)
+        client.credentials(HTTP_X_API_EOL_KEY=settings.API_KEY)
         resp = client.get("/api/v1/institucional/escolas/tiposEscolas/")
         assert resp.status_code in (401, 403)
 
@@ -598,7 +619,7 @@ class TestSwaggerFidelity:
         resp = api_client.get("/api/v1/institucional/schema/", HTTP_ACCEPT="application/json")
         assert resp.status_code == 200
         content = resp.content.decode()
-        assert "x-api-eol-key" in content
+        assert "X-API-Key" in content
 
     def test_schema_nao_contem_schema_vazio(self, api_client, db):
         """Garante que não há schema: {} no YAML gerado."""
