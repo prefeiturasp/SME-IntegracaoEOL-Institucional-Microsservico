@@ -151,6 +151,25 @@ _TIPO_UNIDADE_EDUCACAO_FIELDS = {
 }
 
 
+def _paginar_ues_basicas(request: Request) -> Response:
+    """Valida limite/offset e retorna página de UEs básicas."""
+    try:
+        limite = int(request.query_params.get("limite", 100))
+        offset = int(request.query_params.get("offset", 0))
+    except (ValueError, TypeError) as exc:
+        raise ValidationError(
+            "Os parâmetros 'limite' e 'offset' devem ser inteiros."
+        ) from exc
+    if limite < 1 or limite > 1000:
+        raise ValidationError(
+            "O parâmetro 'limite' deve estar entre 1 e 1000."
+        )
+    if offset < 0:
+        raise ValidationError("O parâmetro 'offset' não pode ser negativo.")
+    items, total = listar_ues_basicas(limite=limite, offset=offset)
+    return Response({"count": total, "results": items})
+
+
 class UnidadeEducacionalAdminSgpView(BaseAPIView):
     """Administradores SGP de uma UE (E01) — placeholder cross-domain."""
 
@@ -335,17 +354,7 @@ class UnidadeEducacionalListPostView(BaseAPIView):
     )
     def get(self, request: Request) -> Response:
         """Resposta 200 com página de unidades e total."""
-        try:
-            limite = int(request.query_params.get("limite", 100))
-            offset = int(request.query_params.get("offset", 0))
-        except (ValueError, TypeError):
-            raise ValidationError("Os parâmetros 'limite' e 'offset' devem ser inteiros.")
-        if limite < 1 or limite > 1000:
-            raise ValidationError("O parâmetro 'limite' deve estar entre 1 e 1000.")
-        if offset < 0:
-            raise ValidationError("O parâmetro 'offset' não pode ser negativo.")
-        items, total = listar_ues_basicas(limite=limite, offset=offset)
-        return Response({"count": total, "results": items})
+        return _paginar_ues_basicas(request)
 
     @extend_schema(
         request={"application/json": {"type": "array", "items": {"type": "string"}}},
@@ -828,14 +837,4 @@ class TodasUnidadesView(BaseAPIView):
     )
     def get(self, request: Request) -> Response:
         """Resposta 200 com página de unidades e total."""
-        try:
-            limite = int(request.query_params.get("limite", 100))
-            offset = int(request.query_params.get("offset", 0))
-        except (ValueError, TypeError):
-            raise ValidationError("Os parâmetros 'limite' e 'offset' devem ser inteiros.")
-        if limite < 1 or limite > 1000:
-            raise ValidationError("O parâmetro 'limite' deve estar entre 1 e 1000.")
-        if offset < 0:
-            raise ValidationError("O parâmetro 'offset' não pode ser negativo.")
-        items, total = listar_ues_basicas(limite=limite, offset=offset)
-        return Response({"count": total, "results": items})
+        return _paginar_ues_basicas(request)
