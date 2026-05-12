@@ -406,7 +406,7 @@ class TestE27TodasUnidades:
         assert resp.data["results"] == []
 
     def test_paginacao_limite_offset(self, api_client, ue_factory):
-        for i in range(5):
+        for _ in range(5):
             ue_factory()
         resp = api_client.get("/api/v1/institucional/escolas/todas-unidades/?limite=2&offset=0")
         assert resp.status_code == 200
