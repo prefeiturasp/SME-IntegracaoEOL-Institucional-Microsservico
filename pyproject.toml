@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "SME-IntegracaoEOL-Institucional-Microsservico"
+version = "1.0.0"
+description = "Microsserviço institucional — SGP EOL"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "SME" }]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["apps*", "config*"]
+
+[tool.black]
+line-length = 79
+target-version = ["py312"]
+exclude = "/migrations/"
+
+[tool.ruff]
+line-length = 79
+target-version = "py312"
+exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "D"]
+ignore = ["D203", "D212", "D104", "D105", "D106", "D107", "D102"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/admin.py" = ["D100", "D101"]
+"**/apps.py" = ["D101"]
+"**/tests.py" = ["D100"]
+"**/tests/**/*.py" = ["D100", "D101"]
+"**/wsgi.py" = ["D100"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.mypy]
+python_version = "3.12"
+exclude = ".*/migrations/.*"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings_test"
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--tb=short -q --ds=config.settings_test"
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests/*", "*/conftest.py", "*/mock_data.py"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+
+[tool.importlinter]
+root_packages = ["apps"]
+
+[[tool.importlinter.contracts]]
+name = "DRE não importa UE internamente"
+type = "forbidden"
+source_modules = ["apps.dre"]
+forbidden_modules = ["apps.unidade_educacional.api", "apps.unidade_educacional.repositories", "apps.unidade_educacional.selectors", "apps.unidade_educacional.services"]
+
+[[tool.importlinter.contracts]]
+name = "UE não importa DRE internamente"
+type = "forbidden"
+source_modules = ["apps.unidade_educacional"]
+forbidden_modules = ["apps.dre.api", "apps.dre.repositories", "apps.dre.selectors", "apps.dre.services"]
