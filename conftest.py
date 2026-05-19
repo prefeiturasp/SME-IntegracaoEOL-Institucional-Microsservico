@@ -1,11 +1,11 @@
-"""Configuração de testes — fixtures compartilhadas."""
+"""Fixtures compartilhadas entre os testes."""
 
 import pytest
 
 
 @pytest.fixture(scope="session")
 def django_db_setup(django_test_environment, django_db_blocker):
-    """Cria as tabelas managed=False manualmente no SQLite de testes."""
+    """Cria as tabelas dos models no banco SQLite de testes."""
     with django_db_blocker.unblock():
         from django.db import connection
 

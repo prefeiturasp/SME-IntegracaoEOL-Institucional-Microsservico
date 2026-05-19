@@ -1,25 +1,4 @@
-"""
-Configurações Django do microserviço Institucional.
-
-Lê todas as variáveis sensíveis de variáveis de ambiente — nenhum valor fixo
-em produção. Em desenvolvimento, valores padrão seguros são aplicados para
-permitir `runserver` sem configuração adicional.
-
-Variáveis obrigatórias em produção:
-  - DJANGO_SECRET_KEY: chave secreta do Django (obrigatória quando DJANGO_DEBUG=0)
-  - URL_BANCO_INSTITUCIONAL: URL postgres do banco populado pelo ETL institucional
-    Formato: postgres://<usuario>:<senha>@<host>:5432/<nome_banco>
-  - API_KEY: chave usada pelo header X-API-Key para autenticar todas as rotas
-  - DJANGO_ALLOWED_HOSTS: hosts permitidos, separados por vírgula
-
-Variáveis opcionais relevantes:
-  - APP_PREFIX: prefixo de path removido pelo PrefixMiddleware (ex.: /institucional)
-  - NIVEL_LOG: nível de logging (padrão INFO)
-  - CACHE_TTL_DRE_SECONDS / CACHE_TTL_TIPO_ESCOLA_SECONDS: TTL de cache por domínio
-
-O banco usa connection pooling via dj-db-conn-pool (pool de 5 conexões, sem overflow).
-Sem URL_BANCO_INSTITUCIONAL, cai para SQLite in-memory — válido apenas em testes.
-"""
+"""Configurações Django do microserviço Institucional."""
 
 import os
 import secrets
@@ -42,7 +21,7 @@ _POOL_OPTIONS = {
 
 
 def _parse_db_url(url: Any) -> dict:
-    """Faz o parse de uma URL postgres para dict de configuração Django."""
+    """Converte uma URL postgres em dicionário de configuração Django."""
     if not url:
         return {
             "ENGINE": "django.db.backends.sqlite3",

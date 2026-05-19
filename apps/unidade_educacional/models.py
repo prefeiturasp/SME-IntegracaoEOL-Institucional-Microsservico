@@ -1,14 +1,10 @@
-"""Models de leitura do domínio UE — managed=False, sem migrations."""
+"""Models de leitura do domínio UE."""
 
 from django.db import models
 
 
 class UnidadeEducacional(models.Model):
-    """Unidade educacional (escola) da rede municipal.
-
-    Fonte: tabela `unidade_educacional` populada pelo ETL institucional.
-    Referencia DRE, TipoEscola e SubPrefeitura via FK.
-    """
+    """Unidade educacional (escola) da rede municipal."""
 
     codigo_ue = models.CharField(max_length=20, primary_key=True)
     nome = models.CharField(max_length=200)

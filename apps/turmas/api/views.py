@@ -1,4 +1,4 @@
-"""Views do domínio Turmas (T01-T02) — placeholders cross-domain Pedagógico."""
+"""Views do domínio Turmas."""
 
 from drf_spectacular.utils import extend_schema
 from rest_framework.request import Request
@@ -10,7 +10,7 @@ _TAG_CD = ["CrossDomain"]
 
 
 class SincronizacoesTurmaView(BaseAPIView):
-    """T01 — cross-domain Pedagógico."""
+    """Sincronizações institucionais de uma turma — competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -24,12 +24,11 @@ class SincronizacoesTurmaView(BaseAPIView):
     def get(
         self, _request: Request, ue_codigo: str, turma_codigo: str
     ) -> Response:
-        """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")
 
 
 class SincronizacoesTurmaLegacyView(BaseAPIView):
-    """T01 — alias /api/turmas/{ue_codigo}/turmas/{turma_codigo}/..."""
+    """Sincronizações institucionais de uma turma — rota legada, competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -44,12 +43,11 @@ class SincronizacoesTurmaLegacyView(BaseAPIView):
     def get(
         self, _request: Request, ue_codigo: str, turma_codigo: str
     ) -> Response:
-        """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")
 
 
 class AnosLetivosSincronizacaoTurmaView(BaseAPIView):
-    """T02 — cross-domain Pedagógico."""
+    """Anos letivos com sincronizações de turmas de uma UE — competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -61,12 +59,11 @@ class AnosLetivosSincronizacaoTurmaView(BaseAPIView):
         operation_id="T02_anos_letivos_sincronizacao_turma",
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
-        """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")
 
 
 class AnosLetivosSincronizacaoTurmaLegacyView(BaseAPIView):
-    """T02 — alias /api/ues/ue/{ue_codigo}/..."""
+    """Anos letivos com sincronizações de turmas de uma UE — rota legada, competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -79,5 +76,4 @@ class AnosLetivosSincronizacaoTurmaLegacyView(BaseAPIView):
         operation_id="T02_anos_letivos_sincronizacao_turma_legacy",
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
-        """Retorna 501 — competência do domínio Pedagógico."""
         return self.cross_domain("pedagogico")

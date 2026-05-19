@@ -1,13 +1,4 @@
-"""URLs do domínio Turmas (T01-T02).
-
-Rotas canônicas:
-  T01 — /api/ues/{ueCodigo}/turmas/{turmaCodigo}/sincronizacoes-institucionais/
-  T02 — /api/turmas/ue/{ueCodigo}/sincronizacoes-institucionais/anos-letivos/
-
-Aliases alternativos:
-  T01 — /api/turmas/{ueCodigo}/turmas/{turmaCodigo}/sincronizacoes-institucionais/
-  T02 — /api/ues/ue/{ueCodigo}/sincronizacoes-institucionais/anos-letivos/
-"""
+"""URLs do domínio Turmas."""
 
 from django.urls import path
 
