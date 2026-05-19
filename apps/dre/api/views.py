@@ -1,4 +1,4 @@
-"""Views do domínio DRE (D01-D11)."""
+"""Views do domínio DRE."""
 
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -99,7 +99,7 @@ _CODIGO_INTEGRACAO_FIELDS = {
 
 
 class DreListView(BaseAPIView):
-    """Lista DREs (GET) e filtra por código via POST (D01/D02)."""
+    """Lista e filtra Diretorias Regionais de Educação."""
 
     @extend_schema(
         responses={
@@ -128,7 +128,7 @@ class DreListView(BaseAPIView):
         ],
     )
     def get(self, _request: Request) -> Response:
-        """Resposta com lista de todas as DREs (D01)."""
+        """Lista todas as DREs."""
         return Response(listar_dres())
 
     @extend_schema(
@@ -159,7 +159,7 @@ class DreListView(BaseAPIView):
         ],
     )
     def post(self, request: Request) -> Response:
-        """Resposta com DREs encontradas ou 204 se vazio (D02)."""
+        """Filtra DREs pela lista de códigos informada."""
         codigos = request.data
         if not isinstance(codigos, list):
             raise ValidationError(
@@ -174,12 +174,7 @@ class DreListView(BaseAPIView):
 
 
 class DreDetalheView(BaseAPIView):
-    """Retorna uma DRE pelo código EOL (D04).
-
-    Resposta em array com um único elemento para consistência com os demais
-    endpoints de listagem.
-
-    """
+    """Retorna dados de uma Diretoria Regional de Educação pelo código EOL."""
 
     @extend_schema(
         responses={
@@ -207,7 +202,6 @@ class DreDetalheView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
-        """Resposta 200 (array[1]) ou 404 se não encontrada."""
         dre = obter_dre_por_codigo(codigo_eol_dre)
         if dre is None:
             raise NotFound("DRE não encontrada.")
@@ -215,7 +209,7 @@ class DreDetalheView(BaseAPIView):
 
 
 class DreEscolasTipoView(BaseAPIView):
-    """Retorna escolas de uma DRE filtradas por tipo (D05)."""
+    """Lista escolas de uma DRE filtradas por tipo."""
 
     @extend_schema(
         responses={
@@ -235,7 +229,6 @@ class DreEscolasTipoView(BaseAPIView):
         codigo_eol_dre: str,
         tipo_escola_id: int,
     ) -> Response:
-        """Resposta 200 com escolas filtradas ou lista vazia."""
         if not codigo_eol_dre.strip():
             raise ValidationError("Código EOL da DRE é obrigatório.")
         escolas = listar_escolas_por_dre(codigo_eol_dre, tipo_escola_id)
@@ -243,7 +236,7 @@ class DreEscolasTipoView(BaseAPIView):
 
 
 class DreEscolasView(BaseAPIView):
-    """Retorna todas as escolas de uma DRE (D06)."""
+    """Lista todas as escolas de uma DRE."""
 
     @extend_schema(
         responses={
@@ -259,7 +252,6 @@ class DreEscolasView(BaseAPIView):
         operation_id="D06_escolas_vinculadas_dre",
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
-        """Resposta 200 ou 204 se a DRE não possuir escolas."""
         escolas = listar_escolas_por_dre(codigo_eol_dre)
         if not escolas:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -267,7 +259,7 @@ class DreEscolasView(BaseAPIView):
 
 
 class DreSubprefeiturasView(BaseAPIView):
-    """Retorna subprefeituras de uma DRE (D07)."""
+    """Lista subprefeituras de uma DRE."""
 
     @extend_schema(
         responses={
@@ -282,14 +274,13 @@ class DreSubprefeiturasView(BaseAPIView):
         operation_id="D07_subprefeituras_dre",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
-        """Resposta 200 com subprefeituras."""
         if not dre_codigo.strip():
             raise ValidationError("Código da DRE é obrigatório.")
         return Response(listar_subprefeituras_por_dre(dre_codigo))
 
 
 class DreUesView(BaseAPIView):
-    """Retorna códigos das UEs de uma DRE (D08)."""
+    """Lista os códigos das UEs de uma DRE."""
 
     @extend_schema(
         responses={200: inline_serializer(
@@ -305,14 +296,13 @@ class DreUesView(BaseAPIView):
         operation_id="D08_codigos_ues_dre",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
-        """Resposta 200 com lista de códigos."""
         if not dre_codigo.strip():
             raise ValidationError("Código da DRE é obrigatório.")
         return Response(listar_codigos_ues_por_dre(dre_codigo))
 
 
 class DreEscolasSigpaeView(BaseAPIView):
-    """Retorna escolas SIGPAE de uma DRE (D09)."""
+    """Lista escolas de uma DRE no formato SIGPAE."""
 
     @extend_schema(
         responses={
@@ -328,7 +318,6 @@ class DreEscolasSigpaeView(BaseAPIView):
         operation_id="D09_escolas_sigpae",
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
-        """Resposta 200 ou 204 se não houver escolas."""
         if not codigo_eol_dre.strip():
             raise ValidationError("Código EOL da DRE é obrigatório.")
         escolas = listar_escolas_por_dre(codigo_eol_dre)
@@ -338,7 +327,7 @@ class DreEscolasSigpaeView(BaseAPIView):
 
 
 class DreUnidadesView(BaseAPIView):
-    """Retorna unidades completas de uma DRE (D10)."""
+    """Retorna unidades prediais completas de uma DRE."""
 
     @extend_schema(
         responses={
@@ -353,12 +342,11 @@ class DreUnidadesView(BaseAPIView):
         operation_id="D10_unidades_gestao_predial",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
-        """Resposta 200 com dados completos das unidades."""
         return Response(listar_unidades_por_dre(dre_codigo))
 
 
 class DreCodigosIntegracaoView(BaseAPIView):
-    """Retorna códigos de integração das UEs da DRE (D11)."""
+    """Lista os códigos de integração das UEs de uma DRE."""
 
     @extend_schema(
         responses={
@@ -373,15 +361,11 @@ class DreCodigosIntegracaoView(BaseAPIView):
         operation_id="D11_ues_codigo_integracao",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
-        """Resposta 200 com códigos de integração."""
         return Response(listar_codigos_integracao_por_dre(dre_codigo))
 
 
 class DreSupervisoresView(BaseAPIView):
-    """Cross-domain: supervisores de uma DRE (D03).
-
-    Responsabilidade do domínio Professores via Transition Gateway.
-    """
+    """Supervisores de uma DRE — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -394,5 +378,4 @@ class DreSupervisoresView(BaseAPIView):
         operation_id="D03_supervisores_dre",
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
-        """Retorna 501 — rota de competência do domínio Professores."""
         return self.cross_domain("professores")

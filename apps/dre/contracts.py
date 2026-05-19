@@ -1,7 +1,4 @@
-"""Contratos de resposta do domínio DRE.
-
-Mapeiam campos internos (snake_case) para a representação de saída (camelCase).
-"""
+"""Contratos de resposta do domínio DRE."""
 
 from typing import TypedDict
 
@@ -9,7 +6,7 @@ from apps.core.types import SubPrefeiturarContract  # noqa: F401 — re-export
 
 
 class DreResumoContract(TypedDict):
-    """Contrato D01/D02/D04 — listagem e detalhe de DRE."""
+    """Dados resumidos de Diretoria Regional de Educação."""
 
     codigoDRE: str
     nomeDRE: str
@@ -17,7 +14,7 @@ class DreResumoContract(TypedDict):
 
 
 class EscolaPorDreContract(TypedDict):
-    """Contrato D05/D06/D09 — escola listada por DRE."""
+    """Dados de escola vinculada a uma DRE."""
 
     codigoEscola: str
     nomeEscola: str
@@ -37,7 +34,7 @@ class EscolaPorDreContract(TypedDict):
 
 
 class UnidadePredialContract(TypedDict):
-    """Contrato D10 — unidade de gestão predial."""
+    """Dados completos de unidade predial."""
 
     codigoEol: str
     nomeOficial: str
@@ -71,7 +68,7 @@ class UnidadePredialContract(TypedDict):
 
 
 class CodigoIntegracaoContract(TypedDict):
-    """Contrato D11 — código de integração por UE."""
+    """Dados de código de integração de uma UE."""
 
     codigoUe: str
     nomeUe: str

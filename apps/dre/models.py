@@ -1,13 +1,10 @@
-"""Models de leitura do domínio DRE — managed=False, sem migrations."""
+"""Models de leitura do domínio DRE."""
 
 from django.db import models
 
 
 class TipoEscola(models.Model):
-    """Tipo de unidade educacional (EMEF, EMEI, CEI, etc.).
-
-    Fonte: tabela `tipo_escola` populada pelo ETL institucional.
-    """
+    """Tipo de unidade educacional (EMEF, EMEI, CEI, etc.)."""
 
     codigo_tipo_escola = models.IntegerField(primary_key=True)
     sigla = models.CharField(max_length=20, null=True, blank=True)
@@ -24,10 +21,7 @@ class TipoEscola(models.Model):
 
 
 class DRE(models.Model):
-    """Diretoria Regional de Educação.
-
-    Fonte: tabela `dre` populada pelo ETL institucional.
-    """
+    """Diretoria Regional de Educação."""
 
     codigo_dre = models.CharField(max_length=20, primary_key=True)
     nome = models.CharField(max_length=200)
@@ -47,10 +41,7 @@ class DRE(models.Model):
 
 
 class SubPrefeitura(models.Model):
-    """Sub-prefeitura do município de São Paulo.
-
-    Fonte: tabela `sub_prefeitura` populada pelo ETL institucional.
-    """
+    """Subprefeitura do município de São Paulo."""
 
     codigo_sub_prefeitura = models.IntegerField(primary_key=True)
     sigla = models.CharField(max_length=20, null=True, blank=True)

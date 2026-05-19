@@ -1,4 +1,4 @@
-"""Middlewares do projeto: prefixo de path e observabilidade."""
+"""Middlewares de observabilidade e roteamento."""
 
 import logging
 import time
@@ -13,7 +13,7 @@ _SLOW_QUERY_MS = 200
 
 
 class ObservabilidadeMiddleware:
-    """Injeta X-Correlation-ID, mede tempo de resposta e avisa sobre requisições lentas."""
+    """Injeta X-Correlation-ID e registra métricas de cada requisição."""
 
     def __init__(self, get_response: object) -> None:
         self.get_response = get_response
@@ -45,11 +45,7 @@ class ObservabilidadeMiddleware:
 
 
 class PrefixMiddleware:
-    """Remove o prefixo de path configurado via APP_PREFIX antes do roteamento.
-
-    Permite publicar o serviço em /institucional/api/... no Ingress
-    sem duplicar o prefixo nas URLs internas do Django.
-    """
+    """Remove o prefixo de path configurado antes do roteamento Django."""
 
     def __init__(self, get_response: object) -> None:
         self.get_response = get_response

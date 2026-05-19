@@ -1,16 +1,4 @@
-"""
-Roteamento central do microserviço Institucional.
-
-Organiza as rotas em dois grupos principais:
-- Rotas administrativas/infraestrutura: health checks (live/ready/status),
-  schema OpenAPI e Swagger UI — todas acessíveis sob /institucional/api/.
-- Rotas de domínio de negócio: DREs (/api/dres/), Escolas (/api/escolas/),
-  Turmas (/api/ues/ e /api/turmas/) — incluídas via módulos de cada domínio.
-
-O prefixo /institucional/api/ nos endpoints de infra reflete o prefixo de
-path configurado no Ingress do Kubernetes (APP_PREFIX). Rotas de domínio não
-carregam esse prefixo porque o PrefixMiddleware o remove antes do roteamento.
-"""
+"""Roteamento central do microserviço Institucional."""
 
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView

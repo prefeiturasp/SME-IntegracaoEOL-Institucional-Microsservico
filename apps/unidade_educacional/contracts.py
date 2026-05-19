@@ -1,13 +1,10 @@
-"""Contratos de resposta do domínio UE.
-
-Mapeiam campos internos (snake_case) para a representação de saída (camelCase).
-"""
+"""Contratos de resposta do domínio UE."""
 
 from typing import TypedDict
 
 
 class UeBasicaContract(TypedDict):
-    """Contrato E02/E06/E27 — dados básicos de UE."""
+    """Dados básicos de unidade educacional."""
 
     codigoEscola: str
     nomeEscola: str
@@ -26,7 +23,7 @@ class UeBasicaContract(TypedDict):
 
 
 class UeEolContract(TypedDict):
-    """Contrato E03 — UE por código EOL genérico."""
+    """Dados resumidos de unidade educacional por código EOL."""
 
     codigo: str
     sigla: str | None
@@ -36,7 +33,7 @@ class UeEolContract(TypedDict):
 
 
 class UeCompletaContract(TypedDict):
-    """Contrato E04 — dados completos de UE."""
+    """Dados completos de unidade educacional."""
 
     nomeDRE: str
     siglaDRE: str
@@ -67,7 +64,7 @@ class UeCompletaContract(TypedDict):
 
 
 class TipoEscolaContract(TypedDict):
-    """Contrato E11 — tipo de escola."""
+    """Dados de tipo de escola."""
 
     codigo: int
     descricaoSigla: str | None
@@ -75,10 +72,7 @@ class TipoEscolaContract(TypedDict):
 
 
 class SincronizacaoUeContract(TypedDict):
-    """Contrato E23 — sincronização institucional da UE.
-
-    dreCodigo é int; dataAtualizacao é datetime ISO 8601 ou null.
-    """
+    """Dados de sincronização institucional da unidade educacional."""
 
     ueCodigo: str
     dataAtualizacao: str | None
@@ -94,7 +88,7 @@ class SincronizacaoUeContract(TypedDict):
 
 
 class UnidadeParceirasContract(TypedDict):
-    """Contrato E26 — unidade parceira."""
+    """Dados de unidade educacional parceira."""
 
     codigo: str
     nome: str
@@ -102,11 +96,7 @@ class UnidadeParceirasContract(TypedDict):
 
 
 class EquipamentoContract(TypedDict):
-    """Contrato E25 — equipamento/UE com filtros.
-
-    Campos com nomenclatura prefixada (cd_*, nm_*, dc_*, sg_*) conforme
-    definição do contrato E25.
-    """
+    """Dados de equipamento escolar com nomenclatura prefixada."""
 
     cd_equipamento: str
     nm_exibicao_equipamento: str

@@ -1,4 +1,4 @@
-"""Selectors do domínio DRE — queries otimizadas, sem N+1."""
+"""Selectors do domínio DRE."""
 
 from typing import Any
 
@@ -16,7 +16,7 @@ from apps.unidade_educacional.models import UnidadeEducacional
 
 
 def listar_dres() -> list[DreResumoContract]:
-    """Retorna todas as DREs com campos mínimos do contrato EOL."""
+    """Lista todas as Diretorias Regionais de Educação."""
     qs = DRE.objects.only("codigo_dre", "nome", "sigla").order_by("nome")
     return [
         DreResumoContract(
@@ -91,7 +91,7 @@ def listar_subprefeituras_por_dre(
 def _ue_rows_por_dre(
     codigo_dre: str, tipo_escola_id: int | None = None
 ) -> Any:
-    """QuerySet de UEs por DRE com todos os dados de join em memória."""
+    """Retorna QuerySet de UEs de uma DRE, opcionalmente filtrado por tipo."""
     qs = UnidadeEducacional.objects.filter(codigo_dre=codigo_dre).values(
         "codigo_ue",
         "nome",
@@ -108,7 +108,7 @@ def _ue_rows_por_dre(
 def listar_escolas_por_dre(
     codigo_dre: str, tipo_escola_id: int | None = None
 ) -> list[EscolaPorDreContract]:
-    """Escolas de uma DRE com dados de TipoEscola, DRE e SubPrefeitura."""
+    """Lista escolas de uma DRE, opcionalmente filtradas por tipo."""
     from apps.dre.models import TipoEscola
 
     # Carrega lookups em memória para evitar N+1
@@ -180,7 +180,7 @@ def listar_codigos_ues_por_dre(codigo_dre: str) -> list[str]:
 
 
 def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
-    """Lista completa de unidades prediais de uma DRE (D10)."""
+    """Lista unidades prediais de uma DRE."""
     try:
         dre_obj = DRE.objects.only(
             "codigo_dre", "nome", "tipo_unidade_adm"
@@ -281,7 +281,7 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
 def listar_codigos_integracao_por_dre(
     codigo_dre: str,
 ) -> list[CodigoIntegracaoContract]:
-    """UEs com código de integração de uma DRE (D11)."""
+    """Lista UEs com código de integração de uma DRE."""
     rows = (
         UnidadeEducacional.objects.filter(codigo_dre=codigo_dre)
         .values(
