@@ -1,4 +1,4 @@
-"""Views do domínio UE (E01-E27)."""
+"""Views do domínio UE."""
 
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -171,7 +171,7 @@ def _paginar_ues_basicas(request: Request) -> Response:
 
 
 class UnidadeEducacionalAdminSgpView(BaseAPIView):
-    """Administradores SGP de uma UE (E01) — placeholder cross-domain."""
+    """Administradores SGP de uma UE — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -184,15 +184,11 @@ class UnidadeEducacionalAdminSgpView(BaseAPIView):
         operation_id="E01_administrador_sgp",
     )
     def get(self, _request: Request, codigo_ue: str) -> Response:
-        """Retorna 501 — competência de outro domínio."""
         return self.cross_domain("professores")
 
 
 class UnidadeEducacionalDetalheView(BaseAPIView):
-    """Dados básicos de uma UE por código EOL (E02).
-
-    Retorna objeto único identificado pelo código da UE.
-    """
+    """Retorna dados básicos de uma UE pelo código EOL."""
 
     @extend_schema(
         responses={
@@ -224,7 +220,6 @@ class UnidadeEducacionalDetalheView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_escola_eol: str) -> Response:
-        """Resposta 200 (objeto único) ou 404."""
         if not codigo_escola_eol.strip():
             raise ValidationError("Código da unidade EOL é obrigatório.")
         ue = obter_ue_basica_por_codigo(codigo_escola_eol)
@@ -234,7 +229,7 @@ class UnidadeEducacionalDetalheView(BaseAPIView):
 
 
 class UnidadeEolView(BaseAPIView):
-    """UE resumida por código EOL genérico (E03)."""
+    """Retorna dados resumidos de uma UE pelo código EOL."""
 
     @extend_schema(
         responses={
@@ -260,7 +255,6 @@ class UnidadeEolView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_eol: str) -> Response:
-        """Resposta 200 ou 404."""
         ue = obter_ue_eol(codigo_eol)
         if ue is None:
             raise NotFound("Unidade EOL não encontrada.")
@@ -268,7 +262,7 @@ class UnidadeEolView(BaseAPIView):
 
 
 class DadosUnidadeEducacionalView(BaseAPIView):
-    """Dados completos de uma UE (E04)."""
+    """Retorna dados completos de uma UE pelo código EOL."""
 
     @extend_schema(
         responses={
@@ -309,7 +303,6 @@ class DadosUnidadeEducacionalView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_escola_eol: str) -> Response:
-        """Resposta 200 ou 404."""
         dados = obter_ue_completa(codigo_escola_eol)
         if dados is None:
             raise NotFound("Dados da unidade não encontrados.")
@@ -317,7 +310,7 @@ class DadosUnidadeEducacionalView(BaseAPIView):
 
 
 class QuantidadeAlunosView(BaseAPIView):
-    """Quantidade de alunos de uma UE (E05) — cross-domain Alunos."""
+    """Quantidade de alunos de uma UE — competência do domínio Alunos."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -329,12 +322,11 @@ class QuantidadeAlunosView(BaseAPIView):
         operation_id="E05_quantidade_alunos_ue",
     )
     def get(self, _request: Request, codigo_escola: str) -> Response:
-        """Retorna 501 — competência do domínio Alunos."""
         return self.cross_domain("alunos")
 
 
 class UnidadeEducacionalListPostView(BaseAPIView):
-    """Busca UEs: GET lista todas paginado (E27b), POST filtra por lista (E06)."""
+    """Lista todas as UEs paginadas (GET) ou busca por lista de códigos (POST)."""
 
     @extend_schema(
         parameters=[
@@ -353,7 +345,6 @@ class UnidadeEducacionalListPostView(BaseAPIView):
         operation_id="E27b_lista_todas_ues_raiz",
     )
     def get(self, request: Request) -> Response:
-        """Resposta 200 com página de unidades e total."""
         return _paginar_ues_basicas(request)
 
     @extend_schema(
@@ -376,7 +367,6 @@ class UnidadeEducacionalListPostView(BaseAPIView):
         ],
     )
     def post(self, request: Request) -> Response:
-        """Resposta 200 ou 400."""
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
             raise ValidationError(
@@ -387,7 +377,7 @@ class UnidadeEducacionalListPostView(BaseAPIView):
 
 
 class ProfessoresEscolaAnoView(BaseAPIView):
-    """Professores de uma escola por ano letivo (E07) — cross-domain."""
+    """Professores de uma escola por ano letivo — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -400,7 +390,7 @@ class ProfessoresEscolaAnoView(BaseAPIView):
 
 
 class ProfessoresEscolaView(BaseAPIView):
-    """Professores de uma escola (E08) — cross-domain."""
+    """Professores de uma escola — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -413,7 +403,7 @@ class ProfessoresEscolaView(BaseAPIView):
 
 
 class ModalidadesEnsinoView(BaseAPIView):
-    """Modalidades de ensino (E09) — cross-domain Pedagógico."""
+    """Modalidades de ensino — competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -426,12 +416,7 @@ class ModalidadesEnsinoView(BaseAPIView):
 
 
 class TiposUnidadeEducacaoView(BaseAPIView):
-    """Tipos de unidade de educação (E10).
-
-    Retorna array de strings com os nomes completos dos tipos de escola
-    (somente descrição).
-
-    """
+    """Lista os tipos de unidade educacional disponíveis."""
 
     @extend_schema(
         responses={200: inline_serializer(
@@ -444,7 +429,6 @@ class TiposUnidadeEducacaoView(BaseAPIView):
         operation_id="E10_tipos_unidade_educacional",
     )
     def get(self, _request: Request) -> Response:
-        """Retorna lista de nomes de tipos de escola."""
         from apps.dre.models import TipoEscola
 
         descricoes = (
@@ -456,7 +440,7 @@ class TiposUnidadeEducacaoView(BaseAPIView):
 
 
 class TiposEscolasView(BaseAPIView):
-    """Tipos de escola com código e sigla (E11)."""
+    """Lista tipos de escola com código e sigla."""
 
     @extend_schema(
         responses={200: inline_serializer(
@@ -467,12 +451,11 @@ class TiposEscolasView(BaseAPIView):
         operation_id="E11_codigo_sigla_tipos_escola",
     )
     def get(self, _request: Request) -> Response:
-        """Resposta 200 com lista de tipos."""
         return Response(listar_tipos_escolas())
 
 
 class SalasAnoLetivoView(BaseAPIView):
-    """Salas de uma UE por tipo e ano letivo (E12) — cross-domain Pedagógico."""
+    """Salas de uma UE por tipo e ano letivo — competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -491,7 +474,7 @@ class SalasAnoLetivoView(BaseAPIView):
 
 
 class FuncionariosUeView(BaseAPIView):
-    """Funcionários de uma UE (E13) — cross-domain Professores."""
+    """Funcionários de uma UE — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -504,7 +487,7 @@ class FuncionariosUeView(BaseAPIView):
 
 
 class FuncionariosCargoView(BaseAPIView):
-    """Funcionários por cargo (E14) — cross-domain Professores."""
+    """Funcionários por cargo — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -519,7 +502,7 @@ class FuncionariosCargoView(BaseAPIView):
 
 
 class FuncionariosFuncaoExternaView(BaseAPIView):
-    """Funcionários por função externa (E15) — cross-domain Professores."""
+    """Funcionários por função externa — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -534,7 +517,7 @@ class FuncionariosFuncaoExternaView(BaseAPIView):
 
 
 class FuncionariosFuncaoAtividadeView(BaseAPIView):
-    """Funcionários por função atividade (E16) — cross-domain Professores."""
+    """Funcionários por função atividade — competência do domínio Professores."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -549,7 +532,7 @@ class FuncionariosFuncaoAtividadeView(BaseAPIView):
 
 
 class SubprefeituraUnidadeEducacionalView(BaseAPIView):
-    """Subprefeituras da unidade (E17)."""
+    """Lista subprefeituras de uma unidade educacional."""
 
     @extend_schema(
         responses={
@@ -563,7 +546,6 @@ class SubprefeituraUnidadeEducacionalView(BaseAPIView):
         operation_id="E17_subprefeituras_ue",
     )
     def get(self, _request: Request, codigo_escola_eol: str) -> Response:
-        """Resposta 200 ou 404."""
         subs = obter_subprefeituras_ue(codigo_escola_eol)
         if subs is None:
             raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
@@ -571,7 +553,7 @@ class SubprefeituraUnidadeEducacionalView(BaseAPIView):
 
 
 class TurmasAnoLetivoView(BaseAPIView):
-    """Turmas de uma UE por ano letivo (E18) — cross-domain Pedagógico."""
+    """Turmas de uma UE por ano letivo — competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -584,7 +566,7 @@ class TurmasAnoLetivoView(BaseAPIView):
 
 
 class TurmasSondagemAnoLetivoView(BaseAPIView):
-    """Turmas sondagem de uma UE por ano letivo (E19) — cross-domain Pedagógico."""
+    """Turmas de sondagem de uma UE por ano letivo — competência do domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -597,7 +579,7 @@ class TurmasSondagemAnoLetivoView(BaseAPIView):
 
 
 class FuncionariosCargosListView(BaseAPIView):
-    """Lista de cargos dos funcionários de uma UE (E20) — cross-domain Professores."""
+    """Lista cargos dos funcionários de uma UE — competência do domínio Professores."""
 
     @extend_schema(
         parameters=[
@@ -618,7 +600,7 @@ class FuncionariosCargosListView(BaseAPIView):
 
 
 class FuncionariosFuncoesAtividadesListView(BaseAPIView):
-    """Lista funções-atividades de funcionários de UE (E21) — cross-domain Professores."""
+    """Lista funções-atividades dos funcionários de uma UE — competência do domínio Professores."""
 
     @extend_schema(
         parameters=[
@@ -639,7 +621,7 @@ class FuncionariosFuncoesAtividadesListView(BaseAPIView):
 
 
 class FuncionariosFuncoesExternasListView(BaseAPIView):
-    """Lista funções-externas de funcionários de UE (E22) — cross-domain Professores."""
+    """Lista funções-externas dos funcionários de uma UE — competência do domínio Professores."""
 
     @extend_schema(
         parameters=[
@@ -660,7 +642,7 @@ class FuncionariosFuncoesExternasListView(BaseAPIView):
 
 
 class SincronizacaoUnidadeEducacionalView(BaseAPIView):
-    """Sincronização institucional da UE (E23)."""
+    """Retorna dados de sincronização institucional de uma UE."""
 
     @extend_schema(
         responses={
@@ -688,7 +670,6 @@ class SincronizacaoUnidadeEducacionalView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
-        """Resposta 200 ou 404."""
         dados = obter_sincronizacao_ue(ue_codigo)
         if dados is None:
             raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
@@ -696,7 +677,7 @@ class SincronizacaoUnidadeEducacionalView(BaseAPIView):
 
 
 class MatriculasAlunoView(BaseAPIView):
-    """Matrículas de aluno em escola (E24) — cross-domain Alunos."""
+    """Matrículas de aluno em escola — competência do domínio Alunos."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -711,7 +692,7 @@ class MatriculasAlunoView(BaseAPIView):
 
 
 class EquipamentosView(BaseAPIView):
-    """Equipamentos/UEs com filtros (E25)."""
+    """Lista equipamentos SME com filtros opcionais."""
 
     @extend_schema(
         parameters=[
@@ -754,7 +735,6 @@ class EquipamentosView(BaseAPIView):
         operation_id="E25_equipamentos_sme_filtro",
     )
     def get(self, request: Request) -> Response:
-        """Resposta 200 com equipamentos filtrados."""
         def _parse_ints(key: str) -> list[int] | None:
             vals = request.query_params.getlist(key)
             if not vals:
@@ -781,7 +761,7 @@ class EquipamentosView(BaseAPIView):
 
 
 class UnidadesParceirasView(BaseAPIView):
-    """Unidades parceiras por lista de códigos (E26) — POST."""
+    """Retorna unidades parceiras pelos códigos informados."""
 
     @extend_schema(
         request={"application/json": {"type": "array", "items": {"type": "string"}}},
@@ -805,7 +785,6 @@ class UnidadesParceirasView(BaseAPIView):
         operation_id="E26_unidades_parceiras_lista_codigos",
     )
     def post(self, request: Request) -> Response:
-        """Resposta 200 ou 400."""
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
             raise ValidationError(
@@ -815,7 +794,7 @@ class UnidadesParceirasView(BaseAPIView):
 
 
 class TodasUnidadesView(BaseAPIView):
-    """Todas as UEs (E27) — paginado por limite/offset."""
+    """Lista todas as UEs paginadas por limite e offset."""
 
     @extend_schema(
         parameters=[
@@ -836,5 +815,4 @@ class TodasUnidadesView(BaseAPIView):
         operation_id="E27_lista_todas_ues",
     )
     def get(self, request: Request) -> Response:
-        """Resposta 200 com página de unidades e total."""
         return _paginar_ues_basicas(request)

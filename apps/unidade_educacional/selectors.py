@@ -1,4 +1,4 @@
-"""Selectors do domínio UE — queries otimizadas, sem N+1."""
+"""Selectors do domínio UE."""
 
 from zoneinfo import ZoneInfo
 
@@ -81,11 +81,7 @@ def listar_ues_basicas(
     limite: int | None = None,
     offset: int = 0,
 ) -> tuple[list[UeBasicaContract], int]:
-    """Lista UEs com dados básicos.
-
-    Retorna (items, total). Se `codigos` for passado ignora paginação e
-    retorna todos os itens filtrados (uso interno — POST E06).
-    """
+    """Lista UEs com dados básicos, retornando tupla (items, total)."""
     qs = UnidadeEducacional.objects.values(
         "codigo_ue", "nome", "codigo_dre", "codigo_tipo_escola",
         "codigo_sub_prefeitura", "codigo_ue_integracao",
@@ -127,13 +123,7 @@ def obter_ue_basica_por_codigo(codigo: str) -> UeBasicaContract | None:
 
 
 def obter_ue_eol(codigo: str) -> UeEolContract | None:
-    """Retorna UE resumida para o contrato E03 ou None.
-
-    Contrato EOL:
-      - sigla: nome abreviado/não-oficial da UE (campo nome_nao_oficial)
-      - tipo: código numérico do tipo de unidade educacional (tp_unidade_educacao)
-      - codigoReferencia: código da DRE à qual a UE pertence
-    """
+    """Retorna UE resumida pelo código ou None se não encontrada."""
     try:
         ue = UnidadeEducacional.objects.only(
             "codigo_ue", "nome", "nome_nao_oficial",
@@ -151,7 +141,7 @@ def obter_ue_eol(codigo: str) -> UeEolContract | None:
 
 
 def obter_ue_completa(codigo: str) -> UeCompletaContract | None:
-    """Retorna dados completos de UE para contrato E04 ou None."""
+    """Retorna dados completos de uma UE ou None se não encontrada."""
     rows = list(
         UnidadeEducacional.objects.filter(codigo_ue=codigo).values(
             "codigo_ue", "nome", "nome_nao_oficial", "tipo_ue",
@@ -205,10 +195,7 @@ def obter_ue_completa(codigo: str) -> UeCompletaContract | None:
 
 
 def listar_tipos_escolas() -> list[TipoEscolaContract]:
-    """Tipos de escola para contrato E11.
-
-    dtAtualizacao lido de data_atualizacao quando a coluna existir no banco.
-    """
+    """Lista todos os tipos de escola."""
     campos = ["codigo_tipo_escola", "sigla"]
     tem_dt = _coluna_existe("tipo_escola", "data_atualizacao")
     if tem_dt:
@@ -234,7 +221,7 @@ def listar_tipos_escolas() -> list[TipoEscolaContract]:
 
 
 def obter_subprefeituras_ue(codigo: str) -> list[SubPrefeiturarContract] | None:
-    """Subprefeituras associadas a uma UE (E17)."""
+    """Retorna subprefeituras de uma UE ou None se a UE não existir."""
     rows = list(
         UnidadeEducacional.objects.filter(codigo_ue=codigo)
         .exclude(codigo_sub_prefeitura__isnull=True)
@@ -272,11 +259,7 @@ def _coluna_existe(tabela: str, coluna: str) -> bool:
 
 
 def obter_sincronizacao_ue(codigo: str) -> SincronizacaoUeContract | None:
-    """Dados de sincronização institucional da UE (E23).
-
-    dreCodigo é convertido para int; dataAtualizacao é lido de data_atualizacao
-    quando a coluna existir no banco.
-    """
+    """Retorna dados de sincronização institucional de uma UE ou None se não encontrada."""
     campos = [
         "codigo_ue", "nome", "codigo_dre", "codigo_tipo_escola",
         "codigo_sub_prefeitura", "codigo_ue_integracao",
@@ -344,7 +327,7 @@ def _montar_logradouro(r: dict) -> str | None:
 
 
 def _build_equipamento(r: dict, dres: dict, tipos: dict, subs: dict) -> EquipamentoContract:
-    """Monta equipamento com schema alinhado ao EOL (cd_*, nm_*, dc_*, sg_*, ehCeu)."""
+    """Monta contrato de equipamento a partir dos dados brutos da UE."""
     dre = dres.get(r["codigo_dre"])
     # cd_tp_equipamento = vcue.tp_unidade_educacao (tipo_unidade_educacao.tp_unidade_educacao)
     # dc_tp_equipamento = tipo_ue (tipo_unidade_educacao.dc_tipo_unidade_educacao)
@@ -390,7 +373,7 @@ def listar_equipamentos(
     nome_escola: str | None = None,
     codigo_eol: str | None = None,
 ) -> list[EquipamentoContract]:
-    """Lista equipamentos/UEs com filtros (E25) — schema alinhado ao EOL."""
+    """Lista equipamentos com filtros opcionais de subprefeitura, DRE, tipo e nome."""
     campos_eq = [
         "codigo_ue", "nome", "nome_nao_oficial", "tipo_ue", "codigo_dre",
         "codigo_tipo_escola", "codigo_tipo_unidade_educacao", "codigo_sub_prefeitura",
@@ -423,11 +406,7 @@ def _nome_com_tipo(nome: str, tipo: "TipoEscola | None") -> str:
 
 
 def listar_unidades_parceiras(codigos: list[str]) -> list[UnidadeParceirasContract]:
-    """UEs parceiras filtradas por lista de códigos (E26).
-
-    Nome retornado com a sigla do tipo de escola no prefixo (ex: "EMEF CASARAO").
-    Filtra apenas UEs com organizacao_parceira=True.
-    """
+    """Lista unidades parceiras pelos códigos informados."""
     rows = list(
         UnidadeEducacional.objects.filter(
             codigo_ue__in=codigos, organizacao_parceira=True

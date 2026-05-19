@@ -1,4 +1,4 @@
-"""Endpoints de health check — liveness, readiness e status."""
+"""Endpoints de health check."""
 
 import time
 
@@ -23,7 +23,7 @@ def _db_ok() -> tuple[bool, float]:
 
 
 class LivenessView(APIView):
-    """GET /api/health/live/ — sinal de vida do processo."""
+    """Verifica se o processo está vivo."""
 
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -34,7 +34,7 @@ class LivenessView(APIView):
 
 
 class ReadinessView(APIView):
-    """GET /api/health/ready/ — pronto para receber tráfego."""
+    """Verifica se o serviço está pronto para receber tráfego."""
 
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -54,7 +54,7 @@ class ReadinessView(APIView):
 
 
 class HealthView(APIView):
-    """GET /api/health/ — status detalhado."""
+    """Retorna o status detalhado do serviço."""
 
     authentication_classes = []
     permission_classes = [AllowAny]

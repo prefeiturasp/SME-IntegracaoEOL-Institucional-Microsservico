@@ -1,17 +1,17 @@
-"""Tipos e contratos compartilhados entre domínios."""
+"""Tipos compartilhados entre domínios."""
 
 from typing import TypedDict
 
 
 class SubPrefeiturarContract(TypedDict):
-    """Contrato D07/E17 — subprefeitura (compartilhado entre DRE e UE)."""
+    """Dados de subprefeitura."""
 
     codigoSubprefeitura: str
     nomeSubprefeitura: str
 
 
 class CrossDomainResponse(TypedDict):
-    """Contrato padrão 501 para endpoints cross-domain (Transition Gateway)."""
+    """Resposta padrão para endpoints de responsabilidade de outro domínio."""
 
     detail: str
     dominio: str
@@ -19,6 +19,6 @@ class CrossDomainResponse(TypedDict):
 
 
 class ProblemDetails(TypedDict):
-    """RFC 7807 Problem Details — usado em respostas 400/404."""
+    """Detalhe de erro em respostas de falha."""
 
     detail: str

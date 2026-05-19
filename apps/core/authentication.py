@@ -1,4 +1,4 @@
-"""Autenticação por API Key para todas as rotas."""
+"""Autenticação por API Key."""
 
 from typing import Any
 
@@ -9,7 +9,7 @@ from rest_framework.request import Request
 
 
 class _ApiUser:
-    """Usuário sintético retornado pelo autenticador de API key."""
+    """Representa o usuário autenticado via API key."""
 
     is_authenticated = True
 
@@ -18,10 +18,14 @@ class _ApiUser:
 
 
 class ApiKeyAuthentication(BaseAuthentication):
-    """Valida o header API Key configurado em API_KEY_HEADER."""
+    """Autentica requisições via API key no header configurado."""
 
     def authenticate(self, request: Request) -> tuple[Any, None] | None:
-        """Retorna (_ApiUser, None) se a chave for válida, None se ausente."""
+        """Valida a API key da requisição.
+
+        Returns:
+            Tupla (usuário, None) se a chave for válida, None se ausente.
+        """
         header = settings.API_KEY_HEADER
         chave = request.headers.get(header, "")
         if not chave:
