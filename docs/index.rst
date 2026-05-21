@@ -11,3 +11,4 @@ SME-IntegracaoEOL-Institucional-Microsservico
    performance
    cross_domain
    desenvolvimento
+   api/index

@@ -149,12 +149,32 @@ docker compose -f docker-compose-dev.yml exec institucional bash -c "
 
 ## Documentação Sphinx
 
+A documentação técnica é gerada com [Sphinx](https://www.sphinx-doc.org/) a partir das docstrings
+do código (padrão Google) e das páginas `.rst` em `docs/`.
+
 ```bash
-docker compose -f docker-compose-dev.yml exec institucional bash -c "
-  pip install sphinx &&
-  sphinx-build -b html docs/ docs/_build/html
-"
+# Gerar HTML (requer container dev rodando)
+make docs
 ```
+
+O resultado fica em `docs/_build/html/index.html`.
+
+Para gerar sem o Makefile:
+
+```bash
+docker compose -f docker-compose-dev.yml exec institucional \
+  sphinx-build -b html docs/ docs/_build/html
+```
+
+Extensões ativas:
+
+| Extensão | Função |
+|---|---|
+| `autodoc` | Extrai docstrings dos módulos Python automaticamente |
+| `napoleon` | Interpreta docstrings no padrão Google (`Args`, `Returns`, `Raises`) |
+| `viewcode` | Adiciona links para o código-fonte em cada símbolo documentado |
+| `autosectionlabel` | Permite referenciar seções entre páginas via `:ref:` |
+| `intersphinx` | Links cruzados para a documentação do Python e do Django |
 
 ---
 

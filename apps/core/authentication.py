@@ -23,8 +23,15 @@ class ApiKeyAuthentication(BaseAuthentication):
     def authenticate(self, request: Request) -> tuple[Any, None] | None:
         """Valida a API key da requisição.
 
+        Args:
+            request: Requisição HTTP recebida.
+
         Returns:
             Tupla (usuário, None) se a chave for válida, None se ausente.
+
+        Raises:
+            AuthenticationFailed: Se o header estiver presente mas a chave
+                for inválida.
         """
         header = settings.API_KEY_HEADER
         chave = request.headers.get(header, "")

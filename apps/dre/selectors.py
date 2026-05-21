@@ -12,11 +12,13 @@ from apps.dre.contracts import (
 from apps.dre.models import DRE, SubPrefeitura
 from apps.unidade_educacional.models import UnidadeEducacional
 
-# --- DRE ---
-
 
 def listar_dres() -> list[DreResumoContract]:
-    """Lista todas as Diretorias Regionais de Educação."""
+    """Lista todas as Diretorias Regionais de Educação.
+
+    Returns:
+        DREs cadastradas ordenadas por nome.
+    """
     qs = DRE.objects.only("codigo_dre", "nome", "sigla").order_by("nome")
     return [
         DreResumoContract(
@@ -31,7 +33,14 @@ def listar_dres() -> list[DreResumoContract]:
 def filtrar_dres_por_codigos(
     codigos: list[str],
 ) -> list[DreResumoContract]:
-    """Filtra DREs pela lista de códigos."""
+    """Filtra DREs pela lista de códigos.
+
+    Args:
+        codigos: Códigos EOL das DREs a serem buscadas.
+
+    Returns:
+        DREs encontradas para os códigos informados.
+    """
     qs = DRE.objects.filter(codigo_dre__in=codigos).only(
         "codigo_dre", "nome", "sigla"
     )
@@ -46,7 +55,14 @@ def filtrar_dres_por_codigos(
 
 
 def obter_dre_por_codigo(codigo: str) -> DreResumoContract | None:
-    """Retorna uma DRE pelo código ou None se não existir."""
+    """Retorna uma DRE pelo código ou None se não existir.
+
+    Args:
+        codigo: Código EOL da DRE.
+
+    Returns:
+        Dados resumidos da DRE, ou None se não encontrada.
+    """
     try:
         d = DRE.objects.only("codigo_dre", "nome", "sigla").get(
             codigo_dre=codigo
@@ -66,7 +82,14 @@ def obter_dre_por_codigo(codigo: str) -> DreResumoContract | None:
 def listar_subprefeituras_por_dre(
     codigo_dre: str,
 ) -> list[SubPrefeiturarContract]:
-    """Lista subprefeituras distintas das UEs de uma DRE."""
+    """Lista subprefeituras distintas das UEs de uma DRE.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+
+    Returns:
+        Subprefeituras distintas referenciadas pelas UEs da DRE.
+    """
     ids = (
         UnidadeEducacional.objects.filter(codigo_dre=codigo_dre)
         .exclude(codigo_sub_prefeitura__isnull=True)
@@ -91,7 +114,15 @@ def listar_subprefeituras_por_dre(
 def _ue_rows_por_dre(
     codigo_dre: str, tipo_escola_id: int | None = None
 ) -> Any:
-    """Retorna QuerySet de UEs de uma DRE, opcionalmente filtrado por tipo."""
+    """Retorna QuerySet de UEs de uma DRE, opcionalmente filtrado por tipo.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+        tipo_escola_id: Código do tipo de escola para filtro opcional.
+
+    Returns:
+        QuerySet com campos básicos das UEs, ordenado por código.
+    """
     qs = UnidadeEducacional.objects.filter(codigo_dre=codigo_dre).values(
         "codigo_ue",
         "nome",
@@ -108,7 +139,15 @@ def _ue_rows_por_dre(
 def listar_escolas_por_dre(
     codigo_dre: str, tipo_escola_id: int | None = None
 ) -> list[EscolaPorDreContract]:
-    """Lista escolas de uma DRE, opcionalmente filtradas por tipo."""
+    """Lista escolas de uma DRE, opcionalmente filtradas por tipo.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+        tipo_escola_id: Código do tipo de escola para filtro opcional.
+
+    Returns:
+        Escolas da DRE com dados de tipo e subprefeitura resolvidos.
+    """
     from apps.dre.models import TipoEscola
 
     # Carrega lookups em memória para evitar N+1
@@ -123,7 +162,9 @@ def listar_escolas_por_dre(
     if not rows:
         return []
 
-    tipo_ids = {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
+    tipo_ids = {
+        r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]
+    }
     tipos = {
         t.codigo_tipo_escola: t
         for t in TipoEscola.objects.filter(
@@ -131,7 +172,11 @@ def listar_escolas_por_dre(
         ).only("codigo_tipo_escola", "sigla", "descricao")
     }
 
-    sub_ids = {r["codigo_sub_prefeitura"] for r in rows if r["codigo_sub_prefeitura"]}
+    sub_ids = {
+        r["codigo_sub_prefeitura"]
+        for r in rows
+        if r["codigo_sub_prefeitura"]
+    }
     subs = {
         s.codigo_sub_prefeitura: s
         for s in SubPrefeitura.objects.filter(
@@ -152,7 +197,11 @@ def listar_escolas_por_dre(
                 siglaTipoEscola=tipo.sigla if tipo else "",
                 nomeDRE=dre_obj.nome,
                 siglaDRE=dre_obj.sigla or "",
-                codigoSubprefeitura=str(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else "",
+                codigoSubprefeitura=(
+                    str(r["codigo_sub_prefeitura"])
+                    if r["codigo_sub_prefeitura"]
+                    else ""
+                ),
                 nomeSubprefeitura=sub.nome if sub else "",
                 tipoEscolaId=r["codigo_tipo_escola"],
                 tipoUnidadeId=r["codigo_tipo_escola"],
@@ -168,7 +217,14 @@ def listar_escolas_por_dre(
 
 
 def listar_codigos_ues_por_dre(codigo_dre: str) -> list[str]:
-    """Retorna lista de códigos EOL das UEs de uma DRE."""
+    """Retorna lista de códigos EOL das UEs de uma DRE.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+
+    Returns:
+        Códigos EOL das UEs vinculadas, ordenados.
+    """
     return list(
         UnidadeEducacional.objects.filter(codigo_dre=codigo_dre)
         .values_list("codigo_ue", flat=True)
@@ -180,7 +236,14 @@ def listar_codigos_ues_por_dre(codigo_dre: str) -> list[str]:
 
 
 def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
-    """Lista unidades prediais de uma DRE."""
+    """Lista unidades prediais de uma DRE.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+
+    Returns:
+        Unidades com endereço, vagas e dados de subprefeitura resolvidos.
+    """
     try:
         dre_obj = DRE.objects.only(
             "codigo_dre", "nome", "tipo_unidade_adm"
@@ -223,7 +286,11 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
     if not rows:
         return []
 
-    sub_ids = {r["codigo_sub_prefeitura"] for r in rows if r["codigo_sub_prefeitura"]}
+    sub_ids = {
+        r["codigo_sub_prefeitura"]
+        for r in rows
+        if r["codigo_sub_prefeitura"]
+    }
     subs = {
         s.codigo_sub_prefeitura: s
         for s in SubPrefeitura.objects.filter(
@@ -275,13 +342,19 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
     return result
 
 
-# --- Códigos de integração ---
 
 
 def listar_codigos_integracao_por_dre(
     codigo_dre: str,
 ) -> list[CodigoIntegracaoContract]:
-    """Lista UEs com código de integração de uma DRE."""
+    """Lista UEs com código de integração de uma DRE.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+
+    Returns:
+        UEs da DRE com seus respectivos códigos de integração.
+    """
     rows = (
         UnidadeEducacional.objects.filter(codigo_dre=codigo_dre)
         .values(

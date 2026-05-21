@@ -11,7 +11,9 @@ _DOMINIOS = ("professores", "alunos", "pedagogico", "institucional")
 _CROSS_DOMAIN_SCHEMA = inline_serializer(
     name="CrossDomainResponse",
     fields={
-        "detail": serializers.CharField(default="Endpoint de responsabilidade de outro domínio"),
+        "detail": serializers.CharField(
+            default="Endpoint de responsabilidade de outro domínio"
+        ),
         "dominio": serializers.CharField(),
         "transitionGateway": serializers.BooleanField(default=True),
     },
@@ -29,7 +31,14 @@ class BaseAPIView(APIView):
 
     @staticmethod
     def cross_domain(dominio: str) -> Response:
-        """Resposta padrão 501 para endpoints de outro domínio."""
+        """Retorna resposta 501 para endpoints de responsabilidade de outro domínio.
+
+        Args:
+            dominio: Nome do microserviço responsável (ex: "professores", "alunos").
+
+        Returns:
+            Response 501 com detalhes do domínio competente.
+        """
         return Response(
             {
                 "detail": "Endpoint de responsabilidade de outro domínio",

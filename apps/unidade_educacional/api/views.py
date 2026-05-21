@@ -152,7 +152,17 @@ _TIPO_UNIDADE_EDUCACAO_FIELDS = {
 
 
 def _paginar_ues_basicas(request: Request) -> Response:
-    """Valida limite/offset e retorna página de UEs básicas."""
+    """Valida parâmetros de paginação e retorna página de UEs básicas.
+
+    Args:
+        request: Requisição com query params ``limite`` e ``offset``.
+
+    Returns:
+        Response paginada com ``count`` e ``results``.
+
+    Raises:
+        ValidationError: Se ``limite`` ou ``offset`` forem inválidos.
+    """
     try:
         limite = int(request.query_params.get("limite", 100))
         offset = int(request.query_params.get("offset", 0))
@@ -184,6 +194,15 @@ class UnidadeEducacionalAdminSgpView(BaseAPIView):
         operation_id="E01_administrador_sgp",
     )
     def get(self, _request: Request, codigo_ue: str) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -220,6 +239,19 @@ class UnidadeEducacionalDetalheView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_escola_eol: str) -> Response:
+        """Retorna dados básicos de uma UE pelo código EOL.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_escola_eol: Código EOL da unidade educacional.
+
+        Returns:
+            Dados básicos da UE.
+
+        Raises:
+            ValidationError: Se o código for vazio.
+            NotFound: Se a UE não for encontrada.
+        """
         if not codigo_escola_eol.strip():
             raise ValidationError("Código da unidade EOL é obrigatório.")
         ue = obter_ue_basica_por_codigo(codigo_escola_eol)
@@ -255,6 +287,18 @@ class UnidadeEolView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_eol: str) -> Response:
+        """Retorna dados resumidos de uma UE pelo código EOL.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_eol: Código EOL da unidade educacional.
+
+        Returns:
+            Dados resumidos da UE.
+
+        Raises:
+            NotFound: Se a UE não for encontrada.
+        """
         ue = obter_ue_eol(codigo_eol)
         if ue is None:
             raise NotFound("Unidade EOL não encontrada.")
@@ -303,6 +347,18 @@ class DadosUnidadeEducacionalView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_escola_eol: str) -> Response:
+        """Retorna dados completos de uma UE pelo código EOL.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_escola_eol: Código EOL da unidade educacional.
+
+        Returns:
+            Dados completos da UE com endereço e DRE.
+
+        Raises:
+            NotFound: Se a UE não for encontrada.
+        """
         dados = obter_ue_completa(codigo_escola_eol)
         if dados is None:
             raise NotFound("Dados da unidade não encontrados.")
@@ -322,6 +378,15 @@ class QuantidadeAlunosView(BaseAPIView):
         operation_id="E05_quantidade_alunos_ue",
     )
     def get(self, _request: Request, codigo_escola: str) -> Response:
+        """Redireciona para o microserviço Alunos.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_escola: Código EOL da escola.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("alunos")
 
 
@@ -330,25 +395,59 @@ class UnidadeEducacionalListPostView(BaseAPIView):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter("limite", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Itens por página (padrão 100)."),
-            OpenApiParameter("offset", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Posição inicial (padrão 0)."),
+            OpenApiParameter(
+                "limite",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Itens por página (padrão 100).",
+            ),
+            OpenApiParameter(
+                "offset",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Posição inicial (padrão 0).",
+            ),
         ],
-        responses={200: inline_serializer(
-            "UeBasicaRaizPaginado",
-            fields={
-                "count": serializers.IntegerField(),
-                "results": inline_serializer("UeBasicaRaiz", fields=_UE_BASICA_FIELDS, many=True),
-            },
-        )},
-        description="Lista todas as UEs paginadas (GET raiz). Use `limite` e `offset` para navegar.",
+        responses={
+            200: inline_serializer(
+                "UeBasicaRaizPaginado",
+                fields={
+                    "count": serializers.IntegerField(),
+                    "results": inline_serializer(
+                        "UeBasicaRaiz",
+                        fields=_UE_BASICA_FIELDS,
+                        many=True,
+                    ),
+                },
+            )
+        },
+        description=(
+            "Lista todas as UEs paginadas (GET raiz). "
+            "Use `limite` e `offset` para navegar."
+        ),
         tags=_TAG_UE,
         operation_id="E27b_lista_todas_ues_raiz",
     )
     def get(self, request: Request) -> Response:
+        """Lista todas as UEs paginadas.
+
+        Args:
+            request: Requisição com query params ``limite`` e ``offset``.
+
+        Returns:
+            Response paginada com ``count`` e ``results``.
+        """
         return _paginar_ues_basicas(request)
 
     @extend_schema(
-        request={"application/json": {"type": "array", "items": {"type": "string"}}},
+        request={
+            "application/json": {
+                "type": "array",
+                "items": {"type": "string"},
+            }
+        },
         responses={
             200: inline_serializer(
                 "UeBasicaFiltrada", fields=_UE_BASICA_FIELDS, many=True
@@ -367,6 +466,17 @@ class UnidadeEducacionalListPostView(BaseAPIView):
         ],
     )
     def post(self, request: Request) -> Response:
+        """Busca UEs pela lista de códigos EOL informada.
+
+        Args:
+            request: Requisição com lista de códigos EOL no corpo JSON.
+
+        Returns:
+            UEs encontradas para os códigos informados.
+
+        Raises:
+            ValidationError: Se o corpo não for uma lista não-vazia.
+        """
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
             raise ValidationError(
@@ -385,7 +495,22 @@ class ProfessoresEscolaAnoView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E07_professores_escola_ano",
     )
-    def get(self, _request: Request, codigo_eol_escola: str, ano_letivo: str) -> Response:
+    def get(
+        self,
+        _request: Request,
+        codigo_eol_escola: str,
+        ano_letivo: str,
+    ) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_eol_escola: Código EOL da escola.
+            ano_letivo: Ano letivo de referência.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -399,6 +524,15 @@ class ProfessoresEscolaView(BaseAPIView):
         operation_id="E08_professores_escola",
     )
     def get(self, _request: Request, codigo_eol_escola: str) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_eol_escola: Código EOL da escola.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -412,6 +546,14 @@ class ModalidadesEnsinoView(BaseAPIView):
         operation_id="E09_modalidades_ensino",
     )
     def get(self, _request: Request) -> Response:
+        """Redireciona para o microserviço Pedagógico.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")
 
 
@@ -419,16 +561,26 @@ class TiposUnidadeEducacaoView(BaseAPIView):
     """Lista os tipos de unidade educacional disponíveis."""
 
     @extend_schema(
-        responses={200: inline_serializer(
-            "TipoUnidadeEducacao",
-            fields={"$value": serializers.CharField()},
-            many=True,
-        )},
-        description="Tipos de unidade de educação (E10). Retorna array de strings com nomes dos tipos de escola.",
+        responses={
+            200: inline_serializer(
+                "TipoUnidadeEducacao",
+                fields={"$value": serializers.CharField()},
+                many=True,
+            )
+        },
+        description=(
+            "Tipos de unidade de educação (E10). "
+            "Retorna array de strings com nomes dos tipos de escola."
+        ),
         tags=_TAG_UE,
         operation_id="E10_tipos_unidade_educacional",
     )
     def get(self, _request: Request) -> Response:
+        """Lista as descrições dos tipos de unidade educacional.
+
+        Returns:
+            Lista de strings com os nomes dos tipos de escola.
+        """
         from apps.dre.models import TipoEscola
 
         descricoes = (
@@ -451,6 +603,14 @@ class TiposEscolasView(BaseAPIView):
         operation_id="E11_codigo_sigla_tipos_escola",
     )
     def get(self, _request: Request) -> Response:
+        """Lista tipos de escola com código e sigla.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+
+        Returns:
+            Tipos de escola com código numérico e sigla.
+        """
         return Response(listar_tipos_escolas())
 
 
@@ -470,6 +630,17 @@ class SalasAnoLetivoView(BaseAPIView):
         tipo_sala: str,
         ano_letivo: str,
     ) -> Response:
+        """Redireciona para o microserviço Pedagógico.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+            tipo_sala: Tipo de sala a consultar.
+            ano_letivo: Ano letivo de referência.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")
 
 
@@ -483,6 +654,15 @@ class FuncionariosUeView(BaseAPIView):
         operation_id="E13_funcionarios_ue",
     )
     def get(self, _request: Request, codigo_ue: str) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -498,6 +678,16 @@ class FuncionariosCargoView(BaseAPIView):
     def get(
         self, _request: Request, codigo_ue: str, codigo_cargo: str
     ) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+            codigo_cargo: Código do cargo a consultar.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -513,6 +703,16 @@ class FuncionariosFuncaoExternaView(BaseAPIView):
     def get(
         self, _request: Request, codigo_ue: str, codigo_funcao_externa: str
     ) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+            codigo_funcao_externa: Código da função externa a consultar.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -528,6 +728,16 @@ class FuncionariosFuncaoAtividadeView(BaseAPIView):
     def get(
         self, _request: Request, codigo_ue: str, codigo_funcao_atividade: str
     ) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+            codigo_funcao_atividade: Código da função-atividade a consultar.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -546,6 +756,18 @@ class SubprefeituraUnidadeEducacionalView(BaseAPIView):
         operation_id="E17_subprefeituras_ue",
     )
     def get(self, _request: Request, codigo_escola_eol: str) -> Response:
+        """Lista subprefeituras de uma unidade educacional.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_escola_eol: Código EOL da unidade educacional.
+
+        Returns:
+            Subprefeituras vinculadas à UE.
+
+        Raises:
+            NotFound: Se a UE não for encontrada.
+        """
         subs = obter_subprefeituras_ue(codigo_escola_eol)
         if subs is None:
             raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
@@ -561,7 +783,19 @@ class TurmasAnoLetivoView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E18_turmas_ue_ano_letivo",
     )
-    def get(self, _request: Request, codigo_ue: str, ano_letivo: str) -> Response:
+    def get(
+        self, _request: Request, codigo_ue: str, ano_letivo: str
+    ) -> Response:
+        """Redireciona para o microserviço Pedagógico.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+            ano_letivo: Ano letivo de referência.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")
 
 
@@ -574,7 +808,19 @@ class TurmasSondagemAnoLetivoView(BaseAPIView):
         tags=_TAG_CD,
         operation_id="E19_turmas_sondagem_ue_ano_letivo",
     )
-    def get(self, _request: Request, codigo_ue: str, ano_letivo: str) -> Response:
+    def get(
+        self, _request: Request, codigo_ue: str, ano_letivo: str
+    ) -> Response:
+        """Redireciona para o microserviço Pedagógico.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_ue: Código EOL da unidade educacional.
+            ano_letivo: Ano letivo de referência.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")
 
 
@@ -596,6 +842,15 @@ class FuncionariosCargosListView(BaseAPIView):
         operation_id="E20_funcionarios_cargos_lista",
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -617,6 +872,15 @@ class FuncionariosFuncoesAtividadesListView(BaseAPIView):
         operation_id="E21_funcionarios_funcoes_atividades_lista",
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -638,6 +902,15 @@ class FuncionariosFuncoesExternasListView(BaseAPIView):
         operation_id="E22_funcionarios_funcoes_externas_lista",
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
+        """Redireciona para o microserviço Professores.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("professores")
 
 
@@ -670,6 +943,18 @@ class SincronizacaoUnidadeEducacionalView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
+        """Retorna dados de sincronização institucional de uma UE.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+
+        Returns:
+            Dados de sincronização com data de atualização.
+
+        Raises:
+            NotFound: Se a UE não for encontrada.
+        """
         dados = obter_sincronizacao_ue(ue_codigo)
         if dados is None:
             raise NotFound(_MSG_UNIDADE_NAO_ENCONTRADA)
@@ -688,6 +973,16 @@ class MatriculasAlunoView(BaseAPIView):
     def get(
         self, _request: Request, codigo_escola: str, codigo_aluno: str
     ) -> Response:
+        """Redireciona para o microserviço Alunos.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_escola: Código EOL da escola.
+            codigo_aluno: Código EOL do aluno.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("alunos")
 
 
@@ -735,6 +1030,17 @@ class EquipamentosView(BaseAPIView):
         operation_id="E25_equipamentos_sme_filtro",
     )
     def get(self, request: Request) -> Response:
+        """Lista equipamentos SME com filtros opcionais via query params.
+
+        Args:
+            request: Requisição com query params de filtro.
+
+        Returns:
+            Equipamentos que atendem aos filtros informados.
+
+        Raises:
+            ValidationError: Se algum parâmetro inteiro contiver valor inválido.
+        """
         def _parse_ints(key: str) -> list[int] | None:
             vals = request.query_params.getlist(key)
             if not vals:
@@ -742,7 +1048,9 @@ class EquipamentosView(BaseAPIView):
             try:
                 return [int(v) for v in vals]
             except ValueError:
-                raise ValidationError(f"Parâmetro '{key}' deve conter inteiros.")
+                raise ValidationError(
+                    f"Parâmetro '{key}' deve conter inteiros."
+                )
 
         def _parse_strs(key: str) -> list[str] | None:
             vals = request.query_params.getlist(key)
@@ -785,6 +1093,17 @@ class UnidadesParceirasView(BaseAPIView):
         operation_id="E26_unidades_parceiras_lista_codigos",
     )
     def post(self, request: Request) -> Response:
+        """Retorna unidades parceiras pelos códigos informados.
+
+        Args:
+            request: Requisição com lista de códigos EOL no corpo JSON.
+
+        Returns:
+            Unidades parceiras encontradas para os códigos informados.
+
+        Raises:
+            ValidationError: Se o corpo não for uma lista não-vazia.
+        """
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
             raise ValidationError(
@@ -798,21 +1117,48 @@ class TodasUnidadesView(BaseAPIView):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter("limite", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Itens por página (padrão 100)."),
-            OpenApiParameter("offset", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY, required=False, description="Posição inicial (padrão 0)."),
+            OpenApiParameter(
+                "limite",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Itens por página (padrão 100).",
+            ),
+            OpenApiParameter(
+                "offset",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Posição inicial (padrão 0).",
+            ),
         ],
         responses={
             200: inline_serializer(
                 "UeBasicaTodasPaginado",
                 fields={
                     "count": serializers.IntegerField(),
-                    "results": inline_serializer("UeBasicaTodasList", fields=_UE_BASICA_FIELDS, many=True),
+                    "results": inline_serializer(
+                        "UeBasicaTodasList",
+                        fields=_UE_BASICA_FIELDS,
+                        many=True,
+                    ),
                 },
             )
         },
-        description="Lista todas as UEs paginadas (E27). Use `limite` e `offset` para navegar.",
+        description=(
+            "Lista todas as UEs paginadas (E27). "
+            "Use `limite` e `offset` para navegar."
+        ),
         tags=_TAG_UE,
         operation_id="E27_lista_todas_ues",
     )
     def get(self, request: Request) -> Response:
+        """Lista todas as UEs paginadas por limite e offset.
+
+        Args:
+            request: Requisição com query params ``limite`` e ``offset``.
+
+        Returns:
+            Response paginada com ``count`` e ``results``.
+        """
         return _paginar_ues_basicas(request)

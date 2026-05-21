@@ -10,7 +10,7 @@ _TAG_CD = ["CrossDomain"]
 
 
 class SincronizacoesTurmaView(BaseAPIView):
-    """Sincronizações institucionais de uma turma — competência do domínio Pedagógico."""
+    """Sincronizações institucionais de uma turma — domínio Pedagógico."""
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -24,11 +24,24 @@ class SincronizacoesTurmaView(BaseAPIView):
     def get(
         self, _request: Request, ue_codigo: str, turma_codigo: str
     ) -> Response:
+        """Redireciona para o microserviço Pedagógico.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+            turma_codigo: Código da turma.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")
 
 
 class SincronizacoesTurmaLegacyView(BaseAPIView):
-    """Sincronizações institucionais de uma turma — rota legada, competência do domínio Pedagógico."""
+    """Sincronizações institucionais de turma — rota legada.
+
+    Competência do domínio Pedagógico.
+    """
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -43,11 +56,24 @@ class SincronizacoesTurmaLegacyView(BaseAPIView):
     def get(
         self, _request: Request, ue_codigo: str, turma_codigo: str
     ) -> Response:
+        """Redireciona para o microserviço Pedagógico (rota legada).
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+            turma_codigo: Código da turma.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")
 
 
 class AnosLetivosSincronizacaoTurmaView(BaseAPIView):
-    """Anos letivos com sincronizações de turmas de uma UE — competência do domínio Pedagógico."""
+    """Anos letivos com sincronizações de turmas de uma UE.
+
+    Competência do domínio Pedagógico.
+    """
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -59,11 +85,23 @@ class AnosLetivosSincronizacaoTurmaView(BaseAPIView):
         operation_id="T02_anos_letivos_sincronizacao_turma",
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
+        """Redireciona para o microserviço Pedagógico.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")
 
 
 class AnosLetivosSincronizacaoTurmaLegacyView(BaseAPIView):
-    """Anos letivos com sincronizações de turmas de uma UE — rota legada, competência do domínio Pedagógico."""
+    """Anos letivos com sincronizações de turmas de uma UE — rota legada.
+
+    Competência do domínio Pedagógico.
+    """
 
     @extend_schema(
         responses={501: _CROSS_DOMAIN_SCHEMA},
@@ -76,4 +114,13 @@ class AnosLetivosSincronizacaoTurmaLegacyView(BaseAPIView):
         operation_id="T02_anos_letivos_sincronizacao_turma_legacy",
     )
     def get(self, _request: Request, ue_codigo: str) -> Response:
+        """Redireciona para o microserviço Pedagógico (rota legada).
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            ue_codigo: Código EOL da unidade educacional.
+
+        Returns:
+            Resposta 501 com indicação de domínio responsável.
+        """
         return self.cross_domain("pedagogico")

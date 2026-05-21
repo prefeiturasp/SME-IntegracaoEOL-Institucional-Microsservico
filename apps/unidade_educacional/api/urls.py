@@ -33,36 +33,137 @@ from apps.unidade_educacional.api.views import (
 )
 
 urlpatterns = [
-    # Rotas sem parâmetros ou com prefixo literal — devem vir antes das genéricas
-    path("unidade-eol/<str:codigo_eol>/", UnidadeEolView.as_view(), name="ue-unidade-eol"),
-    path("dados/<str:codigo_escola_eol>/", DadosUnidadeEducacionalView.as_view(), name="ue-dados"),
-    path("modalidades_ensino/", ModalidadesEnsinoView.as_view(), name="ue-modalidades-ensino"),
-    path("tipos_unidade_educacao/", TiposUnidadeEducacaoView.as_view(), name="ue-tipos-ue"),
-    path("tiposEscolas/", TiposEscolasView.as_view(), name="ue-tipos-escolas"),
-    path("equipamentos/", EquipamentosView.as_view(), name="ue-equipamentos"),
-    path("unidades-parceiras/", UnidadesParceirasView.as_view(), name="ue-unidades-parceiras"),
-    path("todas-unidades/", TodasUnidadesView.as_view(), name="ue-todas-unidades"),
-    # Sub-rotas com parâmetro de código de UE (mais específicas primeiro)
-    path("<str:codigo_ue>/administrador-sgp/", UnidadeEducacionalAdminSgpView.as_view(), name="ue-admin-sgp"),
-    path("<str:codigo_escola_eol>/subprefeituras/", SubprefeituraUnidadeEducacionalView.as_view(), name="ue-subprefeituras"),
-    path("<str:ue_codigo>/sincronizacoes-institucionais/", SincronizacaoUnidadeEducacionalView.as_view(), name="ue-sincronizacao"),
-    path("<str:codigo_escola>/alunos/quantidade/", QuantidadeAlunosView.as_view(), name="ue-quantidade-alunos"),
-    path("<str:codigo_eol_escola>/professores/<str:ano_letivo>/", ProfessoresEscolaAnoView.as_view(), name="ue-professores-ano"),
-    path("<str:codigo_eol_escola>/professores/", ProfessoresEscolaView.as_view(), name="ue-professores"),
-    path("<str:codigo_ue>/salas/<str:tipo_sala>/anos_letivos/<str:ano_letivo>/", SalasAnoLetivoView.as_view(), name="ue-salas-ano"),
-    path("<str:codigo_ue>/funcionarios/cargos/<str:codigo_cargo>/", FuncionariosCargoView.as_view(), name="ue-funcionarios-cargo"),
-    path("<str:codigo_ue>/funcionarios/funcoes-externas/<str:codigo_funcao_externa>/", FuncionariosFuncaoExternaView.as_view(), name="ue-funcionarios-funcao-externa"),
-    path("<str:codigo_ue>/funcionarios/funcoes-atividades/<str:codigo_funcao_atividade>/", FuncionariosFuncaoAtividadeView.as_view(), name="ue-funcionarios-funcao-atividade"),
-    path("<str:ue_codigo>/funcionarios/cargos/", FuncionariosCargosListView.as_view(), name="ue-funcionarios-cargos-lista"),
-    path("<str:ue_codigo>/funcionarios/funcoes-atividades/", FuncionariosFuncoesAtividadesListView.as_view(), name="ue-funcionarios-funcoes-atividades-lista"),
-    path("<str:ue_codigo>/funcionarios/funcoes-externas/", FuncionariosFuncoesExternasListView.as_view(), name="ue-funcionarios-funcoes-externas-lista"),
-    path("<str:codigo_ue>/funcionarios/", FuncionariosUeView.as_view(), name="ue-funcionarios"),
-    path("<str:codigo_ue>/turmas/anos_letivos/<str:ano_letivo>/", TurmasAnoLetivoView.as_view(), name="ue-turmas-ano"),
-    path("<str:codigo_ue>/turmasSondagem/anos_letivos/<str:ano_letivo>/", TurmasSondagemAnoLetivoView.as_view(), name="ue-turmas-sondagem-ano"),
-    path("<str:codigo_escola>/aluno/<str:codigo_aluno>/matriculas/", MatriculasAlunoView.as_view(), name="ue-matriculas-aluno"),
-    # Rota genérica de detalhe por código (deve ficar após as com sub-paths)
-    path("<str:codigo_escola_eol>/", UnidadeEducacionalDetalheView.as_view(), name="ue-detalhe"),
-    # Raiz: GET (todas) via TodasUnidadesView, POST (por lista) via UnidadeEducacionalListPostView
-    # A view raiz unifica os dois métodos
+    path(
+        "unidade-eol/<str:codigo_eol>/",
+        UnidadeEolView.as_view(),
+        name="ue-unidade-eol",
+    ),
+    path(
+        "dados/<str:codigo_escola_eol>/",
+        DadosUnidadeEducacionalView.as_view(),
+        name="ue-dados",
+    ),
+    path(
+        "modalidades_ensino/",
+        ModalidadesEnsinoView.as_view(),
+        name="ue-modalidades-ensino",
+    ),
+    path(
+        "tipos_unidade_educacao/",
+        TiposUnidadeEducacaoView.as_view(),
+        name="ue-tipos-ue",
+    ),
+    path(
+        "tiposEscolas/",
+        TiposEscolasView.as_view(),
+        name="ue-tipos-escolas",
+    ),
+    path(
+        "equipamentos/",
+        EquipamentosView.as_view(),
+        name="ue-equipamentos",
+    ),
+    path(
+        "unidades-parceiras/",
+        UnidadesParceirasView.as_view(),
+        name="ue-unidades-parceiras",
+    ),
+    path(
+        "todas-unidades/",
+        TodasUnidadesView.as_view(),
+        name="ue-todas-unidades",
+    ),
+    path(
+        "<str:codigo_ue>/administrador-sgp/",
+        UnidadeEducacionalAdminSgpView.as_view(),
+        name="ue-admin-sgp",
+    ),
+    path(
+        "<str:codigo_escola_eol>/subprefeituras/",
+        SubprefeituraUnidadeEducacionalView.as_view(),
+        name="ue-subprefeituras",
+    ),
+    path(
+        "<str:ue_codigo>/sincronizacoes-institucionais/",
+        SincronizacaoUnidadeEducacionalView.as_view(),
+        name="ue-sincronizacao",
+    ),
+    path(
+        "<str:codigo_escola>/alunos/quantidade/",
+        QuantidadeAlunosView.as_view(),
+        name="ue-quantidade-alunos",
+    ),
+    path(
+        "<str:codigo_eol_escola>/professores/<str:ano_letivo>/",
+        ProfessoresEscolaAnoView.as_view(),
+        name="ue-professores-ano",
+    ),
+    path(
+        "<str:codigo_eol_escola>/professores/",
+        ProfessoresEscolaView.as_view(),
+        name="ue-professores",
+    ),
+    path(
+        "<str:codigo_ue>/salas/<str:tipo_sala>/anos_letivos/<str:ano_letivo>/",
+        SalasAnoLetivoView.as_view(),
+        name="ue-salas-ano",
+    ),
+    path(
+        "<str:codigo_ue>/funcionarios/cargos/<str:codigo_cargo>/",
+        FuncionariosCargoView.as_view(),
+        name="ue-funcionarios-cargo",
+    ),
+    path(
+        "<str:codigo_ue>/funcionarios/funcoes-externas/"
+        "<str:codigo_funcao_externa>/",
+        FuncionariosFuncaoExternaView.as_view(),
+        name="ue-funcionarios-funcao-externa",
+    ),
+    path(
+        "<str:codigo_ue>/funcionarios/funcoes-atividades/"
+        "<str:codigo_funcao_atividade>/",
+        FuncionariosFuncaoAtividadeView.as_view(),
+        name="ue-funcionarios-funcao-atividade",
+    ),
+    path(
+        "<str:ue_codigo>/funcionarios/cargos/",
+        FuncionariosCargosListView.as_view(),
+        name="ue-funcionarios-cargos-lista",
+    ),
+    path(
+        "<str:ue_codigo>/funcionarios/funcoes-atividades/",
+        FuncionariosFuncoesAtividadesListView.as_view(),
+        name="ue-funcionarios-funcoes-atividades-lista",
+    ),
+    path(
+        "<str:ue_codigo>/funcionarios/funcoes-externas/",
+        FuncionariosFuncoesExternasListView.as_view(),
+        name="ue-funcionarios-funcoes-externas-lista",
+    ),
+    path(
+        "<str:codigo_ue>/funcionarios/",
+        FuncionariosUeView.as_view(),
+        name="ue-funcionarios",
+    ),
+    path(
+        "<str:codigo_ue>/turmas/anos_letivos/<str:ano_letivo>/",
+        TurmasAnoLetivoView.as_view(),
+        name="ue-turmas-ano",
+    ),
+    path(
+        "<str:codigo_ue>/turmasSondagem/anos_letivos/<str:ano_letivo>/",
+        TurmasSondagemAnoLetivoView.as_view(),
+        name="ue-turmas-sondagem-ano",
+    ),
+    path(
+        "<str:codigo_escola>/aluno/<str:codigo_aluno>/matriculas/",
+        MatriculasAlunoView.as_view(),
+        name="ue-matriculas-aluno",
+    ),
+    path(
+        "<str:codigo_escola_eol>/",
+        UnidadeEducacionalDetalheView.as_view(),
+        name="ue-detalhe",
+    ),
     path("", UnidadeEducacionalListPostView.as_view(), name="ue-list-post"),
 ]

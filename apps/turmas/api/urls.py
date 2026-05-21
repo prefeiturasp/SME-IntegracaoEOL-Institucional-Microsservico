@@ -22,7 +22,6 @@ urlpatterns_ues = [
     ),
 ]
 
-# Registrado sob api/turmas/ em config/urls.py
 urlpatterns_turmas = [
     path(
         "ue/<str:ue_codigo>/sincronizacoes-institucionais/anos-letivos/",

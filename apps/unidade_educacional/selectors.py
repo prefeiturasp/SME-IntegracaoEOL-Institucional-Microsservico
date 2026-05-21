@@ -1,5 +1,6 @@
 """Selectors do domínio UE."""
 
+import re as _re
 from zoneinfo import ZoneInfo
 
 from apps.core.types import SubPrefeiturarContract
@@ -17,15 +18,35 @@ from apps.unidade_educacional.models import UnidadeEducacional
 
 
 def _lookup_dres(ids: set[str]) -> dict[str, DRE]:
+    """Carrega DREs pelos códigos em um dict indexado por código.
+
+    Args:
+        ids: Conjunto de códigos EOL das DREs a carregar.
+
+    Returns:
+        Dict mapeando código EOL para instância de DRE.
+    """
     return {
         d.codigo_dre: d
         for d in DRE.objects.filter(codigo_dre__in=ids).only(
-            "codigo_dre", "nome", "sigla", "tipo_unidade_adm", "descricao_unidade_adm"
+            "codigo_dre",
+            "nome",
+            "sigla",
+            "tipo_unidade_adm",
+            "descricao_unidade_adm",
         )
     }
 
 
 def _lookup_tipos(ids: set[int]) -> dict[int, TipoEscola]:
+    """Carrega tipos de escola pelos códigos em um dict indexado por código.
+
+    Args:
+        ids: Conjunto de códigos de tipo de escola a carregar.
+
+    Returns:
+        Dict mapeando código de tipo para instância de TipoEscola.
+    """
     return {
         t.codigo_tipo_escola: t
         for t in TipoEscola.objects.filter(
@@ -35,6 +56,14 @@ def _lookup_tipos(ids: set[int]) -> dict[int, TipoEscola]:
 
 
 def _lookup_subs(ids: set[int]) -> dict[int, SubPrefeitura]:
+    """Carrega subprefeituras pelos códigos em um dict indexado por código.
+
+    Args:
+        ids: Conjunto de códigos de subprefeitura a carregar.
+
+    Returns:
+        Dict mapeando código para instância de SubPrefeitura.
+    """
     return {
         s.codigo_sub_prefeitura: s
         for s in SubPrefeitura.objects.filter(
@@ -44,6 +73,14 @@ def _lookup_subs(ids: set[int]) -> dict[int, SubPrefeitura]:
 
 
 def _cep_to_int(cep: str | None) -> int | None:
+    """Converte string de CEP para inteiro, removendo pontuação.
+
+    Args:
+        cep: String de CEP (ex: "04218-050" ou "04218050").
+
+    Returns:
+        CEP como inteiro, ou None se ausente ou inválido.
+    """
     if not cep:
         return None
     try:
@@ -57,8 +94,22 @@ def _build_ue_basica(
     dres: dict[str, DRE],
     tipos: dict[int, TipoEscola],
 ) -> UeBasicaContract:
+    """Monta contrato básico de UE a partir de uma linha e lookups pré-carregados.
+
+    Args:
+        r: Linha de dados brutos da UE (campos do .values()).
+        dres: Lookup de DREs indexado por código EOL.
+        tipos: Lookup de tipos de escola indexado por código.
+
+    Returns:
+        Contrato básico da UE com dados de DRE e tipo resolvidos.
+    """
     dre = dres.get(r["codigo_dre"])
-    tipo = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
+    tipo = (
+        tipos.get(r["codigo_tipo_escola"])
+        if r["codigo_tipo_escola"]
+        else None
+    )
     return UeBasicaContract(
         codigoEscola=r["codigo_ue"],
         nomeEscola=r["nome"],
@@ -81,10 +132,23 @@ def listar_ues_basicas(
     limite: int | None = None,
     offset: int = 0,
 ) -> tuple[list[UeBasicaContract], int]:
-    """Lista UEs com dados básicos, retornando tupla (items, total)."""
+    """Lista UEs com dados básicos.
+
+    Args:
+        codigos: Lista de códigos EOL para filtro. Se None, retorna todas.
+        limite: Número máximo de itens por página.
+        offset: Posição inicial da página.
+
+    Returns:
+        Tupla (itens, total), onde total é o total sem paginação.
+    """
     qs = UnidadeEducacional.objects.values(
-        "codigo_ue", "nome", "codigo_dre", "codigo_tipo_escola",
-        "codigo_sub_prefeitura", "codigo_ue_integracao",
+        "codigo_ue",
+        "nome",
+        "codigo_dre",
+        "codigo_tipo_escola",
+        "codigo_sub_prefeitura",
+        "codigo_ue_integracao",
     ).order_by("nome")
     if codigos is not None:
         qs = qs.filter(codigo_ue__in=codigos)
@@ -100,34 +164,59 @@ def listar_ues_basicas(
         return [], total
 
     dre_ids = {r["codigo_dre"] for r in rows}
-    tipo_ids = {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
+    tipo_ids = {
+        r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]
+    }
     dres = _lookup_dres(dre_ids)
     tipos = _lookup_tipos(tipo_ids)
     return [_build_ue_basica(r, dres, tipos) for r in rows], total
 
 
 def obter_ue_basica_por_codigo(codigo: str) -> UeBasicaContract | None:
-    """Retorna dados básicos de uma UE ou None."""
+    """Retorna dados básicos de uma UE pelo código EOL.
+
+    Args:
+        codigo: Código EOL da UE.
+
+    Returns:
+        Contrato básico da UE, ou None se não encontrada.
+    """
     rows = list(
         UnidadeEducacional.objects.filter(codigo_ue=codigo).values(
-            "codigo_ue", "nome", "codigo_dre", "codigo_tipo_escola",
-            "codigo_sub_prefeitura", "codigo_ue_integracao",
+            "codigo_ue",
+            "nome",
+            "codigo_dre",
+            "codigo_tipo_escola",
+            "codigo_sub_prefeitura",
+            "codigo_ue_integracao",
         )
     )
     if not rows:
         return None
     r = rows[0]
     dres = _lookup_dres({r["codigo_dre"]})
-    tipos = _lookup_tipos({r["codigo_tipo_escola"]} if r["codigo_tipo_escola"] else set())
+    tipos = _lookup_tipos(
+        {r["codigo_tipo_escola"]} if r["codigo_tipo_escola"] else set()
+    )
     return _build_ue_basica(r, dres, tipos)
 
 
 def obter_ue_eol(codigo: str) -> UeEolContract | None:
-    """Retorna UE resumida pelo código ou None se não encontrada."""
+    """Retorna dados resumidos de uma UE pelo código EOL.
+
+    Args:
+        codigo: Código EOL da UE.
+
+    Returns:
+        Dados resumidos da UE, ou None se não encontrada.
+    """
     try:
         ue = UnidadeEducacional.objects.only(
-            "codigo_ue", "nome", "nome_nao_oficial",
-            "codigo_tipo_unidade_educacao", "codigo_dre",
+            "codigo_ue",
+            "nome",
+            "nome_nao_oficial",
+            "codigo_tipo_unidade_educacao",
+            "codigo_dre",
         ).get(codigo_ue=codigo)
     except UnidadeEducacional.DoesNotExist:
         return None
@@ -141,14 +230,34 @@ def obter_ue_eol(codigo: str) -> UeEolContract | None:
 
 
 def obter_ue_completa(codigo: str) -> UeCompletaContract | None:
-    """Retorna dados completos de uma UE ou None se não encontrada."""
+    """Retorna dados completos de uma UE pelo código EOL.
+
+    Args:
+        codigo: Código EOL da UE.
+
+    Returns:
+        Dados completos com endereço, tipo e DRE resolvidos,
+        ou None se não encontrada.
+    """
     rows = list(
         UnidadeEducacional.objects.filter(codigo_ue=codigo).values(
-            "codigo_ue", "nome", "nome_nao_oficial", "tipo_ue",
-            "tipo_logradouro", "logradouro", "numero", "bairro", "cep",
-            "municipio", "email", "telefone_1", "codigo_dre",
-            "codigo_tipo_escola", "codigo_inep",
-            "codigo_sub_prefeitura", "codigo_ue_integracao",
+            "codigo_ue",
+            "nome",
+            "nome_nao_oficial",
+            "tipo_ue",
+            "tipo_logradouro",
+            "logradouro",
+            "numero",
+            "bairro",
+            "cep",
+            "municipio",
+            "email",
+            "telefone_1",
+            "codigo_dre",
+            "codigo_tipo_escola",
+            "codigo_inep",
+            "codigo_sub_prefeitura",
+            "codigo_ue_integracao",
         )
     )
     if not rows:
@@ -159,11 +268,12 @@ def obter_ue_completa(codigo: str) -> UeCompletaContract | None:
         {r["codigo_tipo_escola"]} if r["codigo_tipo_escola"] else set()
     )
     dre = dres.get(r["codigo_dre"])
-    tipo = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
+    tipo = (
+        tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
+    )
     sigla_tipo = tipo.sigla.strip() if tipo and tipo.sigla else None
     telefone_raw = r["telefone_1"]
     if telefone_raw:
-        import re as _re
         telefone_raw = _re.sub(r"^\(\d+\)\s*", "", telefone_raw).strip()
     return UeCompletaContract(
         nomeDRE=dre.nome if dre else "",
@@ -195,7 +305,11 @@ def obter_ue_completa(codigo: str) -> UeCompletaContract | None:
 
 
 def listar_tipos_escolas() -> list[TipoEscolaContract]:
-    """Lista todos os tipos de escola."""
+    """Lista todos os tipos de escola com código, sigla e data de atualização.
+
+    Returns:
+        Tipos de escola ordenados por código, com data formatada em ISO 8601.
+    """
     campos = ["codigo_tipo_escola", "sigla"]
     tem_dt = _coluna_existe("tipo_escola", "data_atualizacao")
     if tem_dt:
@@ -220,16 +334,27 @@ def listar_tipos_escolas() -> list[TipoEscolaContract]:
     return result
 
 
-def obter_subprefeituras_ue(codigo: str) -> list[SubPrefeiturarContract] | None:
-    """Retorna subprefeituras de uma UE ou None se a UE não existir."""
+def obter_subprefeituras_ue(
+    codigo: str,
+) -> list[SubPrefeiturarContract] | None:
+    """Retorna subprefeituras de uma UE ou None se a UE não existir.
+
+    Args:
+        codigo: Código EOL da UE.
+
+    Returns:
+        Lista de subprefeituras vinculadas, lista vazia se não houver
+        nenhuma, ou None se a UE não existir.
+    """
     rows = list(
         UnidadeEducacional.objects.filter(codigo_ue=codigo)
         .exclude(codigo_sub_prefeitura__isnull=True)
         .values("codigo_sub_prefeitura")
     )
     if not rows:
-        # verifica se a UE existe
-        if not UnidadeEducacional.objects.filter(codigo_ue=codigo).exists():
+        if not UnidadeEducacional.objects.filter(
+            codigo_ue=codigo
+        ).exists():
             return None
         return []
     sub_ids = {r["codigo_sub_prefeitura"] for r in rows}
@@ -244,8 +369,17 @@ def obter_subprefeituras_ue(codigo: str) -> list[SubPrefeiturarContract] | None:
 
 
 def _coluna_existe(tabela: str, coluna: str) -> bool:
-    """Verifica em tempo de execução se uma coluna existe no banco (PostgreSQL)."""
+    """Verifica em tempo de execução se uma coluna existe no banco.
+
+    Args:
+        tabela: Nome da tabela no banco de dados.
+        coluna: Nome da coluna a verificar.
+
+    Returns:
+        True se a coluna existir, False caso contrário ou em caso de erro.
+    """
     from django.db import connection
+
     try:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -258,16 +392,32 @@ def _coluna_existe(tabela: str, coluna: str) -> bool:
         return False
 
 
-def obter_sincronizacao_ue(codigo: str) -> SincronizacaoUeContract | None:
-    """Retorna dados de sincronização institucional de uma UE ou None se não encontrada."""
+def obter_sincronizacao_ue(
+    codigo: str,
+) -> SincronizacaoUeContract | None:
+    """Retorna dados de sincronização institucional de uma UE.
+
+    Args:
+        codigo: Código EOL da UE.
+
+    Returns:
+        Dados de sincronização com data de atualização formatada,
+        ou None se a UE não for encontrada.
+    """
     campos = [
-        "codigo_ue", "nome", "codigo_dre", "codigo_tipo_escola",
-        "codigo_sub_prefeitura", "codigo_ue_integracao",
+        "codigo_ue",
+        "nome",
+        "codigo_dre",
+        "codigo_tipo_escola",
+        "codigo_sub_prefeitura",
+        "codigo_ue_integracao",
     ]
     if _coluna_existe("unidade_educacional", "data_atualizacao"):
         campos.append("data_atualizacao")
 
-    rows = list(UnidadeEducacional.objects.filter(codigo_ue=codigo).values(*campos))
+    rows = list(
+        UnidadeEducacional.objects.filter(codigo_ue=codigo).values(*campos)
+    )
     if not rows:
         return None
     r = rows[0]
@@ -281,7 +431,9 @@ def obter_sincronizacao_ue(codigo: str) -> SincronizacaoUeContract | None:
     else:
         data_iso = None
     try:
-        dre_int: int | None = int(r["codigo_dre"]) if r["codigo_dre"] else None
+        dre_int: int | None = (
+            int(r["codigo_dre"]) if r["codigo_dre"] else None
+        )
     except (ValueError, TypeError):
         dre_int = None
     return SincronizacaoUeContract(
@@ -298,9 +450,33 @@ def obter_sincronizacao_ue(codigo: str) -> SincronizacaoUeContract | None:
     )
 
 
-def _aplicar_filtros_equipamentos(qs, codigos_subprefeitura, codigos_dre, tipos_unidade, tipos_escola, nome_escola, codigo_eol):
+def _aplicar_filtros_equipamentos(
+    qs,
+    codigos_subprefeitura,
+    codigos_dre,
+    tipos_unidade,
+    tipos_escola,
+    nome_escola,
+    codigo_eol,
+):
+    """Aplica filtros opcionais ao QuerySet de equipamentos.
+
+    Args:
+        qs: QuerySet base de UnidadeEducacional.
+        codigos_subprefeitura: Códigos de subprefeitura para filtro.
+        codigos_dre: Códigos EOL de DRE para filtro.
+        tipos_unidade: Códigos de tipo de unidade para filtro.
+        tipos_escola: Códigos de tipo de escola para filtro.
+        nome_escola: Substring do nome da escola para filtro.
+        codigo_eol: Código EOL exato da escola para filtro.
+
+    Returns:
+        QuerySet com os filtros aplicados.
+    """
     if codigos_subprefeitura:
-        qs = qs.filter(codigo_sub_prefeitura__in=codigos_subprefeitura)
+        qs = qs.filter(
+            codigo_sub_prefeitura__in=codigos_subprefeitura
+        )
     if codigos_dre:
         qs = qs.filter(codigo_dre__in=codigos_dre)
     if tipos_unidade:
@@ -315,7 +491,14 @@ def _aplicar_filtros_equipamentos(qs, codigos_subprefeitura, codigos_dre, tipos_
 
 
 def _montar_logradouro(r: dict) -> str | None:
-    """Concatena tipo + logradouro + número no formato EOL: 'RUA APUCARANA Nº 215'."""
+    """Concatena tipo, logradouro e número no formato EOL.
+
+    Args:
+        r: Linha de dados brutos da UE com campos de endereço.
+
+    Returns:
+        Logradouro formatado (ex: "RUA APUCARANA Nº 215"), ou None se vazio.
+    """
     partes = []
     if r.get("tipo_logradouro"):
         partes.append(r["tipo_logradouro"].strip().upper())
@@ -326,21 +509,45 @@ def _montar_logradouro(r: dict) -> str | None:
     return " ".join(partes) if partes else None
 
 
-def _build_equipamento(r: dict, dres: dict, tipos: dict, subs: dict) -> EquipamentoContract:
-    """Monta contrato de equipamento a partir dos dados brutos da UE."""
+def _build_equipamento(
+    r: dict,
+    dres: dict,
+    tipos: dict,
+    subs: dict,
+) -> EquipamentoContract:
+    """Monta contrato de equipamento a partir dos dados brutos da UE.
+
+    Args:
+        r: Linha de dados brutos da UE (campos do .values()).
+        dres: Lookup de DREs indexado por código EOL.
+        tipos: Lookup de tipos de escola indexado por código.
+        subs: Lookup de subprefeituras indexado por código.
+
+    Returns:
+        Contrato de equipamento com campos prefixados (cd_, nm_, dc_, sg_).
+    """
     dre = dres.get(r["codigo_dre"])
-    # cd_tp_equipamento = vcue.tp_unidade_educacao (tipo_unidade_educacao.tp_unidade_educacao)
-    # dc_tp_equipamento = tipo_ue (tipo_unidade_educacao.dc_tipo_unidade_educacao)
-    # cd_tp_escola = codigo_tipo_escola (join com tabela tipo_escola)
     cd_tp_eq = r.get("codigo_tipo_unidade_educacao")
     dc_tp_eq = r.get("tipo_ue")
-    tipo_escola = tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
-    sub = subs.get(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None
+    tipo_escola = (
+        tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
+    )
+    sub = (
+        subs.get(r["codigo_sub_prefeitura"])
+        if r["codigo_sub_prefeitura"]
+        else None
+    )
     dre_nome = dre.nome if dre else ""
     dre_sigla = (dre.sigla or "").strip() if dre else ""
-    tipo_sigla = tipo_escola.sigla.strip() if tipo_escola and tipo_escola.sigla else ""
+    tipo_sigla = (
+        tipo_escola.sigla.strip() if tipo_escola and tipo_escola.sigla else ""
+    )
     tipo_desc = tipo_escola.descricao if tipo_escola else ""
-    cd_tp_escola = r["codigo_tipo_escola"] if r["codigo_tipo_escola"] is not None else 0
+    cd_tp_escola = (
+        r["codigo_tipo_escola"]
+        if r["codigo_tipo_escola"] is not None
+        else 0
+    )
     return EquipamentoContract(
         cd_equipamento=r["codigo_ue"],
         nm_exibicao_equipamento=r["nome_nao_oficial"] or r["nome"],
@@ -359,7 +566,11 @@ def _build_equipamento(r: dict, dres: dict, tipos: dict, subs: dict) -> Equipame
         cd_logradouro=r.get("codigo_logradouro"),
         logradouro=_montar_logradouro(r),
         bairro=r["bairro"],
-        codigoSubprefeitura=str(r["codigo_sub_prefeitura"]) if r["codigo_sub_prefeitura"] else None,
+        codigoSubprefeitura=(
+            str(r["codigo_sub_prefeitura"])
+            if r["codigo_sub_prefeitura"]
+            else None
+        ),
         nomeSubprefeitura=sub.nome if sub else None,
         ehCeu=bool(r.get("eh_ceu", False)),
     )
@@ -373,30 +584,75 @@ def listar_equipamentos(
     nome_escola: str | None = None,
     codigo_eol: str | None = None,
 ) -> list[EquipamentoContract]:
-    """Lista equipamentos com filtros opcionais de subprefeitura, DRE, tipo e nome."""
+    """Lista equipamentos SME com filtros opcionais.
+
+    Args:
+        codigos_subprefeitura: Códigos de subprefeitura para filtro.
+        codigos_dre: Códigos EOL de DRE para filtro.
+        tipos_unidade: Códigos de tipo de unidade para filtro.
+        tipos_escola: Códigos de tipo de escola para filtro.
+        nome_escola: Substring do nome da escola para filtro.
+        codigo_eol: Código EOL exato da escola para filtro.
+
+    Returns:
+        Equipamentos que atendem aos filtros, ordenados por nome.
+    """
     campos_eq = [
-        "codigo_ue", "nome", "nome_nao_oficial", "tipo_ue", "codigo_dre",
-        "codigo_tipo_escola", "codigo_tipo_unidade_educacao", "codigo_sub_prefeitura",
-        "tipo_logradouro", "codigo_logradouro", "logradouro", "numero", "bairro",
+        "codigo_ue",
+        "nome",
+        "nome_nao_oficial",
+        "tipo_ue",
+        "codigo_dre",
+        "codigo_tipo_escola",
+        "codigo_tipo_unidade_educacao",
+        "codigo_sub_prefeitura",
+        "tipo_logradouro",
+        "codigo_logradouro",
+        "logradouro",
+        "numero",
+        "bairro",
     ]
     if _coluna_existe("unidade_educacional", "eh_ceu"):
         campos_eq.append("eh_ceu")
     qs = UnidadeEducacional.objects.values(*campos_eq)
     qs = _aplicar_filtros_equipamentos(
-        qs, codigos_subprefeitura, codigos_dre, tipos_unidade, tipos_escola, nome_escola, codigo_eol
+        qs,
+        codigos_subprefeitura,
+        codigos_dre,
+        tipos_unidade,
+        tipos_escola,
+        nome_escola,
+        codigo_eol,
     )
     rows = list(qs.order_by("nome"))
     if not rows:
         return []
 
     dres = _lookup_dres({r["codigo_dre"] for r in rows})
-    tipos = _lookup_tipos({r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]})
-    subs = _lookup_subs({r["codigo_sub_prefeitura"] for r in rows if r["codigo_sub_prefeitura"]})
+    tipos = _lookup_tipos(
+        {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
+    )
+    subs = _lookup_subs(
+        {
+            r["codigo_sub_prefeitura"]
+            for r in rows
+            if r["codigo_sub_prefeitura"]
+        }
+    )
     return [_build_equipamento(r, dres, tipos, subs) for r in rows]
 
 
 def _nome_com_tipo(nome: str, tipo: "TipoEscola | None") -> str:
-    """Prefixa o nome da UE com a sigla do tipo de escola (ex: 'EMEF CASARAO')."""
+    """Prefixa o nome da UE com a sigla do tipo de escola.
+
+    Args:
+        nome: Nome da UE.
+        tipo: Tipo de escola da UE, ou None.
+
+    Returns:
+        Nome prefixado com sigla (ex: "EMEF CASARAO"), ou nome original
+        se já contiver o prefixo ou tipo for None.
+    """
     if not tipo or not tipo.sigla:
         return nome
     sigla = tipo.sigla.strip()
@@ -405,8 +661,17 @@ def _nome_com_tipo(nome: str, tipo: "TipoEscola | None") -> str:
     return f"{sigla} {nome}"
 
 
-def listar_unidades_parceiras(codigos: list[str]) -> list[UnidadeParceirasContract]:
-    """Lista unidades parceiras pelos códigos informados."""
+def listar_unidades_parceiras(
+    codigos: list[str],
+) -> list[UnidadeParceirasContract]:
+    """Lista unidades parceiras pelos códigos informados.
+
+    Args:
+        codigos: Códigos EOL das unidades a buscar.
+
+    Returns:
+        Unidades com organização_parceira=True encontradas nos códigos.
+    """
     rows = list(
         UnidadeEducacional.objects.filter(
             codigo_ue__in=codigos, organizacao_parceira=True
@@ -415,7 +680,9 @@ def listar_unidades_parceiras(codigos: list[str]) -> list[UnidadeParceirasContra
     if not rows:
         return []
 
-    tipo_ids = {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
+    tipo_ids = {
+        r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]
+    }
     tipos = _lookup_tipos(tipo_ids)
 
     return [
