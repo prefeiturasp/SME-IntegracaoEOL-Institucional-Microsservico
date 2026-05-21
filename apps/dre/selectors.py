@@ -93,12 +93,15 @@ def listar_subprefeituras_por_dre(
     ids = (
         UnidadeEducacional.objects.filter(codigo_dre=codigo_dre)
         .exclude(codigo_sub_prefeitura__isnull=True)
+        .exclude(codigo_sub_prefeitura=0)
         .values_list("codigo_sub_prefeitura", flat=True)
         .distinct()
     )
-    qs = SubPrefeitura.objects.filter(
-        codigo_sub_prefeitura__in=ids
-    ).only("codigo_sub_prefeitura", "nome")
+    qs = (
+        SubPrefeitura.objects.filter(codigo_sub_prefeitura__in=ids)
+        .exclude(codigo_sub_prefeitura=99)
+        .only("codigo_sub_prefeitura", "nome")
+    )
     return [
         SubPrefeiturarContract(
             codigoSubprefeitura=str(s.codigo_sub_prefeitura),
@@ -226,7 +229,11 @@ def listar_codigos_ues_por_dre(codigo_dre: str) -> list[str]:
         Códigos EOL das UEs vinculadas, ordenados.
     """
     return list(
-        UnidadeEducacional.objects.filter(codigo_dre=codigo_dre)
+        UnidadeEducacional.objects.filter(
+            codigo_dre=codigo_dre,
+            codigo_tipo_escola__isnull=False,
+        )
+        .exclude(tipo_ue="UNIDADE ADMINISTRATIVA")
         .values_list("codigo_ue", flat=True)
         .order_by("codigo_ue")
     )
