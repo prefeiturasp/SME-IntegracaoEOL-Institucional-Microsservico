@@ -33,8 +33,6 @@ urlpatterns = [
     ),
     path(f"{_API}dres/", include("apps.dre.api.urls")),
     path(f"{_API}escolas/", include("apps.unidade_educacional.api.urls")),
-    # T01 — /api/ues/{ueCodigo}/turmas/{turmaCodigo}/sincronizacoes-institucionais/
     path(f"{_API}ues/", include(urlpatterns_ues)),
-    # T02 — /api/turmas/ue/{ueCodigo}/sincronizacoes-institucionais/anos-letivos/
     path(f"{_API}turmas/", include(urlpatterns_turmas)),
 ]

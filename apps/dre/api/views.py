@@ -128,7 +128,14 @@ class DreListView(BaseAPIView):
         ],
     )
     def get(self, _request: Request) -> Response:
-        """Lista todas as DREs."""
+        """Lista todas as DREs.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+
+        Returns:
+            Lista com todas as DREs ordenadas por nome.
+        """
         return Response(listar_dres())
 
     @extend_schema(
@@ -159,7 +166,17 @@ class DreListView(BaseAPIView):
         ],
     )
     def post(self, request: Request) -> Response:
-        """Filtra DREs pela lista de códigos informada."""
+        """Filtra DREs pela lista de códigos informada.
+
+        Args:
+            request: Requisição com lista de códigos EOL no corpo JSON.
+
+        Returns:
+            DREs encontradas, ou 204 se nenhuma for localizada.
+
+        Raises:
+            ValidationError: Se o corpo não for uma lista.
+        """
         codigos = request.data
         if not isinstance(codigos, list):
             raise ValidationError(
@@ -174,7 +191,7 @@ class DreListView(BaseAPIView):
 
 
 class DreDetalheView(BaseAPIView):
-    """Retorna dados de uma Diretoria Regional de Educação pelo código EOL."""
+    """Retorna dados de uma DRE pelo código EOL."""
 
     @extend_schema(
         responses={
@@ -202,6 +219,18 @@ class DreDetalheView(BaseAPIView):
         ],
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
+        """Retorna dados de uma DRE pelo código EOL.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_eol_dre: Código EOL da DRE.
+
+        Returns:
+            Lista com os dados resumidos da DRE.
+
+        Raises:
+            NotFound: Se a DRE não for encontrada.
+        """
         dre = obter_dre_por_codigo(codigo_eol_dre)
         if dre is None:
             raise NotFound("DRE não encontrada.")
@@ -229,6 +258,19 @@ class DreEscolasTipoView(BaseAPIView):
         codigo_eol_dre: str,
         tipo_escola_id: int,
     ) -> Response:
+        """Lista escolas de uma DRE filtradas pelo tipo informado.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_eol_dre: Código EOL da DRE.
+            tipo_escola_id: Código numérico do tipo de escola.
+
+        Returns:
+            Escolas da DRE do tipo informado.
+
+        Raises:
+            ValidationError: Se o código EOL da DRE for vazio.
+        """
         if not codigo_eol_dre.strip():
             raise ValidationError("Código EOL da DRE é obrigatório.")
         escolas = listar_escolas_por_dre(codigo_eol_dre, tipo_escola_id)
@@ -252,6 +294,15 @@ class DreEscolasView(BaseAPIView):
         operation_id="D06_escolas_vinculadas_dre",
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
+        """Lista todas as escolas de uma DRE.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_eol_dre: Código EOL da DRE.
+
+        Returns:
+            Escolas da DRE ou 204 se não houver resultados.
+        """
         escolas = listar_escolas_por_dre(codigo_eol_dre)
         if not escolas:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -274,6 +325,18 @@ class DreSubprefeiturasView(BaseAPIView):
         operation_id="D07_subprefeituras_dre",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
+        """Lista subprefeituras das UEs de uma DRE.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            dre_codigo: Código EOL da DRE.
+
+        Returns:
+            Subprefeituras distintas referenciadas pelas UEs da DRE.
+
+        Raises:
+            ValidationError: Se o código da DRE for vazio.
+        """
         if not dre_codigo.strip():
             raise ValidationError("Código da DRE é obrigatório.")
         return Response(listar_subprefeituras_por_dre(dre_codigo))
@@ -296,6 +359,18 @@ class DreUesView(BaseAPIView):
         operation_id="D08_codigos_ues_dre",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
+        """Retorna os códigos EOL das UEs de uma DRE.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            dre_codigo: Código EOL da DRE.
+
+        Returns:
+            Lista de códigos EOL das UEs vinculadas à DRE.
+
+        Raises:
+            ValidationError: Se o código da DRE for vazio.
+        """
         if not dre_codigo.strip():
             raise ValidationError("Código da DRE é obrigatório.")
         return Response(listar_codigos_ues_por_dre(dre_codigo))
@@ -318,6 +393,18 @@ class DreEscolasSigpaeView(BaseAPIView):
         operation_id="D09_escolas_sigpae",
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
+        """Lista escolas de uma DRE no formato esperado pelo SIGPAE.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            codigo_eol_dre: Código EOL da DRE.
+
+        Returns:
+            Escolas da DRE ou 204 se não houver resultados.
+
+        Raises:
+            ValidationError: Se o código EOL da DRE for vazio.
+        """
         if not codigo_eol_dre.strip():
             raise ValidationError("Código EOL da DRE é obrigatório.")
         escolas = listar_escolas_por_dre(codigo_eol_dre)
@@ -342,6 +429,15 @@ class DreUnidadesView(BaseAPIView):
         operation_id="D10_unidades_gestao_predial",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
+        """Retorna unidades prediais completas de uma DRE.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            dre_codigo: Código EOL da DRE.
+
+        Returns:
+            Unidades prediais com endereço e vagas.
+        """
         return Response(listar_unidades_por_dre(dre_codigo))
 
 
@@ -361,6 +457,15 @@ class DreCodigosIntegracaoView(BaseAPIView):
         operation_id="D11_ues_codigo_integracao",
     )
     def get(self, _request: Request, dre_codigo: str) -> Response:
+        """Lista os códigos de integração das UEs de uma DRE.
+
+        Args:
+            _request: Requisição HTTP (não utilizada).
+            dre_codigo: Código EOL da DRE.
+
+        Returns:
+            UEs com seus códigos de integração.
+        """
         return Response(listar_codigos_integracao_por_dre(dre_codigo))
 
 

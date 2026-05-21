@@ -25,7 +25,6 @@ class EscolaPorDreContract(TypedDict):
     siglaDRE: str
     codigoSubprefeitura: str
     nomeSubprefeitura: str
-    # Campos institucionais expandidos
     tipoEscolaId: int | None
     tipoUnidadeId: int | None
     subprefeituraId: int | None
@@ -62,7 +61,6 @@ class UnidadePredialContract(TypedDict):
     organizacaoParceira: bool
     quantidadeDeFuncionarios: int
     status: str | None
-    # Campos institucionais expandidos
     subprefeituraId: int | None
     tipoUnidadeAdmId: int | None
 
@@ -73,7 +71,6 @@ class CodigoIntegracaoContract(TypedDict):
     codigoUe: str
     nomeUe: str
     codigoIntegracao: str | None
-    # Campos institucionais expandidos
     tipoEscolaId: int | None
     tipoUnidadeId: int | None
     subprefeituraId: int | None

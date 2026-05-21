@@ -16,7 +16,6 @@ from apps.dre.api.views import (
 )
 
 urlpatterns = [
-    # Rotas específicas antes das genéricas com parâmetros
     path(
         "<str:codigo_eol_dre>/escolas/<int:tipo_escola_id>/",
         DreEscolasTipoView.as_view(),

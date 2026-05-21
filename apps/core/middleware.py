@@ -19,6 +19,14 @@ class ObservabilidadeMiddleware:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
+        """Processa a requisição injetando correlation ID e métricas de tempo.
+
+        Args:
+            request: Requisição HTTP recebida pelo Django.
+
+        Returns:
+            Resposta HTTP com headers X-Correlation-Id e X-Response-Time-Ms.
+        """
         correlation_id = (
             request.headers.get("X-Correlation-Id") or str(uuid.uuid4())
         )
@@ -31,7 +39,9 @@ class ObservabilidadeMiddleware:
         response["X-Correlation-Id"] = correlation_id
         response["X-Response-Time-Ms"] = str(elapsed_ms)
 
-        log_level = logging.WARNING if elapsed_ms > _SLOW_QUERY_MS else logging.DEBUG
+        log_level = (
+            logging.WARNING if elapsed_ms > _SLOW_QUERY_MS else logging.DEBUG
+        )
         logger.log(
             log_level,
             "method=%s path=%s status=%s elapsed_ms=%s correlation_id=%s",
@@ -53,7 +63,17 @@ class PrefixMiddleware:
         self.prefix = f"/{prefix.strip('/')}" if prefix else ""
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
+        """Reescreve o path da requisição removendo o prefixo configurado.
+
+        Args:
+            request: Requisição HTTP recebida pelo Django.
+
+        Returns:
+            Resposta HTTP após o roteamento com o path ajustado.
+        """
         if self.prefix and request.path_info.startswith(self.prefix):
-            request.path_info = request.path_info[len(self.prefix) :] or "/"
+            request.path_info = (
+                request.path_info[len(self.prefix):] or "/"
+            )
             request.path = request.path_info
         return self.get_response(request)  # type: ignore[return-value]
