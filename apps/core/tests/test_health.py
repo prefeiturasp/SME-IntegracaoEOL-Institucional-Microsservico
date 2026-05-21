@@ -9,6 +9,7 @@ class TestLiveness:
     """GET /institucional/api/health/live/"""
 
     def test_retorna_200_sem_autenticacao(self, db):
+        """Liveness não exige autenticação e retorna status ok."""
         from rest_framework.test import APIClient
 
         resp = APIClient().get("/api/v1/institucional/health/live/")
@@ -20,6 +21,7 @@ class TestReadiness:
     """GET /institucional/api/health/ready/"""
 
     def test_retorna_200_com_banco_ok(self, db):
+        """Readiness retorna 200 com check de banco bem-sucedido."""
         from rest_framework.test import APIClient
 
         resp = APIClient().get("/api/v1/institucional/health/ready/")
@@ -31,6 +33,7 @@ class TestReadiness:
         assert "latency_ms" in resp.data["checks"]["database"]
 
     def test_sem_autenticacao(self, db):
+        """Readiness é acessível sem autenticação."""
         from rest_framework.test import APIClient
 
         resp = APIClient().get("/api/v1/institucional/health/ready/")
@@ -41,6 +44,7 @@ class TestHealth:
     """GET /institucional/api/health/"""
 
     def test_retorna_200_com_versao(self, db):
+        """Health retorna versão e checks no payload."""
         from rest_framework.test import APIClient
 
         resp = APIClient().get("/api/v1/institucional/health/")
@@ -49,6 +53,7 @@ class TestHealth:
         assert "checks" in resp.data
 
     def test_sem_autenticacao(self, db):
+        """Health é acessível sem autenticação."""
         from rest_framework.test import APIClient
 
         resp = APIClient().get("/api/v1/institucional/health/")

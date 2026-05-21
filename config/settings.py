@@ -21,7 +21,16 @@ _POOL_OPTIONS = {
 
 
 def _parse_db_url(url: Any) -> dict:
-    """Converte uma URL postgres em dicionário de configuração Django."""
+    """Converte uma URL postgres em dicionário de configuração Django.
+
+    Args:
+        url: URL de conexão no formato ``postgres://user:pass@host:port/db``.
+            Aceita string ou bytes. Se vazio ou None, retorna SQLite in-memory.
+
+    Returns:
+        Dicionário de configuração de banco compatível com ``DATABASES``
+        do Django, usando o backend ``dj_db_conn_pool`` com pool configurado.
+    """
     if not url:
         return {
             "ENGINE": "django.db.backends.sqlite3",

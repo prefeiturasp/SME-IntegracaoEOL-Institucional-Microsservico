@@ -10,7 +10,7 @@ Copie ``.env.example`` para ``.env`` e ajuste:
 
     cp .env.example .env
 
-.. code-block:: env
+.. code-block:: ini
 
     DJANGO_SECRET_KEY=troque-por-uma-chave-secreta-forte
     DJANGO_DEBUG=1
@@ -77,8 +77,19 @@ Gerar schema estático:
 Gerar documentação Sphinx
 --------------------------
 
+Gere a documentação HTML:
+
 .. code-block:: bash
 
     docker compose -f docker-compose-dev.yml exec institucional bash -c "
-      pip install sphinx && sphinx-build -b html docs/ docs/_build/html
+      sphinx-build -b html docs/ docs/_build/html
     "
+
+A documentação gerada ficará em ``docs/_build/html/index.html``.
+
+O Sphinx está configurado com:
+
+- ``autodoc``: extrai docstrings dos módulos Python automaticamente.
+- ``napoleon``: interpreta docstrings no padrão Google (``Args``, ``Returns``, ``Raises``).
+- ``viewcode``: adiciona links para o código-fonte em cada símbolo documentado.
+- ``intersphinx``: links cruzados para a documentação do Python e do Django.

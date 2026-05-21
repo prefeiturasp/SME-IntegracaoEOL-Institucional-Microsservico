@@ -14,7 +14,6 @@ class UeBasicaContract(TypedDict):
     tipoEscola: str
     siglaTipoEscola: str
     codigoTipoEscola: int
-    # Campos institucionais expandidos
     tipoEscolaId: int | None
     tipoUnidadeId: int | None
     subprefeituraId: int | None
@@ -55,7 +54,6 @@ class UeCompletaContract(TypedDict):
     uf: str
     tipoUnidadeAdm: int | None
     descTipoUnidadeAdm: str | None
-    # Campos institucionais expandidos
     tipoEscolaId: int | None
     tipoUnidadeId: int | None
     subprefeituraId: int | None
@@ -79,7 +77,6 @@ class SincronizacaoUeContract(TypedDict):
     dreCodigo: int | None
     ueNome: str
     tipoEscolaCodigo: int | None
-    # Campos institucionais expandidos
     tipoEscolaId: int | None
     tipoUnidadeId: int | None
     subprefeituraId: int | None

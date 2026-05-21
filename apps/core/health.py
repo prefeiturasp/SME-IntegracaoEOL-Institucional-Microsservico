@@ -14,6 +14,11 @@ _VERSION = "1.0.0"
 
 
 def _db_ok() -> tuple[bool, float]:
+    """Testa a conexão com o banco de dados.
+
+    Returns:
+        Tupla (ok, latência_ms), onde ok indica se a conexão foi bem-sucedida.
+    """
     t0 = time.monotonic()
     try:
         connection.ensure_connection()

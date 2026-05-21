@@ -1,8 +1,6 @@
 Cross-Domain
 ============
 
-Ver :doc:`../docs/cross_domain_endpoints` para a matriz completa em Markdown.
-
 Resumo
 ------
 
