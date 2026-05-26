@@ -626,7 +626,7 @@ def listar_equipamentos(
         nome_escola,
         codigo_eol,
     )
-    rows = list(qs.order_by("nome"))
+    rows = list(qs.order_by("codigo_ue"))
     if not rows:
         return []
 

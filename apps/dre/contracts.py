@@ -61,8 +61,6 @@ class UnidadePredialContract(TypedDict):
     organizacaoParceira: bool
     quantidadeDeFuncionarios: int
     status: str | None
-    subprefeituraId: int | None
-    tipoUnidadeAdmId: int | None
 
 
 class CodigoIntegracaoContract(TypedDict):
