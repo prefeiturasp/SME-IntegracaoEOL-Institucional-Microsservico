@@ -320,10 +320,12 @@ def listar_tipos_escolas() -> list[TipoEscolaContract]:
         dt = getattr(t, "data_atualizacao", None) if tem_dt else None
         if dt is not None:
             dt = dt.astimezone(ZoneInfo("America/Sao_Paulo"))
-            dt_iso = (
-                dt.strftime("%Y-%m-%dT%H:%M:%S.")
-                + f"{dt.microsecond // 1000:03d}"
-            )
+            ms_val = dt.microsecond // 1000
+            if ms_val == 0:
+                dt_iso = dt.strftime("%Y-%m-%dT%H:%M:%S")
+            else:
+                ms = f"{ms_val:03d}".rstrip("0")
+                dt_iso = dt.strftime("%Y-%m-%dT%H:%M:%S.") + ms
         else:
             dt_iso = None
         result.append(TipoEscolaContract(
@@ -595,7 +597,7 @@ def listar_equipamentos(
         codigo_eol: Código EOL exato da escola para filtro.
 
     Returns:
-        Equipamentos que atendem aos filtros, ordenados por nome.
+        Equipamentos que atendem aos filtros, ordenados por código EOL.
     """
     campos_eq = [
         "codigo_ue",
@@ -624,7 +626,7 @@ def listar_equipamentos(
         nome_escola,
         codigo_eol,
     )
-    rows = list(qs.order_by("nome"))
+    rows = list(qs.order_by("codigo_ue"))
     if not rows:
         return []
 
