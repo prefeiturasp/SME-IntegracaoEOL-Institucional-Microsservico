@@ -597,7 +597,7 @@ def listar_equipamentos(
         codigo_eol: Código EOL exato da escola para filtro.
 
     Returns:
-        Equipamentos que atendem aos filtros, ordenados por nome.
+        Equipamentos que atendem aos filtros, ordenados por código EOL.
     """
     campos_eq = [
         "codigo_ue",
