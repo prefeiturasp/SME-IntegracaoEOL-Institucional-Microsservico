@@ -368,6 +368,8 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
                 organizacaoParceira=r["organizacao_parceira"],
                 quantidadeDeFuncionarios=r["quantidade_funcionarios"],
                 status=r["status"],
+                subprefeituraId=r["codigo_sub_prefeitura"],
+                tipoUnidadeAdmId=dre_obj.tipo_unidade_adm,
             )
         )
     return result

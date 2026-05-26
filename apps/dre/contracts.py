@@ -85,6 +85,8 @@ class UnidadePredialContract(TypedDict):
         organizacaoParceira: Indica se é organização parceira.
         quantidadeDeFuncionarios: Quantidade de funcionários.
         status: Status da unidade, ou None.
+        subprefeituraId: Código numérico da subprefeitura, ou None.
+        tipoUnidadeAdmId: Código numérico do tipo de unidade administrativa da DRE, ou None.
     """
 
     codigoEol: str
@@ -113,6 +115,8 @@ class UnidadePredialContract(TypedDict):
     organizacaoParceira: bool
     quantidadeDeFuncionarios: int
     status: str | None
+    subprefeituraId: int | None
+    tipoUnidadeAdmId: int | None
 
 
 class CodigoIntegracaoContract(TypedDict):
