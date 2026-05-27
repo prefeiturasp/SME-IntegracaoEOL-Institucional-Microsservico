@@ -274,7 +274,7 @@ def obter_ue_completa(codigo: str) -> UeCompletaContract | None:
     sigla_tipo = tipo.sigla.strip() if tipo and tipo.sigla else None
     telefone_raw = r["telefone_1"]
     if telefone_raw:
-        telefone_raw = _re.sub(r"^\(\d+\)\s*", "", telefone_raw).strip()
+        telefone_raw = _re.sub(r"^\(\s*\d+\s*\)\s*", "", telefone_raw).strip()
     return UeCompletaContract(
         nomeDRE=dre.nome if dre else "",
         siglaDRE=dre.sigla or "" if dre else "",
