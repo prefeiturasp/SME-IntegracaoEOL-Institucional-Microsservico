@@ -101,6 +101,7 @@ def listar_subprefeituras_por_dre(
         SubPrefeitura.objects.filter(codigo_sub_prefeitura__in=ids)
         .exclude(codigo_sub_prefeitura=99)
         .only("codigo_sub_prefeitura", "nome")
+        .order_by("codigo_sub_prefeitura")
     )
     return [
         SubPrefeiturarContract(
@@ -373,8 +374,6 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
             )
         )
     return result
-
-
 
 
 def listar_codigos_integracao_por_dre(
