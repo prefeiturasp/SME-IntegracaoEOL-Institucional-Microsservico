@@ -6,7 +6,13 @@ from apps.core.types import SubPrefeiturarContract  # noqa: F401 — re-export
 
 
 class DreResumoContract(TypedDict):
-    """Dados resumidos de Diretoria Regional de Educação."""
+    """Dados resumidos de Diretoria Regional de Educação.
+
+    Attributes:
+        codigoDRE: Código EOL da DRE.
+        nomeDRE: Nome completo da DRE.
+        siglaDRE: Sigla da DRE.
+    """
 
     codigoDRE: str
     nomeDRE: str
@@ -14,7 +20,24 @@ class DreResumoContract(TypedDict):
 
 
 class EscolaPorDreContract(TypedDict):
-    """Dados de escola vinculada a uma DRE."""
+    """Dados de escola vinculada a uma DRE.
+
+    Attributes:
+        codigoEscola: Código EOL da escola.
+        nomeEscola: Nome da escola.
+        codigoDRE: Código EOL da DRE.
+        tipoEscola: Descrição do tipo de escola.
+        siglaTipoEscola: Sigla do tipo de escola.
+        nomeDRE: Nome da DRE.
+        siglaDRE: Sigla da DRE.
+        codigoSubprefeitura: Código da subprefeitura como string.
+        nomeSubprefeitura: Nome da subprefeitura.
+        tipoEscolaId: Código numérico do tipo de escola.
+        tipoUnidadeId: Código numérico do tipo de unidade (igual a tipoEscolaId).
+        subprefeituraId: Código numérico da subprefeitura.
+        dreId: Código EOL da DRE (igual a codigoDRE).
+        codigoIntegracao: Código de integração externo, ou None.
+    """
 
     codigoEscola: str
     nomeEscola: str
@@ -33,7 +56,38 @@ class EscolaPorDreContract(TypedDict):
 
 
 class UnidadePredialContract(TypedDict):
-    """Dados completos de unidade predial."""
+    """Dados completos de unidade predial.
+
+    Attributes:
+        codigoEol: Código EOL da unidade.
+        nomeOficial: Nome oficial da unidade.
+        nomeNaoOficial: Nome não oficial (sigla/apelido), ou None.
+        tipoUnidadeAdmin: Descrição do tipo de unidade administrativa da DRE, ou None.
+        tipoUE: Descrição do tipo de escola, ou None.
+        logadouro: Logradouro do endereço, ou None.
+        numero: Número do endereço, ou None.
+        bairro: Bairro, ou None.
+        cep: CEP como inteiro sem formatação, ou None.
+        distrito: Distrito, ou None.
+        subPrefeitura: Nome da subprefeitura, ou None.
+        nomeDre: Nome da DRE.
+        email: E-mail de contato, ou None.
+        telefone1: Telefone principal, ou None.
+        telefone2: Telefone secundário, ou None.
+        anoConstrucao: Ano de construção, ou None.
+        propriedade: Tipo de propriedade do imóvel, ou None.
+        capacidadeVagasMatutino: Vagas no período matutino.
+        capacidadeVagasVespertino: Vagas no período vespertino.
+        capacidadeVagasNoturno: Vagas no período noturno.
+        capacidadeVagasIntermediario: Vagas no período intermediário.
+        capacidadeVagasIntegral: Vagas no período integral.
+        capacidadeVagasTotal: Total de vagas.
+        organizacaoParceira: Indica se é organização parceira.
+        quantidadeDeFuncionarios: Quantidade de funcionários.
+        status: Status da unidade, ou None.
+        subprefeituraId: Código numérico da subprefeitura, ou None.
+        tipoUnidadeAdmId: Código numérico do tipo de unidade administrativa da DRE, ou None.
+    """
 
     codigoEol: str
     nomeOficial: str
@@ -66,7 +120,17 @@ class UnidadePredialContract(TypedDict):
 
 
 class CodigoIntegracaoContract(TypedDict):
-    """Dados de código de integração de uma UE."""
+    """Dados de código de integração de uma UE.
+
+    Attributes:
+        codigoUe: Código EOL da unidade.
+        nomeUe: Nome da unidade.
+        codigoIntegracao: Código de integração externo, ou None.
+        tipoEscolaId: Código numérico do tipo de escola.
+        tipoUnidadeId: Código numérico do tipo de unidade (igual a tipoEscolaId).
+        subprefeituraId: Código numérico da subprefeitura.
+        dreId: Código EOL da DRE.
+    """
 
     codigoUe: str
     nomeUe: str
