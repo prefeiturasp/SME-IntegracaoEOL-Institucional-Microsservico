@@ -23,9 +23,12 @@ from apps.unidade_educacional.contracts import (
     UnidadeParceirasContract,
 )
 from apps.unidade_educacional.selectors import (
+    listar_codigos_ue_emei,
+    listar_codigos_ue_tipo_sgp,
     listar_equipamentos,
     listar_tipos_escolas,
     listar_ues_basicas,
+    listar_ues_recorte_fund_medio,
     listar_unidades_parceiras,
     obter_subprefeituras_ue,
     obter_sincronizacao_ue,
@@ -54,6 +57,19 @@ _UE_BASICA_FIELDS = {
     "subprefeituraId": serializers.IntegerField(allow_null=True),
     "dreId": serializers.CharField(),
     "codigoIntegracao": serializers.CharField(allow_null=True),
+}
+
+_UE_RECORTE_FIELDS = {
+    "codigo": serializers.CharField(),
+    "nome": serializers.CharField(),
+    "nomeExibicao": serializers.CharField(allow_null=True),
+    "tipoUnidade": serializers.CharField(allow_null=True),
+    "codigoTipoUnidadeEducacao": serializers.IntegerField(allow_null=True),
+    "codigoTipoEscola": serializers.IntegerField(allow_null=True),
+    "siglaTipoEscola": serializers.CharField(allow_null=True),
+    "codigoDRE": serializers.CharField(),
+    "nomeDRE": serializers.CharField(),
+    "siglaDRE": serializers.CharField(),
 }
 
 _UE_EOL_FIELDS = {
@@ -484,6 +500,163 @@ class UnidadeEducacionalListPostView(BaseAPIView):
             )
         items, _ = listar_ues_basicas(codigos)
         return Response(items)
+
+
+class UnidadeEducacionalRecorteFundMedioView(BaseAPIView):
+    """Filtra UEs por lista de códigos ao recorte de tipo (Fund/Médio)."""
+
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "array",
+                "items": {"type": "string"},
+            }
+        },
+        responses={
+            200: inline_serializer(
+                "UeRecorteFundMedio", fields=_UE_RECORTE_FIELDS, many=True
+            ),
+            400: _PROBLEM_DETAILS_SCHEMA,
+        },
+        description=(
+            "Filtra UEs por lista de códigos, restritas ao recorte de "
+            "tipo de escola EMEF/EMEFM/EMEBS/CEU EMEF (1, 3, 4, 16)."
+        ),
+        tags=_TAG_UE,
+        operation_id="ues_recorte_fund_medio",
+        examples=[
+            OpenApiExample(
+                "Exemplo de Requisição",
+                value=["019251", "019252"],
+                request_only=True,
+            )
+        ],
+    )
+    def post(self, request: Request) -> Response:
+        """Filtra as UEs informadas, mantendo só as do recorte de tipo.
+
+        Args:
+            request: Requisição com lista de códigos EOL no corpo JSON.
+
+        Returns:
+            UEs do recorte de tipo de escola para os códigos informados.
+
+        Raises:
+            ValidationError: Se o corpo não for uma lista não-vazia.
+        """
+        codigos = request.data
+        if not isinstance(codigos, list) or not codigos:
+            raise ValidationError(
+                "Lista de códigos é obrigatória e não pode ser vazia."
+            )
+        return Response(listar_ues_recorte_fund_medio(codigos))
+
+
+class UnidadeEducacionalRecorteEmeiView(BaseAPIView):
+    """Filtra códigos de UE ao recorte de tipo EMEI/CEU EMEI."""
+
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "array",
+                "items": {"type": "string"},
+            }
+        },
+        responses={
+            200: inline_serializer(
+                "UeRecorteEmei",
+                fields={"codigos_ue": serializers.ListField(
+                    child=serializers.CharField()
+                )},
+            ),
+            400: _PROBLEM_DETAILS_SCHEMA,
+        },
+        description=(
+            "Filtra a lista de códigos informada, retornando apenas os que "
+            "são de unidade EMEI/CEU EMEI (tp_escola 2, 17)."
+        ),
+        tags=_TAG_UE,
+        operation_id="ues_recorte_emei",
+        examples=[
+            OpenApiExample(
+                "Exemplo de Requisição",
+                value=["019251", "019252"],
+                request_only=True,
+            )
+        ],
+    )
+    def post(self, request: Request) -> Response:
+        """Filtra os códigos informados, mantendo só os de UE EMEI.
+
+        Args:
+            request: Requisição com lista de códigos EOL no corpo JSON.
+
+        Returns:
+            Códigos EMEI dentre os informados, em ``{"codigos_ue": [...]}``.
+
+        Raises:
+            ValidationError: Se o corpo não for uma lista não-vazia.
+        """
+        codigos = request.data
+        if not isinstance(codigos, list) or not codigos:
+            raise ValidationError(
+                "Lista de códigos é obrigatória e não pode ser vazia."
+            )
+        return Response({"codigos_ue": listar_codigos_ue_emei(codigos)})
+
+
+class UnidadeEducacionalRecorteTipoSgpView(BaseAPIView):
+    """Filtra códigos de UE ao recorte do perfil de professor."""
+
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "array",
+                "items": {"type": "string"},
+            }
+        },
+        responses={
+            200: inline_serializer(
+                "UeRecorteTipoSgp",
+                fields={"codigos_ue": serializers.ListField(
+                    child=serializers.CharField()
+                )},
+            ),
+            400: _PROBLEM_DETAILS_SCHEMA,
+        },
+        description=(
+            "Filtra a lista de códigos informada, retornando apenas os de "
+            "UE cujo tipo de escola está no recorte do perfil de professor "
+            "(parâmetro EOL tipo_escola_sgp)."
+        ),
+        tags=_TAG_UE,
+        operation_id="ues_recorte_tipo_sgp",
+        examples=[
+            OpenApiExample(
+                "Exemplo de Requisição",
+                value=["019251", "019252"],
+                request_only=True,
+            )
+        ],
+    )
+    def post(self, request: Request) -> Response:
+        """Filtra os códigos informados, mantendo só os do recorte SGP.
+
+        Args:
+            request: Requisição com lista de códigos EOL no corpo JSON.
+
+        Returns:
+            Códigos do recorte SGP em ``{"codigos_ue": [...]}``.
+
+        Raises:
+            ValidationError: Se o corpo não for uma lista não-vazia.
+        """
+        codigos = request.data
+        if not isinstance(codigos, list) or not codigos:
+            raise ValidationError(
+                "Lista de códigos é obrigatória e não pode ser vazia."
+            )
+        return Response({"codigos_ue": listar_codigos_ue_tipo_sgp(codigos)})
 
 
 class ProfessoresEscolaAnoView(BaseAPIView):
