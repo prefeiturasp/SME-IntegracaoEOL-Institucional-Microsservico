@@ -41,6 +41,7 @@ _TAG_UE = ["Escola"]
 _TAG_CD = ["CrossDomain"]
 
 _MSG_UNIDADE_NAO_ENCONTRADA = "Unidade não encontrada."
+_MSG_LISTA_OBRIGATORIA = "Lista de códigos é obrigatória e não pode ser vazia."
 
 # Dicts de fields para reutilização nos inline_serializer com many=True
 _UE_BASICA_FIELDS = {
@@ -495,9 +496,7 @@ class UnidadeEducacionalListPostView(BaseAPIView):
         """
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
-            raise ValidationError(
-                "Lista de códigos é obrigatória e não pode ser vazia."
-            )
+            raise ValidationError(_MSG_LISTA_OBRIGATORIA)
         items, _ = listar_ues_basicas(codigos)
         return Response(items)
 
@@ -546,9 +545,7 @@ class UnidadeEducacionalRecorteFundMedioView(BaseAPIView):
         """
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
-            raise ValidationError(
-                "Lista de códigos é obrigatória e não pode ser vazia."
-            )
+            raise ValidationError(_MSG_LISTA_OBRIGATORIA)
         return Response(listar_ues_recorte_fund_medio(codigos))
 
 
@@ -599,9 +596,7 @@ class UnidadeEducacionalRecorteEmeiView(BaseAPIView):
         """
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
-            raise ValidationError(
-                "Lista de códigos é obrigatória e não pode ser vazia."
-            )
+            raise ValidationError(_MSG_LISTA_OBRIGATORIA)
         return Response({"codigos_ue": listar_codigos_ue_emei(codigos)})
 
 
@@ -653,9 +648,7 @@ class UnidadeEducacionalRecorteTipoSgpView(BaseAPIView):
         """
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
-            raise ValidationError(
-                "Lista de códigos é obrigatória e não pode ser vazia."
-            )
+            raise ValidationError(_MSG_LISTA_OBRIGATORIA)
         return Response({"codigos_ue": listar_codigos_ue_tipo_sgp(codigos)})
 
 
@@ -1279,9 +1272,7 @@ class UnidadesParceirasView(BaseAPIView):
         """
         codigos = request.data
         if not isinstance(codigos, list) or not codigos:
-            raise ValidationError(
-                "Lista de códigos é obrigatória e não pode ser vazia."
-            )
+            raise ValidationError(_MSG_LISTA_OBRIGATORIA)
         return Response(listar_unidades_parceiras(codigos))
 
 
