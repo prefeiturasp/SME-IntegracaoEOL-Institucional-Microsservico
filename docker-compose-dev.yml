@@ -13,16 +13,8 @@ services:
       - .:/app
     command: >
       python -Xfrozen_modules=off -m debugpy
-      --listen 0.0.0.0:${PORT_DEBUGPY:-5679} manage.py runserver 0.0.0.0:${PORT_WEB:-8002}
+      --listen 0.0.0.0:5679 manage.py runserver 0.0.0.0:8002
     ports:
-      - "${PORT_WEB:-8007}:${PORT_WEB:-8002}"
+      - "${PORT_WEB:-8002}:${PORT_WEB:-8002}"
       - "${PORT_DEBUGPY:-5679}:${PORT_DEBUGPY:-5679}"
-    networks:
-      - default
-      - ms_etl_net
     restart: unless-stopped
-
-networks:
-  ms_etl_net:
-    name: sme-integracaoeol-ms-etl_default
-    external: true
