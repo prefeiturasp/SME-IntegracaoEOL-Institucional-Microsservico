@@ -816,3 +816,121 @@ class TestSwaggerFidelity:
         assert resp.status_code == 200
         content = resp.content.decode()
         assert "schema: {}" not in content
+
+
+class TestUesRecorteFundMedio:
+    """POST /api/escolas/recorte-fund-medio/ — filtro por tipo de escola."""
+
+    _URL = "/api/v1/institucional/escolas/recorte-fund-medio/"
+
+    def test_retorna_200_filtrando_tipo(
+        self, api_client, ue_factory, tipo_escola_factory
+    ):
+        """Mantém só a UE cujo tipo de escola está no recorte."""
+        tipo_escola_factory(codigo_tipo_escola=1, sigla="EMEF")
+        tipo_escola_factory(codigo_tipo_escola=2, sigla="EMEI")
+        ue_factory(codigo_ue="011111", codigo_tipo_escola=1)
+        ue_factory(codigo_ue="022222", codigo_tipo_escola=2)
+
+        resp = api_client.post(
+            self._URL, ["011111", "022222"], format="json"
+        )
+
+        assert resp.status_code == 200
+        assert [u["codigo"] for u in resp.data] == ["011111"]
+        item = resp.data[0]
+        for campo in [
+            "codigo",
+            "nome",
+            "nomeExibicao",
+            "tipoUnidade",
+            "codigoTipoUnidadeEducacao",
+            "codigoTipoEscola",
+            "siglaTipoEscola",
+            "codigoDRE",
+            "nomeDRE",
+            "siglaDRE",
+        ]:
+            assert campo in item
+
+    def test_lista_vazia_retorna_400(self, api_client, db):
+        """Lista vazia retorna 400."""
+        resp = api_client.post(self._URL, [], format="json")
+        assert resp.status_code == 400
+
+    def test_sem_api_key_retorna_401(self, db):
+        """Sem API key retorna 401."""
+        from rest_framework.test import APIClient
+
+        resp = APIClient().post(self._URL, ["011111"], format="json")
+        assert resp.status_code == 401
+
+
+class TestUesRecorteTipoSgp:
+    """ Testa recortes do filtro por tipo de escola SGP."""
+
+    _URL = "/api/v1/institucional/escolas/recorte-tipo-sgp/"
+
+    def test_retorna_200_filtrando_sgp(
+        self, api_client, ue_factory, tipo_escola_factory
+    ):
+        """Mantém só os códigos cujo tipo está no recorte SGP."""
+        tipo_escola_factory(codigo_tipo_escola=2, sigla="EMEI")
+        tipo_escola_factory(codigo_tipo_escola=99, sigla="OUTRO")
+        ue_factory(codigo_ue="011111", codigo_tipo_escola=2)
+        ue_factory(codigo_ue="022222", codigo_tipo_escola=99)
+
+        resp = api_client.post(
+            self._URL, ["011111", "022222"], format="json"
+        )
+
+        assert resp.status_code == 200
+        assert resp.data["codigos_ue"] == ["011111"]
+
+    def test_lista_vazia_retorna_400(self, api_client, db):
+        """Lista vazia retorna 400."""
+        resp = api_client.post(self._URL, [], format="json")
+        assert resp.status_code == 400
+
+    def test_sem_api_key_retorna_401(self, db):
+        """Sem API key retorna 401."""
+        from rest_framework.test import APIClient
+
+        resp = APIClient().post(self._URL, ["011111"], format="json")
+        assert resp.status_code == 401
+
+
+class TestUesRecorteEmei:
+    """Testa recores EMEI do filtro por tipo EMEI (2, 17)."""
+
+    _URL = "/api/v1/institucional/escolas/recorte-emei/"
+
+    def test_retorna_200_filtrando_emei(
+        self, api_client, ue_factory, tipo_escola_factory
+    ):
+        """Mantém só os códigos de UE EMEI (tp_escola 2 e 17)."""
+        tipo_escola_factory(codigo_tipo_escola=1, sigla="EMEF")
+        tipo_escola_factory(codigo_tipo_escola=2, sigla="EMEI")
+        tipo_escola_factory(codigo_tipo_escola=17, sigla="CEU EMEI")
+        ue_factory(codigo_ue="011111", codigo_tipo_escola=1)
+        ue_factory(codigo_ue="022222", codigo_tipo_escola=2)
+        ue_factory(codigo_ue="033333", codigo_tipo_escola=17)
+
+        resp = api_client.post(
+            self._URL, ["011111", "022222", "033333"], format="json"
+        )
+
+        assert resp.status_code == 200
+        assert sorted(resp.data["codigos_ue"]) == ["022222", "033333"]
+
+    def test_lista_vazia_retorna_400(self, api_client, db):
+        """Lista vazia retorna 400."""
+        resp = api_client.post(self._URL, [], format="json")
+        assert resp.status_code == 400
+
+    def test_sem_api_key_retorna_401(self, db):
+        """Sem API key retorna 401."""
+        from rest_framework.test import APIClient
+
+        resp = APIClient().post(self._URL, ["011111"], format="json")
+        assert resp.status_code == 401
