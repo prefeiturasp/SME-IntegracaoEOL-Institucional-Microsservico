@@ -278,3 +278,91 @@ class TestListarUnidadesParceiras:
         resultado = listar_unidades_parceiras(["019251"])
         assert len(resultado) == 1
         assert resultado[0]["codigo"] == "019251"
+
+
+class TestListarUesRecorteFundMedio:
+    """Cobre listar_ues_recorte_fund_medio(): filtro por tipo de escola."""
+
+    def test_lista_vazia_retorna_vazio(self, db):
+        """Sem códigos retorna lista vazia."""
+        from apps.unidade_educacional.selectors import (
+            listar_ues_recorte_fund_medio,
+        )
+
+        assert listar_ues_recorte_fund_medio([]) == []
+
+    def test_inclui_apenas_tipos_do_recorte(
+        self, ue_factory, tipo_escola_factory
+    ):
+        """Mantém só UEs com tipo de escola no recorte (1,3,4,16)."""
+        from apps.unidade_educacional.selectors import (
+            listar_ues_recorte_fund_medio,
+        )
+
+        tipo_escola_factory(codigo_tipo_escola=1, sigla="EMEF")
+        tipo_escola_factory(codigo_tipo_escola=2, sigla="EMEI")
+        ue_factory(codigo_ue="011111", codigo_tipo_escola=1)
+        ue_factory(codigo_ue="022222", codigo_tipo_escola=2)
+
+        resultado = listar_ues_recorte_fund_medio(["011111", "022222"])
+
+        assert [u["codigo"] for u in resultado] == ["011111"]
+        item = resultado[0]
+        assert item["codigoTipoEscola"] == 1
+        assert item["siglaTipoEscola"] == "EMEF"
+        assert "nomeDRE" in item
+        assert "siglaDRE" in item
+
+
+class TestListarCodigosUeEmei:
+    """Cobre listar_codigos_ue_emei(): filtro por tipo EMEI (2, 17)."""
+
+    def test_lista_vazia_retorna_vazio(self, db):
+        """Sem códigos retorna lista vazia."""
+        from apps.unidade_educacional.selectors import listar_codigos_ue_emei
+
+        assert listar_codigos_ue_emei([]) == []
+
+    def test_inclui_apenas_tipos_emei(self, ue_factory, tipo_escola_factory):
+        """Mantém só códigos de UE EMEI/CEU EMEI (2, 17)."""
+        from apps.unidade_educacional.selectors import listar_codigos_ue_emei
+
+        tipo_escola_factory(codigo_tipo_escola=1, sigla="EMEF")
+        tipo_escola_factory(codigo_tipo_escola=2, sigla="EMEI")
+        tipo_escola_factory(codigo_tipo_escola=17, sigla="CEU EMEI")
+        ue_factory(codigo_ue="011111", codigo_tipo_escola=1)
+        ue_factory(codigo_ue="022222", codigo_tipo_escola=2)
+        ue_factory(codigo_ue="033333", codigo_tipo_escola=17)
+
+        resultado = listar_codigos_ue_emei(["011111", "022222", "033333"])
+
+        assert sorted(resultado) == ["022222", "033333"]
+
+
+class TestListarCodigosUeTipoSgp:
+    """Cobre listar_codigos_ue_tipo_sgp(): recorte do parâmetro SGP."""
+
+    def test_lista_vazia_retorna_vazio(self, db):
+        """Sem códigos retorna lista vazia."""
+        from apps.unidade_educacional.selectors import (
+            listar_codigos_ue_tipo_sgp,
+        )
+
+        assert listar_codigos_ue_tipo_sgp([]) == []
+
+    def test_exclui_tipo_fora_do_recorte(
+        self, ue_factory, tipo_escola_factory
+    ):
+        """Mantém tipos do recorte SGP e exclui os de fora (ex.: 99)."""
+        from apps.unidade_educacional.selectors import (
+            listar_codigos_ue_tipo_sgp,
+        )
+
+        tipo_escola_factory(codigo_tipo_escola=2, sigla="EMEI")
+        tipo_escola_factory(codigo_tipo_escola=99, sigla="OUTRO")
+        ue_factory(codigo_ue="011111", codigo_tipo_escola=2)
+        ue_factory(codigo_ue="022222", codigo_tipo_escola=99)
+
+        resultado = listar_codigos_ue_tipo_sgp(["011111", "022222"])
+
+        assert resultado == ["011111"]

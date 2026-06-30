@@ -61,6 +61,25 @@ class UeCompletaContract(TypedDict):
     codigoIntegracao: str | None
 
 
+class UeRecorteContract(TypedDict):
+    """Dados de UE no recorte de tipo de escola (Fund/Médio).
+
+    Campos usados na composição de turmas atribuídas ao professor
+    (escola + DRE + tipo).
+    """
+
+    codigo: str
+    nome: str
+    nomeExibicao: str | None
+    tipoUnidade: str | None
+    codigoTipoUnidadeEducacao: int | None
+    codigoTipoEscola: int | None
+    siglaTipoEscola: str | None
+    codigoDRE: str
+    nomeDRE: str
+    siglaDRE: str
+
+
 class TipoEscolaContract(TypedDict):
     """Dados de tipo de escola."""
 

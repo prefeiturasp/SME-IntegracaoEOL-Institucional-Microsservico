@@ -28,6 +28,9 @@ from apps.unidade_educacional.api.views import (
     UnidadeEducacionalAdminSgpView,
     UnidadeEducacionalDetalheView,
     UnidadeEducacionalListPostView,
+    UnidadeEducacionalRecorteEmeiView,
+    UnidadeEducacionalRecorteFundMedioView,
+    UnidadeEducacionalRecorteTipoSgpView,
     UnidadeEolView,
     UnidadesParceirasView,
 )
@@ -72,6 +75,21 @@ urlpatterns = [
         "todas-unidades/",
         TodasUnidadesView.as_view(),
         name="ue-todas-unidades",
+    ),
+    path(
+        "recorte-fund-medio/",
+        UnidadeEducacionalRecorteFundMedioView.as_view(),
+        name="ue-recorte-fund-medio",
+    ),
+    path(
+        "recorte-emei/",
+        UnidadeEducacionalRecorteEmeiView.as_view(),
+        name="ue-recorte-emei",
+    ),
+    path(
+        "recorte-tipo-sgp/",
+        UnidadeEducacionalRecorteTipoSgpView.as_view(),
+        name="ue-recorte-tipo-sgp",
     ),
     path(
         "<str:codigo_ue>/administrador-sgp/",

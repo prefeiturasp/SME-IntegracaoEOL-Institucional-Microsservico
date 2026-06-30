@@ -12,9 +12,18 @@ from apps.unidade_educacional.contracts import (
     UeBasicaContract,
     UeCompletaContract,
     UeEolContract,
+    UeRecorteContract,
     UnidadeParceirasContract,
 )
 from apps.unidade_educacional.models import UnidadeEducacional
+
+# EMEF (1), EMEFM (3), EMEBS (4), CEU EMEF (16).
+_TIPOS_ESCOLA_RECORTE_FUND_MEDIO = (1, 3, 4, 16)
+_TIPOS_ESCOLA_EMEI = (2, 17)
+_TIPOS_ESCOLA_SGP = (
+    1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 25, 26, 27,
+    28, 29, 30, 31, 32, 33,
+)
 
 
 def _lookup_dres(ids: set[str]) -> dict[str, DRE]:
@@ -170,6 +179,116 @@ def listar_ues_basicas(
     dres = _lookup_dres(dre_ids)
     tipos = _lookup_tipos(tipo_ids)
     return [_build_ue_basica(r, dres, tipos) for r in rows], total
+
+
+def _build_ue_recorte(
+    r: dict,
+    dres: dict[str, DRE],
+    tipos: dict[int, TipoEscola],
+) -> UeRecorteContract:
+    """Monta contrato de UE do recorte a partir de linha e lookups.
+
+    Args:
+        r: Linha de dados brutos da UE (campos do .values()).
+        dres: Lookup de DREs indexado por código EOL.
+        tipos: Lookup de tipos de escola indexado por código.
+
+    Returns:
+        Contrato de UE do recorte com DRE e tipo de escola resolvidos.
+    """
+    dre = dres.get(r["codigo_dre"])
+    tipo = (
+        tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
+    )
+    return UeRecorteContract(
+        codigo=r["codigo_ue"],
+        nome=r["nome"],
+        nomeExibicao=r.get("nome_nao_oficial"),
+        tipoUnidade=r.get("tipo_ue"),
+        codigoTipoUnidadeEducacao=r.get("codigo_tipo_unidade_educacao"),
+        codigoTipoEscola=r["codigo_tipo_escola"],
+        siglaTipoEscola=(tipo.sigla.strip() if tipo and tipo.sigla else None),
+        codigoDRE=r["codigo_dre"],
+        nomeDRE=dre.nome if dre else "",
+        siglaDRE=dre.sigla or "" if dre else "",
+    )
+
+
+def listar_ues_recorte_fund_medio(
+    codigos: list[str],
+) -> list[UeRecorteContract]:
+    """Lista UEs dos códigos informados restritas ao recorte de tipo.
+
+    Mantém apenas UEs cujo tipo escola está em EMEF/EMEFM/EMEBS/
+    CEU EMEF.
+
+    Args:
+        codigos: Lista de códigos EOL das UEs a consultar.
+
+    Returns:
+        Lista de UEs do recorte com dados de DRE e tipo de escola.
+    """
+    if not codigos:
+        return []
+    rows = list(
+        UnidadeEducacional.objects.filter(
+            codigo_ue__in=codigos,
+            codigo_tipo_escola__in=_TIPOS_ESCOLA_RECORTE_FUND_MEDIO,
+        ).values(
+            "codigo_ue",
+            "nome",
+            "nome_nao_oficial",
+            "tipo_ue",
+            "codigo_tipo_unidade_educacao",
+            "codigo_dre",
+            "codigo_tipo_escola",
+        )
+    )
+    if not rows:
+        return []
+    dres = _lookup_dres({r["codigo_dre"] for r in rows})
+    tipos = _lookup_tipos(
+        {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
+    )
+    return [_build_ue_recorte(r, dres, tipos) for r in rows]
+
+
+def listar_codigos_ue_emei(codigos: list[str]) -> list[str]:
+    """Lista os códigos informados que são de unidade EMEI.
+
+    Args:
+        codigos: Lista de códigos EOL das UEs a consultar.
+
+    Returns:
+        Subconjunto dos códigos informados cujo tipo de escola é EMEI.
+    """
+    if not codigos:
+        return []
+    return list(
+        UnidadeEducacional.objects.filter(
+            codigo_ue__in=codigos,
+            codigo_tipo_escola__in=_TIPOS_ESCOLA_EMEI,
+        ).values_list("codigo_ue", flat=True)
+    )
+
+
+def listar_codigos_ue_tipo_sgp(codigos: list[str]) -> list[str]:
+    """Lista, dentre os códigos, os que estão no recorte do tipo escola SGP``.
+
+    Args:
+        codigos: Lista de códigos EOL das UEs a consultar.
+
+    Returns:
+        Subconjunto dos códigos cujo tipo de escola está no recorte SGP.
+    """
+    if not codigos:
+        return []
+    return list(
+        UnidadeEducacional.objects.filter(
+            codigo_ue__in=codigos,
+            codigo_tipo_escola__in=_TIPOS_ESCOLA_SGP,
+        ).values_list("codigo_ue", flat=True)
+    )
 
 
 def obter_ue_basica_por_codigo(codigo: str) -> UeBasicaContract | None:
