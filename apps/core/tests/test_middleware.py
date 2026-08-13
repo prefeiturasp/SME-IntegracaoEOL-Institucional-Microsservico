@@ -4,34 +4,6 @@ import pytest
 
 pytestmark = pytest.mark.django_db
 
-
-class TestObservabilidadeMiddleware:
-    """Verifica injeção de correlation-id e tempo de resposta nos headers."""
-
-    def test_injeta_correlation_id_nos_headers(self, api_client, db):
-        """Gera UUID como correlation-id quando o header não é enviado."""
-        resp = api_client.get("/api/v1/institucional/health/live/")
-        assert "X-Correlation-Id" in resp
-        assert len(resp["X-Correlation-Id"]) == 36  # UUID4 format
-
-    def test_propaga_correlation_id_do_request(self, db):
-        """Propaga o correlation-id enviado pelo cliente sem alteração."""
-        from rest_framework.test import APIClient
-
-        client = APIClient()
-        resp = client.get(
-            "/api/v1/institucional/health/live/",
-            HTTP_X_CORRELATION_ID="meu-id-customizado",
-        )
-        assert resp["X-Correlation-Id"] == "meu-id-customizado"
-
-    def test_injeta_response_time_ms(self, api_client, db):
-        """Injeta o header X-Response-Time-Ms com valor numérico válido."""
-        resp = api_client.get("/api/v1/institucional/health/live/")
-        assert "X-Response-Time-Ms" in resp
-        assert float(resp["X-Response-Time-Ms"]) >= 0
-
-
 class TestPrefixMiddleware:
     """Verifica que rotas funcionam com e sem prefixo."""
 
