@@ -19,6 +19,20 @@ class DreResumoContract(TypedDict):
     siglaDRE: str
 
 
+class DreNomeAbreviacaoContract(TypedDict):
+    """Dados de identificação de uma Diretoria Regional de Educação.
+
+    Attributes:
+        codigo: Código EOL da DRE.
+        nome: Nome completo da DRE.
+        abreviacao: Nome abreviado da DRE, quando disponível.
+    """
+
+    codigo: str
+    nome: str
+    abreviacao: str | None
+
+
 class EscolaPorDreContract(TypedDict):
     """Dados de escola vinculada a uma DRE.
 

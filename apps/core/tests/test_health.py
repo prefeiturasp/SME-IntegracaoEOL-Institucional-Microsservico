@@ -1,6 +1,9 @@
 """Testes dos endpoints de health check."""
 
+from unittest.mock import patch
+
 import pytest
+from django.db.utils import OperationalError
 
 pytestmark = pytest.mark.django_db
 
@@ -38,6 +41,20 @@ class TestReadiness:
 
         resp = APIClient().get("/api/v1/institucional/health/ready/")
         assert resp.status_code in (200, 503)
+
+    @patch(
+        "apps.core.health.connection.ensure_connection",
+        side_effect=OperationalError,
+    )
+    def test_retorna_503_com_banco_indisponivel(self, _ensure_connection, db):
+        """Readiness informa degradação quando o banco está indisponível."""
+        from rest_framework.test import APIClient
+
+        resp = APIClient().get("/api/v1/institucional/health/ready/")
+
+        assert resp.status_code == 503
+        assert resp.data["status"] == "degraded"
+        assert resp.data["checks"]["database"]["ok"] is False
 
 
 class TestHealth:

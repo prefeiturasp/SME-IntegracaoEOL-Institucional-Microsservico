@@ -5,11 +5,12 @@ from typing import Any
 from apps.core.types import SubPrefeiturarContract
 from apps.dre.contracts import (
     CodigoIntegracaoContract,
+    DreNomeAbreviacaoContract,
     DreResumoContract,
     EscolaPorDreContract,
     UnidadePredialContract,
 )
-from apps.dre.models import DRE, SubPrefeitura, TipoEscola
+from apps.dre.models import DRE, DREAbrangencia, SubPrefeitura, TipoEscola
 from apps.unidade_educacional.models import UnidadeEducacional
 
 
@@ -27,6 +28,38 @@ def listar_dres() -> list[DreResumoContract]:
             siglaDRE=d.sigla or "",
         )
         for d in qs
+    ]
+
+
+def listar_codigos_dres_abrangencia() -> list[str]:
+    """Lista os códigos das DREs com oferta educacional válida.
+
+    Returns:
+        Códigos das DREs na ordem produzida pela consulta de origem.
+    """
+    return list(
+        DREAbrangencia.objects.values_list("codigo_dre", flat=True).order_by(
+            "ordem"
+        )
+    )
+
+
+def listar_nomes_abreviacoes_dres() -> list[DreNomeAbreviacaoContract]:
+    """Lista a identificação das DREs com oferta educacional válida.
+
+    Returns:
+        Dados das DREs na ordem produzida pela consulta de origem.
+    """
+    registros = DREAbrangencia.objects.values_list(
+        "codigo_dre", "nome", "abreviacao"
+    ).order_by("ordem")
+    return [
+        DreNomeAbreviacaoContract(
+            codigo=codigo,
+            nome=nome,
+            abreviacao=abreviacao,
+        )
+        for codigo, nome, abreviacao in registros
     ]
 
 

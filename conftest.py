@@ -23,6 +23,12 @@ def django_db_setup(django_test_environment, django_db_blocker):
             tipo_unidade_adm INTEGER,
             descricao_unidade_adm VARCHAR(200)
         );
+        CREATE TABLE IF NOT EXISTS dre_abrangencia (
+            codigo_dre VARCHAR(20) PRIMARY KEY,
+            nome VARCHAR(200) NOT NULL,
+            abreviacao VARCHAR(100),
+            ordem INTEGER NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS sub_prefeitura (
             codigo_sub_prefeitura INTEGER PRIMARY KEY,
             sigla VARCHAR(20),
@@ -210,3 +216,21 @@ def ue_factory(db, dre_factory, tipo_escola_factory, subprefeitura_factory):
         return obj
 
     return _create
+
+
+@pytest.fixture
+def dre_abrangencia_factory(db):
+    """Cria DREs elegíveis para abrangência no banco de testes."""
+    from apps.dre.models import DREAbrangencia
+
+    def criar_dre_abrangencia(**valores):
+        numero = DREAbrangencia.objects.using("default").count() + 1
+        return DREAbrangencia.objects.using("default").create(
+            codigo_dre=valores.pop("codigo_dre", f"10810{numero}"),
+            nome=valores.pop("nome", f"DRE TESTE {numero}"),
+            abreviacao=valores.pop("abreviacao", f"DRE - {numero}"),
+            ordem=valores.pop("ordem", numero),
+            **valores,
+        )
+
+    return criar_dre_abrangencia

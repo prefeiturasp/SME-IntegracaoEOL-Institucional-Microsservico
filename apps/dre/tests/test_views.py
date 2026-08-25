@@ -1,8 +1,76 @@
 """Testes comportamentais e de contrato — domínio DRE (D01-D11)."""
 
 import pytest
+from rest_framework.test import APIClient
 
 pytestmark = pytest.mark.django_db
+
+_URL_CODIGOS_ABRANGENCIA = "/api/abrangencia/codigos-dres"
+_URL_NOMES_ABRANGENCIA = "/api/abrangencia/nome-abreviacao-dres"
+_URLS_ABRANGENCIA = (_URL_CODIGOS_ABRANGENCIA, _URL_NOMES_ABRANGENCIA)
+
+
+class TestEndpointsAbrangencia:
+    """Valida as consultas de DREs disponíveis na tag Abrangencia."""
+
+    @pytest.mark.parametrize(
+        ("url", "esperado"),
+        [
+            (_URL_CODIGOS_ABRANGENCIA, ["108100", "108200"]),
+            (
+                _URL_NOMES_ABRANGENCIA,
+                [
+                    {
+                        "codigo": "108100",
+                        "nome": "DRE A",
+                        "abreviacao": "DRE-A",
+                    },
+                    {
+                        "codigo": "108200",
+                        "nome": "DRE B",
+                        "abreviacao": None,
+                    },
+                ],
+            ),
+        ],
+    )
+    def test_retorna_contrato_legado(
+        self, api_client, dre_abrangencia_factory, url, esperado
+    ):
+        """Retorna os dados das DREs na ordem materializada pelo ETL."""
+        dre_abrangencia_factory(
+            codigo_dre="108200", nome="DRE B", abreviacao=None, ordem=2
+        )
+        dre_abrangencia_factory(
+            codigo_dre="108100", nome="DRE A", abreviacao="DRE-A", ordem=1
+        )
+
+        resp = api_client.get(url)
+
+        assert resp.status_code == 200
+        assert resp.data == esperado
+
+    @pytest.mark.parametrize("url", _URLS_ABRANGENCIA)
+    def test_sem_dres_elegiveis_retorna_204(self, api_client, db, url):
+        """Retorna sem conteúdo quando não há DREs elegíveis."""
+        resp = api_client.get(url)
+
+        assert resp.status_code == 204
+        assert resp.data is None
+
+    @pytest.mark.parametrize("url", _URLS_ABRANGENCIA)
+    def test_sem_api_key_retorna_401_ou_403(self, db, url):
+        """Exige a API key configurada pelo microsserviço."""
+        assert APIClient().get(url).status_code in (401, 403)
+
+    @pytest.mark.parametrize("url", _URLS_ABRANGENCIA)
+    def test_schema_expoe_tag_abrangencia(self, api_client, db, url):
+        """Publica a consulta na tag Abrangencia do Swagger."""
+        resp = api_client.get(
+            "/api/v1/institucional/schema/", HTTP_ACCEPT="application/json"
+        )
+
+        assert resp.data["paths"][url]["get"]["tags"] == ["Abrangencia"]
 
 
 class TestAutenticacaoDre:

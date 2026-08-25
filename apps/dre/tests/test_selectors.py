@@ -2,7 +2,87 @@
 
 import pytest
 
+from apps.dre.selectors import (
+    listar_codigos_dres_abrangencia,
+    listar_nomes_abreviacoes_dres,
+)
+
 pytestmark = pytest.mark.django_db
+
+
+class TestDREAbrangencia:
+    """Valida o modelo materializado para consultas de abrangência."""
+
+    @pytest.mark.parametrize(
+        ("abreviacao", "identificacao"),
+        [("DRE IP", "DRE IP"), (None, "DRE IPIRANGA")],
+    )
+    def test_representacao_textual(
+        self, dre_abrangencia_factory, abreviacao, identificacao
+    ):
+        """Usa a abreviação disponível ou recorre ao nome da DRE."""
+        dre = dre_abrangencia_factory(
+            codigo_dre="108100",
+            nome="DRE IPIRANGA",
+            abreviacao=abreviacao,
+        )
+
+        assert str(dre) == f"108100 - {identificacao}"
+
+    def test_representacoes_textuais_dos_modelos_dre(self):
+        """Representa os demais modelos de referência do domínio."""
+        from apps.dre.models import DRE, SubPrefeitura, TipoEscola
+
+        assert str(TipoEscola(codigo_tipo_escola=1, descricao="EMEF")) == (
+            "1 - EMEF"
+        )
+        assert str(DRE(codigo_dre="108100", nome="IPIRANGA")) == (
+            "108100 - IPIRANGA"
+        )
+        assert str(SubPrefeitura(nome="IPIRANGA")) == "IPIRANGA"
+
+
+class TestSelectorsAbrangencia:
+    """Valida as consultas de DREs elegíveis para abrangência."""
+
+    @pytest.mark.parametrize(
+        "selector",
+        [listar_codigos_dres_abrangencia, listar_nomes_abreviacoes_dres],
+    )
+    def test_retorna_lista_vazia_sem_dres_elegiveis(self, db, selector):
+        """Sem DREs elegíveis retorna lista vazia."""
+        assert selector() == []
+
+    def test_retorna_codigos_na_ordem_da_origem(
+        self, dre_abrangencia_factory
+    ):
+        """Retorna apenas os códigos na ordem materializada pelo ETL."""
+        dre_abrangencia_factory(codigo_dre="108200", nome="DRE B", ordem=2)
+        dre_abrangencia_factory(codigo_dre="108100", nome="DRE A", ordem=1)
+
+        assert listar_codigos_dres_abrangencia() == ["108100", "108200"]
+
+    def test_retorna_nomes_e_abreviacoes_na_ordem_da_origem(
+        self, dre_abrangencia_factory
+    ):
+        """Retorna o contrato legado na ordem materializada pelo ETL."""
+        dre_abrangencia_factory(
+            codigo_dre="108200", nome="DRE B", abreviacao=None, ordem=2
+        )
+        dre_abrangencia_factory(
+            codigo_dre="108100", nome="DRE A", abreviacao="DRE-A", ordem=1
+        )
+
+        assert listar_nomes_abreviacoes_dres() == [
+            {"codigo": "108100", "nome": "DRE A", "abreviacao": "DRE-A"},
+            {"codigo": "108200", "nome": "DRE B", "abreviacao": None},
+        ]
+
+    def test_ignora_dre_administrativa_sem_abrangencia(self, dre_factory):
+        """DRE genérica não aparece sem registro no read model."""
+        dre_factory(codigo_dre="108100", nome="DRE SEM OFERTA")
+
+        assert listar_codigos_dres_abrangencia() == []
 
 
 class TestListarDres:
