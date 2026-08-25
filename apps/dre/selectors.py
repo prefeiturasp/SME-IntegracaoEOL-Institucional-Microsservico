@@ -5,11 +5,12 @@ from typing import Any
 from apps.core.types import SubPrefeiturarContract
 from apps.dre.contracts import (
     CodigoIntegracaoContract,
+    DreNomeAbreviacaoContract,
     DreResumoContract,
     EscolaPorDreContract,
     UnidadePredialContract,
 )
-from apps.dre.models import DRE, SubPrefeitura, TipoEscola
+from apps.dre.models import DRE, DREAbrangencia, SubPrefeitura, TipoEscola
 from apps.unidade_educacional.models import UnidadeEducacional
 
 
@@ -27,6 +28,40 @@ def listar_dres() -> list[DreResumoContract]:
             siglaDRE=d.sigla or "",
         )
         for d in qs
+    ]
+
+
+def listar_codigos_dres_abrangencia() -> list[str]:
+    """Lista os códigos das DREs com oferta educacional válida.
+
+    Returns:
+        Códigos das DREs na ordem produzida pela consulta de origem.
+    """
+    return list(
+        DREAbrangencia.objects.values_list("codigo_dre", flat=True).order_by(
+            "ordem"
+        )
+    )
+
+
+def listar_nomes_abreviacoes_dres() -> list[DreNomeAbreviacaoContract]:
+    """Lista a identificação das DREs com oferta educacional válida.
+
+    Returns:
+        Dados das DREs na ordem produzida pela consulta de origem.
+    """
+    registros = DREAbrangencia.objects.values_list(
+        "codigo_dre",
+        "nome",
+        "abreviacao",
+    ).order_by("ordem")
+    return [
+        DreNomeAbreviacaoContract(
+            codigo=codigo,
+            nome=nome,
+            abreviacao=abreviacao,
+        )
+        for codigo, nome, abreviacao in registros
     ]
 
 
@@ -117,8 +152,8 @@ def listar_subprefeituras_por_dre(
 
 # Variantes CEU agrupadas no EOL junto ao tipo base.
 _CEU_SUBTIPOS: dict[int, list[int]] = {
-    1: [16],   # EMEF + CEU EMEF
-    2: [17],   # EMEI + CEU EMEI
+    1: [16],  # EMEF + CEU EMEF
+    2: [17],  # EMEI + CEU EMEI
     10: [18],  # CEI DIRET + CEU CEI
     28: [31],  # CEMEI + CEU CEMEI
 }
@@ -175,9 +210,7 @@ def listar_escolas_por_dre(
         return []
 
     tipo_ids = {
-        r["codigo_tipo_escola"]
-        for r in rows
-        if r["codigo_tipo_escola"]
+        r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]
     }
     tipos = {
         t.codigo_tipo_escola: t
@@ -187,9 +220,7 @@ def listar_escolas_por_dre(
     }
 
     sub_ids = {
-        r["codigo_sub_prefeitura"]
-        for r in rows
-        if r["codigo_sub_prefeitura"]
+        r["codigo_sub_prefeitura"] for r in rows if r["codigo_sub_prefeitura"]
     }
     subs = {
         s.codigo_sub_prefeitura: s
@@ -265,16 +296,15 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
     try:
         dre_obj = DRE.objects.only(
             "codigo_dre", "nome", "tipo_unidade_adm", "descricao_unidade_adm"
-        ).get(
-            codigo_dre=codigo_dre
-        )
+        ).get(codigo_dre=codigo_dre)
     except DRE.DoesNotExist:
         return []
 
     rows = list(
         UnidadeEducacional.objects.filter(
             codigo_dre=codigo_dre,
-        ).values(
+        )
+        .values(
             "codigo_ue",
             "nome",
             "nome_nao_oficial",
@@ -300,15 +330,14 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
             "status",
             "codigo_sub_prefeitura",
             "codigo_tipo_escola",
-        ).order_by("codigo_ue")
+        )
+        .order_by("codigo_ue")
     )
     if not rows:
         return []
 
     tipo_ids = {
-        r["codigo_tipo_escola"]
-        for r in rows
-        if r["codigo_tipo_escola"]
+        r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]
     }
     tipos = {
         t.codigo_tipo_escola: t
@@ -318,9 +347,7 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
     }
 
     sub_ids = {
-        r["codigo_sub_prefeitura"]
-        for r in rows
-        if r["codigo_sub_prefeitura"]
+        r["codigo_sub_prefeitura"] for r in rows if r["codigo_sub_prefeitura"]
     }
     subs = {
         s.codigo_sub_prefeitura: s
@@ -336,9 +363,7 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
         cep_val: int | None = None
         if r["cep"]:
             try:
-                cep_val = int(
-                    str(r["cep"]).replace("-", "").replace(".", "")
-                )
+                cep_val = int(str(r["cep"]).replace("-", "").replace(".", ""))
             except (ValueError, TypeError):
                 cep_val = None
         result.append(

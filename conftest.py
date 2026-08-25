@@ -23,6 +23,12 @@ def django_db_setup(django_test_environment, django_db_blocker):
             tipo_unidade_adm INTEGER,
             descricao_unidade_adm VARCHAR(200)
         );
+        CREATE TABLE IF NOT EXISTS dre_abrangencia (
+            codigo_dre VARCHAR(20) PRIMARY KEY,
+            nome VARCHAR(200) NOT NULL,
+            abreviacao VARCHAR(100),
+            ordem INTEGER NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS sub_prefeitura (
             codigo_sub_prefeitura INTEGER PRIMARY KEY,
             sigla VARCHAR(20),
@@ -80,7 +86,8 @@ def api_client():
     from rest_framework.test import APIClient
 
     client = APIClient()
-    client.credentials(**{f"HTTP_{settings.API_KEY_HEADER.upper().replace('-', '_')}": settings.API_KEY})
+    header = f"HTTP_{settings.API_KEY_HEADER.upper().replace('-', '_')}"
+    client.credentials(**{header: settings.API_KEY})
     return client
 
 
@@ -111,6 +118,35 @@ def dre_factory(db):
 
 
 @pytest.fixture
+def dre_abrangencia_factory(db):
+    """Cria DREs elegíveis para abrangência no banco de testes."""
+    from apps.dre.models import DREAbrangencia
+
+    _counter = [0]
+
+    def _create(**kwargs):
+        _counter[0] += 1
+        defaults = {
+            "codigo_dre": f"10810{_counter[0]}",
+            "nome": f"DIRETORIA REGIONAL DE EDUCACAO TESTE {_counter[0]}",
+            "abreviacao": f"DRE - {_counter[0]}",
+            "ordem": _counter[0],
+        }
+        defaults.update(kwargs)
+        obj, _ = DREAbrangencia.objects.using("default").get_or_create(
+            codigo_dre=defaults["codigo_dre"],
+            defaults={
+                key: value
+                for key, value in defaults.items()
+                if key != "codigo_dre"
+            },
+        )
+        return obj
+
+    return _create
+
+
+@pytest.fixture
 def tipo_escola_factory(db):
     """Cria registros de TipoEscola no banco de testes."""
     from apps.dre.models import TipoEscola
@@ -122,12 +158,16 @@ def tipo_escola_factory(db):
         defaults = {
             "codigo_tipo_escola": _counter[0],
             "sigla": f"EMEF{_counter[0]}",
-            "descricao": f"ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL {_counter[0]}",
+            "descricao": (
+                f"ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL {_counter[0]}"
+            ),
         }
         defaults.update(kwargs)
         obj, _ = TipoEscola.objects.using("default").get_or_create(
             codigo_tipo_escola=defaults["codigo_tipo_escola"],
-            defaults={k: v for k, v in defaults.items() if k != "codigo_tipo_escola"},
+            defaults={
+                k: v for k, v in defaults.items() if k != "codigo_tipo_escola"
+            },
         )
         return obj
 
@@ -151,7 +191,11 @@ def subprefeitura_factory(db):
         defaults.update(kwargs)
         obj, _ = SubPrefeitura.objects.using("default").get_or_create(
             codigo_sub_prefeitura=defaults["codigo_sub_prefeitura"],
-            defaults={k: v for k, v in defaults.items() if k != "codigo_sub_prefeitura"},
+            defaults={
+                k: v
+                for k, v in defaults.items()
+                if k != "codigo_sub_prefeitura"
+            },
         )
         return obj
 

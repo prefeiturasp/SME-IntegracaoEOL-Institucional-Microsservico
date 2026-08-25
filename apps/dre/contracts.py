@@ -19,6 +19,20 @@ class DreResumoContract(TypedDict):
     siglaDRE: str
 
 
+class DreNomeAbreviacaoContract(TypedDict):
+    """Dados de identificação de uma Diretoria Regional de Educação.
+
+    Attributes:
+        codigo: Código EOL da DRE.
+        nome: Nome completo da DRE.
+        abreviacao: Nome abreviado da DRE, quando disponível.
+    """
+
+    codigo: str
+    nome: str
+    abreviacao: str | None
+
+
 class EscolaPorDreContract(TypedDict):
     """Dados de escola vinculada a uma DRE.
 
@@ -33,7 +47,8 @@ class EscolaPorDreContract(TypedDict):
         codigoSubprefeitura: Código da subprefeitura como string.
         nomeSubprefeitura: Nome da subprefeitura.
         tipoEscolaId: Código numérico do tipo de escola.
-        tipoUnidadeId: Código numérico do tipo de unidade (igual a tipoEscolaId).
+        tipoUnidadeId: Código numérico do tipo de unidade, igual a
+            tipoEscolaId.
         subprefeituraId: Código numérico da subprefeitura.
         dreId: Código EOL da DRE (igual a codigoDRE).
         codigoIntegracao: Código de integração externo, ou None.
@@ -62,7 +77,8 @@ class UnidadePredialContract(TypedDict):
         codigoEol: Código EOL da unidade.
         nomeOficial: Nome oficial da unidade.
         nomeNaoOficial: Nome não oficial (sigla/apelido), ou None.
-        tipoUnidadeAdmin: Descrição do tipo de unidade administrativa da DRE, ou None.
+        tipoUnidadeAdmin: Descrição do tipo de unidade administrativa da DRE,
+            ou None.
         tipoUE: Descrição do tipo de escola, ou None.
         logadouro: Logradouro do endereço, ou None.
         numero: Número do endereço, ou None.
@@ -86,7 +102,8 @@ class UnidadePredialContract(TypedDict):
         quantidadeDeFuncionarios: Quantidade de funcionários.
         status: Status da unidade, ou None.
         subprefeituraId: Código numérico da subprefeitura, ou None.
-        tipoUnidadeAdmId: Código numérico do tipo de unidade administrativa da DRE, ou None.
+        tipoUnidadeAdmId: Código numérico do tipo de unidade administrativa
+            da DRE, ou None.
     """
 
     codigoEol: str
@@ -127,7 +144,8 @@ class CodigoIntegracaoContract(TypedDict):
         nomeUe: Nome da unidade.
         codigoIntegracao: Código de integração externo, ou None.
         tipoEscolaId: Código numérico do tipo de escola.
-        tipoUnidadeId: Código numérico do tipo de unidade (igual a tipoEscolaId).
+        tipoUnidadeId: Código numérico do tipo de unidade, igual a
+            tipoEscolaId.
         subprefeituraId: Código numérico da subprefeitura.
         dreId: Código EOL da DRE.
     """
