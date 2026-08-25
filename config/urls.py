@@ -12,7 +12,7 @@ _API = "api/v1/institucional/"
 
 
 urlpatterns = [
-    path("api/abrangencia/", include(urlpatterns_abrangencia)),
+    path(f"{_API}abrangencia/", include(urlpatterns_abrangencia)),
     path(f"{_API}health/", HealthView.as_view(), name="health"),
     path(f"{_API}health/live/", LivenessView.as_view(), name="health-live"),
     path(f"{_API}health/ready/", ReadinessView.as_view(), name="health-ready"),

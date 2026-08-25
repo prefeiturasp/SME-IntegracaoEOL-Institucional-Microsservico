@@ -19,12 +19,12 @@ from apps.dre.api.views import (
 
 urlpatterns_abrangencia = [
     path(
-        "codigos-dres",
+        "codigos-dres/",
         CodigosDresAbrangenciaView.as_view(),
         name="abrangencia-codigos-dres",
     ),
     path(
-        "nome-abreviacao-dres",
+        "nome-abreviacao-dres/",
         NomesAbreviacoesDresView.as_view(),
         name="abrangencia-nome-abreviacao-dres",
     ),
