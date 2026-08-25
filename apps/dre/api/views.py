@@ -1,5 +1,7 @@
 """Views do domínio DRE."""
 
+from typing import Any
+
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
@@ -108,90 +110,72 @@ _CODIGO_INTEGRACAO_FIELDS = {
 }
 
 
-class CodigosDresAbrangenciaView(BaseAPIView):
-    """Lista os códigos das Diretorias Regionais de Educação."""
-
-    @extend_schema(
-        responses={
-            200: OpenApiResponse(
-                response={
-                    "type": "array",
-                    "items": {"type": "string"},
-                },
-                description="Códigos EOL das DREs.",
-            ),
-            204: None,
-        },
-        description="Lista os códigos das DREs com abrangência educacional.",
+def _documentar_abrangencia(
+    *, response: Any, description: str, operation_id: str, example: Any
+) -> Any:
+    """Documenta uma consulta de abrangência."""
+    return extend_schema(
+        responses={200: response, 204: None},
+        description=description,
         tags=_TAG_ABRANGENCIA,
-        operation_id="abrangencia_listar_codigos_dres",
+        operation_id=operation_id,
         examples=[
             OpenApiExample(
                 "Resposta",
-                value=["108100", "108200"],
+                value=example,
                 response_only=True,
                 status_codes=["200"],
             )
         ],
     )
+
+
+def _responder_abrangencia(resultados: list[Any]) -> Response:
+    """Retorna os resultados de uma consulta de abrangência."""
+    if not resultados:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(resultados)
+
+
+class CodigosDresAbrangenciaView(BaseAPIView):
+    """Lista os códigos das Diretorias Regionais de Educação."""
+
+    @_documentar_abrangencia(
+        response=OpenApiResponse(
+            response={"type": "array", "items": {"type": "string"}},
+            description="Códigos EOL das DREs.",
+        ),
+        description="Lista os códigos das DREs com abrangência educacional.",
+        operation_id="abrangencia_listar_codigos_dres",
+        example=["108100", "108200"],
+    )
     def get(self, _request: Request) -> Response:
-        """Lista os códigos das DREs com abrangência educacional.
-
-        Args:
-            _request: Requisição HTTP (não utilizada).
-
-        Returns:
-            Códigos das DREs elegíveis para abrangência.
-        """
-        codigos = listar_codigos_dres_abrangencia()
-        if not codigos:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(codigos)
+        """Lista os códigos das DREs com abrangência educacional."""
+        return _responder_abrangencia(listar_codigos_dres_abrangencia())
 
 
 class NomesAbreviacoesDresView(BaseAPIView):
     """Lista nomes e abreviações das Diretorias Regionais de Educação."""
 
-    @extend_schema(
-        responses={
-            200: inline_serializer(
-                name="DreNomeAbreviacao",
-                fields=_DRE_NOME_ABREVIACAO_FIELDS,
-                many=True,
-            ),
-            204: None,
-        },
+    @_documentar_abrangencia(
+        response=inline_serializer(
+            name="DreNomeAbreviacao",
+            fields=_DRE_NOME_ABREVIACAO_FIELDS,
+            many=True,
+        ),
         description="Lista nomes e abreviações das DREs.",
-        tags=_TAG_ABRANGENCIA,
         operation_id="abrangencia_listar_nomes_abreviacoes_dres",
-        examples=[
-            OpenApiExample(
-                "Resposta",
-                value=[
-                    {
-                        "codigo": "108100",
-                        "nome": "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
-                        "abreviacao": "DRE IP",
-                    }
-                ],
-                response_only=True,
-                status_codes=["200"],
-            )
+        example=[
+            {
+                "codigo": "108100",
+                "nome": "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
+                "abreviacao": "DRE IP",
+            }
         ],
     )
     def get(self, _request: Request) -> Response:
-        """Lista a identificação das DREs com abrangência educacional.
-
-        Args:
-            _request: Requisição HTTP (não utilizada).
-
-        Returns:
-            Dados de identificação das DREs elegíveis para abrangência.
-        """
-        dres = listar_nomes_abreviacoes_dres()
-        if not dres:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(dres)
+        """Lista a identificação das DREs com abrangência educacional."""
+        return _responder_abrangencia(listar_nomes_abreviacoes_dres())
 
 
 class DreListView(BaseAPIView):
@@ -304,13 +288,11 @@ class DreDetalheView(BaseAPIView):
         examples=[
             OpenApiExample(
                 "Resposta D04",
-                value=[
-                    {
-                        "codigoDRE": "108100",
-                        "nomeDRE": "DRE IPIRANGA",
-                        "siglaDRE": "DRE-IP",
-                    }
-                ],
+                value=[{
+                    "codigoDRE": "108100",
+                    "nomeDRE": "DRE IPIRANGA",
+                    "siglaDRE": "DRE-IP",
+                }],
                 response_only=True,
                 status_codes=["200"],
             )
@@ -444,16 +426,14 @@ class DreUesView(BaseAPIView):
     """Lista os códigos das UEs de uma DRE."""
 
     @extend_schema(
-        responses={
-            200: inline_serializer(
-                name="CodigosUesDre",
-                fields={
-                    "codigos": serializers.ListField(
-                        child=serializers.CharField()
-                    )
-                },
-            )
-        },
+        responses={200: inline_serializer(
+            name="CodigosUesDre",
+            fields={
+                "codigos": serializers.ListField(
+                    child=serializers.CharField()
+                )
+            },
+        )},
         description="Códigos de UEs de uma DRE (D08).",
         tags=_TAG_DRE,
         operation_id="D08_codigos_ues_dre",

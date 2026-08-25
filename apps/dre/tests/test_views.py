@@ -1,116 +1,76 @@
 """Testes comportamentais e de contrato — domínio DRE (D01-D11)."""
 
 import pytest
+from rest_framework.test import APIClient
 
 pytestmark = pytest.mark.django_db
 
-
-class TestCodigosDresAbrangencia:
-    """Valida a listagem de códigos das DREs por abrangência."""
-
-    _URL = "/api/abrangencia/codigos-dres"
-
-    def test_retorna_codigos_das_dres(
-        self, api_client, dre_abrangencia_factory
-    ):
-        """Retorna os códigos das DREs elegíveis para abrangência."""
-        dre_abrangencia_factory(codigo_dre="108200", nome="DRE B", ordem=2)
-        dre_abrangencia_factory(codigo_dre="108100", nome="DRE A", ordem=1)
-
-        resp = api_client.get(self._URL)
-
-        assert resp.status_code == 200
-        assert resp.data == ["108100", "108200"]
-
-    def test_sem_dres_elegiveis_retorna_204(self, api_client, db):
-        """Retorna sem conteúdo quando não há DREs elegíveis."""
-        resp = api_client.get(self._URL)
-
-        assert resp.status_code == 204
-        assert resp.data is None
-
-    def test_sem_api_key_retorna_401_ou_403(self, db):
-        """Exige a API key configurada pelo microsserviço."""
-        from rest_framework.test import APIClient
-
-        resp = APIClient().get(self._URL)
-
-        assert resp.status_code in (401, 403)
-
-    def test_schema_expoe_tag_abrangencia(self, api_client, db):
-        """Publica o endpoint na tag Abrangencia do Swagger."""
-        resp = api_client.get(
-            "/api/v1/institucional/schema/",
-            HTTP_ACCEPT="application/json",
-        )
-
-        operacao = resp.data["paths"][self._URL]["get"]
-        assert operacao["tags"] == ["Abrangencia"]
+_URL_CODIGOS_ABRANGENCIA = "/api/abrangencia/codigos-dres"
+_URL_NOMES_ABRANGENCIA = "/api/abrangencia/nome-abreviacao-dres"
+_URLS_ABRANGENCIA = (_URL_CODIGOS_ABRANGENCIA, _URL_NOMES_ABRANGENCIA)
 
 
-class TestNomesAbreviacoesDres:
-    """Valida a listagem de nomes e abreviações das DREs."""
+class TestEndpointsAbrangencia:
+    """Valida as consultas de DREs disponíveis na tag Abrangencia."""
 
-    _URL = "/api/abrangencia/nome-abreviacao-dres"
-
+    @pytest.mark.parametrize(
+        ("url", "esperado"),
+        [
+            (_URL_CODIGOS_ABRANGENCIA, ["108100", "108200"]),
+            (
+                _URL_NOMES_ABRANGENCIA,
+                [
+                    {
+                        "codigo": "108100",
+                        "nome": "DRE A",
+                        "abreviacao": "DRE-A",
+                    },
+                    {
+                        "codigo": "108200",
+                        "nome": "DRE B",
+                        "abreviacao": None,
+                    },
+                ],
+            ),
+        ],
+    )
     def test_retorna_contrato_legado(
-        self, api_client, dre_abrangencia_factory
+        self, api_client, dre_abrangencia_factory, url, esperado
     ):
-        """Retorna código, nome e abreviação das DREs."""
+        """Retorna os dados das DREs na ordem materializada pelo ETL."""
         dre_abrangencia_factory(
-            codigo_dre="108100",
-            nome="DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
-            abreviacao="DRE IP",
+            codigo_dre="108200", nome="DRE B", abreviacao=None, ordem=2
+        )
+        dre_abrangencia_factory(
+            codigo_dre="108100", nome="DRE A", abreviacao="DRE-A", ordem=1
         )
 
-        resp = api_client.get(self._URL)
+        resp = api_client.get(url)
 
         assert resp.status_code == 200
-        assert resp.data == [
-            {
-                "codigo": "108100",
-                "nome": "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
-                "abreviacao": "DRE IP",
-            }
-        ]
+        assert resp.data == esperado
 
-    def test_preserva_abreviacao_nula(
-        self, api_client, dre_abrangencia_factory
-    ):
-        """Mantém abreviação nula quando não informada na origem."""
-        dre_abrangencia_factory(
-            codigo_dre="108100", nome="DRE A", abreviacao=None
-        )
-
-        resp = api_client.get(self._URL)
-
-        assert resp.status_code == 200
-        assert resp.data[0]["abreviacao"] is None
-
-    def test_sem_dres_elegiveis_retorna_204(self, api_client, db):
+    @pytest.mark.parametrize("url", _URLS_ABRANGENCIA)
+    def test_sem_dres_elegiveis_retorna_204(self, api_client, db, url):
         """Retorna sem conteúdo quando não há DREs elegíveis."""
-        resp = api_client.get(self._URL)
+        resp = api_client.get(url)
 
         assert resp.status_code == 204
         assert resp.data is None
 
-    def test_sem_api_key_retorna_401_ou_403(self, db):
+    @pytest.mark.parametrize("url", _URLS_ABRANGENCIA)
+    def test_sem_api_key_retorna_401_ou_403(self, db, url):
         """Exige a API key configurada pelo microsserviço."""
-        from rest_framework.test import APIClient
+        assert APIClient().get(url).status_code in (401, 403)
 
-        resp = APIClient().get(self._URL)
-
-        assert resp.status_code in (401, 403)
-
-    def test_schema_expoe_tag_abrangencia(self, api_client, db):
-        """Publica o endpoint na tag Abrangencia do Swagger."""
+    @pytest.mark.parametrize("url", _URLS_ABRANGENCIA)
+    def test_schema_expoe_tag_abrangencia(self, api_client, db, url):
+        """Publica a consulta na tag Abrangencia do Swagger."""
         resp = api_client.get(
-            "/api/v1/institucional/schema/",
-            HTTP_ACCEPT="application/json",
+            "/api/v1/institucional/schema/", HTTP_ACCEPT="application/json"
         )
 
-        operacao = resp.data["paths"][self._URL]["get"]
-        assert operacao["tags"] == ["Abrangencia"]
+        assert resp.data["paths"][url]["get"]["tags"] == ["Abrangencia"]
 
 
 class TestAutenticacaoDre:
@@ -119,27 +79,23 @@ class TestAutenticacaoDre:
     def test_sem_api_key_retorna_401(self):
         """Requisição sem credencial retorna 401 ou 403."""
         from rest_framework.test import APIClient
-
         resp = APIClient().get("/api/v1/institucional/dres/")
         assert resp.status_code in (401, 403)
 
     def test_api_key_errada_retorna_403(self):
         """Requisição com chave inválida retorna 401 ou 403."""
-        from django.conf import settings
         from rest_framework.test import APIClient
-
+        from django.conf import settings
         client = APIClient()
-        client.credentials(
-            **{
-                f"HTTP_{settings.API_KEY_HEADER.upper().replace('-', '_')}": "chave-errada"
-            }
-        )
+        client.credentials(**{
+            f"HTTP_{settings.API_KEY_HEADER.upper().replace('-', '_')}": "chave-errada"
+        })
         resp = client.get("/api/v1/institucional/dres/")
         assert resp.status_code in (401, 403)
 
 
 class TestD01ListarDres:
-    """D01 — GET /api/dres/."""
+    """D01 — GET /api/dres/"""
 
     def test_retorna_200_com_lista(self, api_client, dre_factory):
         """Retorna lista de DREs com status 200."""
@@ -175,7 +131,7 @@ class TestD01ListarDres:
 
 
 class TestD02FiltrarDresPorCodigos:
-    """D02 — POST /api/dres/."""
+    """D02 — POST /api/dres/"""
 
     def test_retorna_dres_encontradas(self, api_client, dre_factory):
         """Retorna DREs correspondentes aos códigos enviados."""
@@ -212,7 +168,7 @@ class TestD02FiltrarDresPorCodigos:
 
 
 class TestD04DetalheDre:
-    """D04 — GET /api/dres/{codigoEolDRE}/."""
+    """D04 — GET /api/dres/{codigoEolDRE}/"""
 
     def test_retorna_200_com_contrato(self, api_client, dre_factory):
         """Retorna lista com a DRE encontrada."""
@@ -244,9 +200,7 @@ class TestD05EscolasTipo:
         assert isinstance(resp.data, list)
         assert len(resp.data) >= 1
 
-    def test_tipo_inexistente_retorna_lista_vazia(
-        self, api_client, ue_factory
-    ):
+    def test_tipo_inexistente_retorna_lista_vazia(self, api_client, ue_factory):
         """Tipo sem escolas vinculadas retorna lista vazia."""
         ue = ue_factory()
         url = f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/999999/"
@@ -261,7 +215,7 @@ class TestD05EscolasTipo:
 
 
 class TestD06EscolasPorDre:
-    """D06 — GET /api/dres/{codigoEolDRE}/escola/."""
+    """D06 — GET /api/dres/{codigoEolDRE}/escola/"""
 
     def test_retorna_200_com_escolas(self, api_client, ue_factory):
         """Retorna escolas da DRE com status 200."""
@@ -281,15 +235,9 @@ class TestD06EscolasPorDre:
         assert resp.status_code == 200
         item = resp.data[0]
         for campo in [
-            "codigoEscola",
-            "nomeEscola",
-            "codigoDRE",
-            "tipoEscola",
-            "siglaTipoEscola",
-            "nomeDRE",
-            "siglaDRE",
-            "codigoSubprefeitura",
-            "nomeSubprefeitura",
+            "codigoEscola", "nomeEscola", "codigoDRE",
+            "tipoEscola", "siglaTipoEscola", "nomeDRE",
+            "siglaDRE", "codigoSubprefeitura", "nomeSubprefeitura",
         ]:
             assert campo in item, f"Campo '{campo}' ausente no contrato D06"
 
@@ -301,7 +249,7 @@ class TestD06EscolasPorDre:
 
 
 class TestD07Subprefeituras:
-    """D07 — GET /api/dres/{dreCodigo}/subprefeituras/."""
+    """D07 — GET /api/dres/{dreCodigo}/subprefeituras/"""
 
     def test_retorna_subprefeituras(self, api_client, ue_factory):
         """Retorna lista de subprefeituras com status 200."""
@@ -325,12 +273,14 @@ class TestD07Subprefeituras:
 
     def test_codigo_vazio_retorna_400(self, api_client, db):
         """Código vazio retorna 400."""
-        resp = api_client.get("/api/v1/institucional/dres/%20/subprefeituras/")
+        resp = api_client.get(
+            "/api/v1/institucional/dres/%20/subprefeituras/"
+        )
         assert resp.status_code == 400
 
 
 class TestD08CodigosUes:
-    """D08 — GET /api/dres/{dreCodigo}/ues/."""
+    """D08 — GET /api/dres/{dreCodigo}/ues/"""
 
     def test_retorna_lista_de_strings(self, api_client, ue_factory):
         """Retorna lista de códigos EOL como strings."""
@@ -356,7 +306,7 @@ class TestD08CodigosUes:
 
 
 class TestD09EscolasSigpae:
-    """D09 — GET /api/dres/{codigoEolDRE}/escola/Sigpae/."""
+    """D09 — GET /api/dres/{codigoEolDRE}/escola/Sigpae/"""
 
     def test_retorna_200_com_escolas(self, api_client, ue_factory):
         """Retorna escolas no formato SIGPAE com status 200."""
@@ -376,12 +326,14 @@ class TestD09EscolasSigpae:
 
     def test_codigo_vazio_retorna_400(self, api_client, db):
         """Código vazio retorna 400."""
-        resp = api_client.get("/api/v1/institucional/dres/%20/escola/Sigpae/")
+        resp = api_client.get(
+            "/api/v1/institucional/dres/%20/escola/Sigpae/"
+        )
         assert resp.status_code == 400
 
 
 class TestD10UnidadesPrediais:
-    """D10 — GET /api/dres/{dreCodigo}/unidades/."""
+    """D10 — GET /api/dres/{dreCodigo}/unidades/"""
 
     def test_retorna_200_com_contrato_completo(self, api_client, ue_factory):
         """Retorna unidades prediais com todos os campos do contrato D10."""
@@ -393,31 +345,14 @@ class TestD10UnidadesPrediais:
         assert len(resp.data) >= 1
         item = resp.data[0]
         for campo in [
-            "codigoEol",
-            "nomeOficial",
-            "nomeNaoOficial",
-            "tipoUE",
-            "logadouro",
-            "numero",
-            "bairro",
-            "cep",
-            "distrito",
-            "subPrefeitura",
-            "nomeDre",
-            "email",
-            "telefone1",
-            "telefone2",
-            "anoConstrucao",
-            "propriedade",
-            "capacidadeVagasMatutino",
-            "capacidadeVagasVespertino",
-            "capacidadeVagasNoturno",
-            "capacidadeVagasIntermediario",
-            "capacidadeVagasIntegral",
-            "capacidadeVagasTotal",
-            "organizacaoParceira",
-            "quantidadeDeFuncionarios",
-            "status",
+            "codigoEol", "nomeOficial", "nomeNaoOficial", "tipoUE",
+            "logadouro", "numero", "bairro", "cep", "distrito",
+            "subPrefeitura", "nomeDre", "email", "telefone1", "telefone2",
+            "anoConstrucao", "propriedade", "capacidadeVagasMatutino",
+            "capacidadeVagasVespertino", "capacidadeVagasNoturno",
+            "capacidadeVagasIntermediario", "capacidadeVagasIntegral",
+            "capacidadeVagasTotal", "organizacaoParceira",
+            "quantidadeDeFuncionarios", "status",
         ]:
             assert campo in item, f"Campo '{campo}' ausente no contrato D10"
 
@@ -429,7 +364,7 @@ class TestD10UnidadesPrediais:
 
 
 class TestD11CodigosIntegracao:
-    """D11 — GET /api/dres/{dreCodigo}/unidades/codigo-integracao/."""
+    """D11 — GET /api/dres/{dreCodigo}/unidades/codigo-integracao/"""
 
     def test_retorna_200_com_contrato(self, api_client, ue_factory):
         """Retorna códigos de integração com campos do contrato D11."""
@@ -457,9 +392,7 @@ class TestD11CodigosIntegracao:
 class TestD05D06D09CamposExpandidos:
     """Valida campos institucionais expandidos nos endpoints D05/D06/D09."""
 
-    def test_d06_contem_campos_ids_institucionais(
-        self, api_client, ue_factory
-    ):
+    def test_d06_contem_campos_ids_institucionais(self, api_client, ue_factory):
         """D06 inclui campos de IDs institucionais."""
         ue = ue_factory()
         resp = api_client.get(
@@ -474,7 +407,7 @@ class TestD05D06D09CamposExpandidos:
         assert "codigoIntegracao" in item
 
     def test_d06_dre_id_igual_codigo_dre(self, api_client, ue_factory):
-        """DreId coincide com o código EOL da DRE."""
+        """dreId coincide com o código EOL da DRE."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -485,7 +418,7 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_tipo_unidade_id_igual_tipo_escola_id(
         self, api_client, ue_factory
     ):
-        """TipoUnidadeId e tipoEscolaId têm o mesmo valor."""
+        """tipoUnidadeId e tipoEscolaId têm o mesmo valor."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -496,7 +429,7 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_tipo_escola_id_eh_inteiro_ou_null(
         self, api_client, ue_factory
     ):
-        """TipoEscolaId é inteiro ou None."""
+        """tipoEscolaId é inteiro ou None."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -509,7 +442,7 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_subprefeitura_id_eh_inteiro_ou_null(
         self, api_client, ue_factory
     ):
-        """SubprefeituraId é inteiro ou None."""
+        """subprefeituraId é inteiro ou None."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -527,23 +460,15 @@ class TestD05D06D09CamposExpandidos:
         )
         item = resp.data[0]
         for campo in [
-            "codigoEscola",
-            "nomeEscola",
-            "codigoDRE",
-            "tipoEscola",
-            "siglaTipoEscola",
-            "nomeDRE",
-            "siglaDRE",
-            "codigoSubprefeitura",
-            "nomeSubprefeitura",
+            "codigoEscola", "nomeEscola", "codigoDRE",
+            "tipoEscola", "siglaTipoEscola", "nomeDRE",
+            "siglaDRE", "codigoSubprefeitura", "nomeSubprefeitura",
         ]:
-            assert (
-                campo in item
-            ), f"Campo legado '{campo}' removido — violação de contrato"
+            assert campo in item, (
+                f"Campo legado '{campo}' removido — violação de contrato"
+            )
 
-    def test_d05_contem_campos_ids_institucionais(
-        self, api_client, ue_factory
-    ):
+    def test_d05_contem_campos_ids_institucionais(self, api_client, ue_factory):
         """D05 retorna 200 com campos expandidos."""
         ue = ue_factory()
         resp = api_client.get(
@@ -552,9 +477,7 @@ class TestD05D06D09CamposExpandidos:
         )
         assert resp.status_code == 200
 
-    def test_d09_contem_campos_ids_institucionais(
-        self, api_client, ue_factory
-    ):
+    def test_d09_contem_campos_ids_institucionais(self, api_client, ue_factory):
         """D09 inclui campos de IDs institucionais quando há resultados."""
         ue = ue_factory()
         resp = api_client.get(
@@ -569,21 +492,13 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_ue_sem_tipo_escola_id_null(self, api_client, dre_factory, db):
         """UE sem tipo de escola tem tipoEscolaId e subprefeituraId nulos."""
         from apps.unidade_educacional.models import UnidadeEducacional
-
         dre = dre_factory(codigo_dre="999001")
         UnidadeEducacional.objects.create(
-            codigo_ue="900001",
-            nome="UE SEM TIPO",
-            codigo_dre=dre.codigo_dre,
-            codigo_tipo_escola=None,
-            codigo_sub_prefeitura=None,
-            organizacao_parceira=False,
-            vagas_matutino=0,
-            vagas_vespertino=0,
-            vagas_noturno=0,
-            vagas_intermediario=0,
-            vagas_integral=0,
-            vagas_total=0,
+            codigo_ue="900001", nome="UE SEM TIPO",
+            codigo_dre=dre.codigo_dre, codigo_tipo_escola=None,
+            codigo_sub_prefeitura=None, organizacao_parceira=False,
+            vagas_matutino=0, vagas_vespertino=0, vagas_noturno=0,
+            vagas_intermediario=0, vagas_integral=0, vagas_total=0,
             quantidade_funcionarios=0,
         )
         resp = api_client.get(
@@ -617,19 +532,15 @@ class TestD10CamposExpandidos:
         )
         item = resp.data[0]
         for campo in [
-            "codigoEol",
-            "nomeOficial",
-            "subPrefeitura",
-            "nomeDre",
-            "capacidadeVagasTotal",
-            "organizacaoParceira",
+            "codigoEol", "nomeOficial", "subPrefeitura", "nomeDre",
+            "capacidadeVagasTotal", "organizacaoParceira",
         ]:
             assert campo in item, f"Campo legado '{campo}' removido"
 
     def test_d10_tipo_unidade_adm_id_inteiro_ou_null(
         self, api_client, ue_factory
     ):
-        """TipoUnidadeAdmId é inteiro ou None."""
+        """tipoUnidadeAdmId é inteiro ou None."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/unidades/"
@@ -660,7 +571,7 @@ class TestD11CamposExpandidos:
         assert "dreId" in item
 
     def test_d11_dre_id_igual_codigo_dre(self, api_client, ue_factory):
-        """DreId coincide com o código EOL da DRE."""
+        """dreId coincide com o código EOL da DRE."""
         ue = ue_factory(codigo_ue_integracao="INT003")
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}"
@@ -672,7 +583,7 @@ class TestD11CamposExpandidos:
     def test_d11_tipo_unidade_id_igual_tipo_escola_id(
         self, api_client, ue_factory
     ):
-        """TipoUnidadeId e tipoEscolaId têm o mesmo valor."""
+        """tipoUnidadeId e tipoEscolaId têm o mesmo valor."""
         ue = ue_factory(codigo_ue_integracao="INT004")
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}"

@@ -1,6 +1,10 @@
 """Testes do middleware de observabilidade e de prefixo."""
 
 import pytest
+from django.http import HttpResponse
+from django.test import RequestFactory, override_settings
+
+from apps.core.middleware import PrefixMiddleware
 
 pytestmark = pytest.mark.django_db
 
@@ -11,6 +15,18 @@ class TestPrefixMiddleware:
         """Rota sem prefixo configurado retorna 200 normalmente."""
         resp = api_client.get("/api/v1/institucional/health/live/")
         assert resp.status_code == 200
+
+    @override_settings(SCRIPT_PREFIX="/institucional")
+    def test_remove_prefixo_antes_do_roteamento(self):
+        """Remove o prefixo configurado do caminho da requisição."""
+        request = RequestFactory().get("/institucional/api/health/")
+        middleware = PrefixMiddleware(
+            lambda current: HttpResponse(current.path_info)
+        )
+
+        response = middleware(request)
+
+        assert response.content == b"/api/health/"
 
 
 class TestCrossDomainShape:
