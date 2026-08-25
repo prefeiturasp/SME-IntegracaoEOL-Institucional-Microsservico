@@ -5,8 +5,12 @@ from rest_framework.test import APIClient
 
 pytestmark = pytest.mark.django_db
 
-_URL_CODIGOS_ABRANGENCIA = "/api/abrangencia/codigos-dres"
-_URL_NOMES_ABRANGENCIA = "/api/abrangencia/nome-abreviacao-dres"
+_URL_CODIGOS_ABRANGENCIA = (
+    "/api/v1/institucional/abrangencia/codigos-dres/"
+)
+_URL_NOMES_ABRANGENCIA = (
+    "/api/v1/institucional/abrangencia/nome-abreviacao-dres/"
+)
 _URLS_ABRANGENCIA = (_URL_CODIGOS_ABRANGENCIA, _URL_NOMES_ABRANGENCIA)
 
 
