@@ -3,6 +3,22 @@ Endpoints
 
 Ver documentação interativa em ``/api/docs/``.
 
+Abrangência — base ``/api/v1/institucional/abrangencia/``
+----------------------------------------------------------
+
+.. list-table::
+   :header-rows: 1
+
+   * - Método
+     - Endpoint
+     - Status
+   * - GET
+     - ``/api/v1/institucional/abrangencia/codigos-dres/``
+     - ✅ Implementado
+   * - GET
+     - ``/api/v1/institucional/abrangencia/nome-abreviacao-dres/``
+     - ✅ Implementado
+
 DRE — base ``/api/dres/``
 --------------------------
 

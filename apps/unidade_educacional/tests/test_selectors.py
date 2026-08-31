@@ -18,11 +18,12 @@ class TestListarUesBasicas:
     def test_com_codigos_especificos(self, ue_factory):
         """Filtro por código retorna apenas a UE solicitada."""
         from apps.unidade_educacional.selectors import listar_ues_basicas
-        ue_factory(codigo_ue="019251")
+        ue = ue_factory(codigo_ue="019251")
         items, total = listar_ues_basicas(["019251"])
         assert len(items) == 1
         assert items[0]["codigoEscola"] == "019251"
         assert total == 1
+        assert str(ue) == f"019251 - {ue.nome}"
 
     def test_codigos_nao_encontrados_retorna_vazio(self, db):
         """Códigos inexistentes retornam lista vazia e total zero."""

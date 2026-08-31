@@ -40,6 +40,23 @@ class DRE(models.Model):
         return f"{self.codigo_dre} - {self.sigla or self.nome}"
 
 
+class DREAbrangencia(models.Model):
+    """DRE com oferta educacional válida para consultas de abrangência."""
+
+    codigo_dre = models.CharField(max_length=20, primary_key=True)
+    nome = models.CharField(max_length=200)
+    abreviacao = models.CharField(max_length=100, null=True, blank=True)
+    ordem = models.PositiveIntegerField()
+
+    class Meta:
+        db_table = "dre_abrangencia"
+        managed = False
+        app_label = "dre"
+
+    def __str__(self) -> str:
+        return f"{self.codigo_dre} - {self.abreviacao or self.nome}"
+
+
 class SubPrefeitura(models.Model):
     """Subprefeitura do município de São Paulo."""
 

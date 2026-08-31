@@ -180,6 +180,13 @@ Extensões ativas:
 
 ## Endpoints
 
+### Abrangência — `/api/v1/institucional/abrangencia/`
+
+| Método | Path | Descrição |
+|---|---|---|
+| GET | `/api/v1/institucional/abrangencia/codigos-dres/` | Lista os códigos das DREs |
+| GET | `/api/v1/institucional/abrangencia/nome-abreviacao-dres/` | Lista código, nome e abreviação das DREs |
+
 ### DREs — `/api/dres/`
 
 | ID | Método | Path | Status |

@@ -65,6 +65,7 @@ addopts = "--tb=short -q --ds=config.settings_test"
 
 [tool.coverage.run]
 source = ["apps"]
+branch = true
 omit = ["*/migrations/*", "*/tests/*", "*/conftest.py", "*/mock_data.py"]
 
 [tool.coverage.report]

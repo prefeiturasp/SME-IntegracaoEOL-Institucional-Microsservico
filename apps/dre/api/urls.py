@@ -3,17 +3,32 @@
 from django.urls import path
 
 from apps.dre.api.views import (
+    CodigosDresAbrangenciaView,
     DreCodigosIntegracaoView,
     DreDetalheView,
     DreEscolasSigpaeView,
     DreEscolasTipoView,
     DreEscolasView,
     DreListView,
-    DreSupervisoresView,
     DreSubprefeiturasView,
+    DreSupervisoresView,
     DreUesView,
     DreUnidadesView,
+    NomesAbreviacoesDresView,
 )
+
+urlpatterns_abrangencia = [
+    path(
+        "codigos-dres/",
+        CodigosDresAbrangenciaView.as_view(),
+        name="abrangencia-codigos-dres",
+    ),
+    path(
+        "nome-abreviacao-dres/",
+        NomesAbreviacoesDresView.as_view(),
+        name="abrangencia-nome-abreviacao-dres",
+    ),
+]
 
 urlpatterns = [
     path(

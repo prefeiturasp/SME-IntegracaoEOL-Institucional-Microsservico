@@ -1,7 +1,10 @@
 """Views do domínio DRE."""
 
+from typing import Any
+
 from drf_spectacular.utils import (
     OpenApiExample,
+    OpenApiResponse,
     extend_schema,
     inline_serializer,
 )
@@ -11,27 +14,36 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.core.views import (
-    BaseAPIView,
     _CROSS_DOMAIN_SCHEMA,
     _PROBLEM_DETAILS_SCHEMA,
+    BaseAPIView,
 )
 from apps.dre.selectors import (
     filtrar_dres_por_codigos,
+    listar_codigos_dres_abrangencia,
     listar_codigos_integracao_por_dre,
     listar_codigos_ues_por_dre,
     listar_dres,
     listar_escolas_por_dre,
+    listar_nomes_abreviacoes_dres,
     listar_subprefeituras_por_dre,
     listar_unidades_por_dre,
     obter_dre_por_codigo,
 )
 
+_TAG_ABRANGENCIA = ["Abrangencia"]
 _TAG_DRE = ["DiretoriaRegionalEducacao"]
 
 _DRE_FIELDS = {
     "codigoDRE": serializers.CharField(),
     "nomeDRE": serializers.CharField(),
     "siglaDRE": serializers.CharField(),
+}
+
+_DRE_NOME_ABREVIACAO_FIELDS = {
+    "codigo": serializers.CharField(),
+    "nome": serializers.CharField(),
+    "abreviacao": serializers.CharField(allow_null=True),
 }
 
 _ESCOLA_FIELDS = {
@@ -96,6 +108,74 @@ _CODIGO_INTEGRACAO_FIELDS = {
     "subprefeituraId": serializers.IntegerField(allow_null=True),
     "dreId": serializers.CharField(),
 }
+
+
+def _documentar_abrangencia(
+    *, response: Any, description: str, operation_id: str, example: Any
+) -> Any:
+    """Documenta uma consulta de abrangência."""
+    return extend_schema(
+        responses={200: response, 204: None},
+        description=description,
+        tags=_TAG_ABRANGENCIA,
+        operation_id=operation_id,
+        examples=[
+            OpenApiExample(
+                "Resposta",
+                value=example,
+                response_only=True,
+                status_codes=["200"],
+            )
+        ],
+    )
+
+
+def _responder_abrangencia(resultados: list[Any]) -> Response:
+    """Retorna os resultados de uma consulta de abrangência."""
+    if not resultados:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(resultados)
+
+
+class CodigosDresAbrangenciaView(BaseAPIView):
+    """Lista os códigos das Diretorias Regionais de Educação."""
+
+    @_documentar_abrangencia(
+        response=OpenApiResponse(
+            response={"type": "array", "items": {"type": "string"}},
+            description="Códigos EOL das DREs.",
+        ),
+        description="Lista os códigos das DREs com abrangência educacional.",
+        operation_id="abrangencia_listar_codigos_dres",
+        example=["108100", "108200"],
+    )
+    def get(self, _request: Request) -> Response:
+        """Lista os códigos das DREs com abrangência educacional."""
+        return _responder_abrangencia(listar_codigos_dres_abrangencia())
+
+
+class NomesAbreviacoesDresView(BaseAPIView):
+    """Lista nomes e abreviações das Diretorias Regionais de Educação."""
+
+    @_documentar_abrangencia(
+        response=inline_serializer(
+            name="DreNomeAbreviacao",
+            fields=_DRE_NOME_ABREVIACAO_FIELDS,
+            many=True,
+        ),
+        description="Lista nomes e abreviações das DREs.",
+        operation_id="abrangencia_listar_nomes_abreviacoes_dres",
+        example=[
+            {
+                "codigo": "108100",
+                "nome": "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
+                "abreviacao": "DRE IP",
+            }
+        ],
+    )
+    def get(self, _request: Request) -> Response:
+        """Lista a identificação das DREs com abrangência educacional."""
+        return _responder_abrangencia(listar_nomes_abreviacoes_dres())
 
 
 class DreListView(BaseAPIView):
