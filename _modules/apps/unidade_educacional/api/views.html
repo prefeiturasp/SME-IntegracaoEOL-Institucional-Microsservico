@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apps.unidade_educacional.api.views &#8212; SME-IntegracaoEOL Institucional</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../../_static/documentation_options.js?v=c0c8e3fa"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/translations.js?v=71a39b36"></script>
+    <link rel="index" title="Índice" href="../../../../genindex.html" />
+    <link rel="search" title="Buscar" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Código-fonte para apps.unidade_educacional.api.views</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Views do domínio UE."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">drf_spectacular.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OpenApiExample</span><span class="p">,</span>
+    <span class="n">OpenApiParameter</span><span class="p">,</span>
+    <span class="n">OpenApiTypes</span><span class="p">,</span>
+    <span class="n">extend_schema</span><span class="p">,</span>
+    <span class="n">inline_serializer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotFound</span><span class="p">,</span> <span class="n">ValidationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">Request</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.response</span><span class="w"> </span><span class="kn">import</span> <span class="n">Response</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">apps.core.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseAPIView</span><span class="p">,</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">,</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apps.unidade_educacional.contracts</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EquipamentoContract</span><span class="p">,</span>
+    <span class="n">SincronizacaoUeContract</span><span class="p">,</span>
+    <span class="n">TipoEscolaContract</span><span class="p">,</span>
+    <span class="n">UeBasicaContract</span><span class="p">,</span>
+    <span class="n">UeCompletaContract</span><span class="p">,</span>
+    <span class="n">UeEolContract</span><span class="p">,</span>
+    <span class="n">UnidadeParceirasContract</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apps.unidade_educacional.selectors</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">listar_codigos_ue_emei</span><span class="p">,</span>
+    <span class="n">listar_codigos_ue_tipo_sgp</span><span class="p">,</span>
+    <span class="n">listar_equipamentos</span><span class="p">,</span>
+    <span class="n">listar_tipos_escolas</span><span class="p">,</span>
+    <span class="n">listar_ues_basicas</span><span class="p">,</span>
+    <span class="n">listar_ues_recorte_fund_medio</span><span class="p">,</span>
+    <span class="n">listar_unidades_parceiras</span><span class="p">,</span>
+    <span class="n">obter_subprefeituras_ue</span><span class="p">,</span>
+    <span class="n">obter_sincronizacao_ue</span><span class="p">,</span>
+    <span class="n">obter_ue_basica_por_codigo</span><span class="p">,</span>
+    <span class="n">obter_ue_completa</span><span class="p">,</span>
+    <span class="n">obter_ue_eol</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">_TAG_UE</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Escola"</span><span class="p">]</span>
+<span class="n">_TAG_CD</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"CrossDomain"</span><span class="p">]</span>
+
+<span class="n">_MSG_UNIDADE_NAO_ENCONTRADA</span> <span class="o">=</span> <span class="s2">"Unidade não encontrada."</span>
+<span class="n">_MSG_LISTA_OBRIGATORIA</span> <span class="o">=</span> <span class="s2">"Lista de códigos é obrigatória e não pode ser vazia."</span>
+
+<span class="c1"># Dicts de fields para reutilização nos inline_serializer com many=True</span>
+<span class="n">_UE_BASICA_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"codigoEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nomeEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nomeDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"siglaDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"codigoDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"tipoEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"siglaTipoEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"codigoTipoEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+    <span class="s2">"tipoEscolaId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"tipoUnidadeId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"subprefeituraId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"dreId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"codigoIntegracao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">_UE_RECORTE_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"codigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nome"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nomeExibicao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"tipoUnidade"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"codigoTipoUnidadeEducacao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"codigoTipoEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"siglaTipoEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"codigoDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nomeDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"siglaDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+<span class="p">}</span>
+
+<span class="n">_UE_EOL_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"codigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"sigla"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"nomeUnidade"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"tipo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"codigoReferencia"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+<span class="p">}</span>
+
+<span class="n">_UE_COMPLETA_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"nomeDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"siglaDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"codigoDRE"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"codigoINEP"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"siglaTipoEscola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"nome"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nomeExibicao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"codigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"tipoUnidade"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"email"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"telefone"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"tipoLogradouro"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"logradouro"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"numero"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"bairro"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"cep"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"municipio"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"uf"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"tipoUnidadeAdm"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"descTipoUnidadeAdm"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"tipoEscolaId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"tipoUnidadeId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"subprefeituraId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"dreId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"codigoIntegracao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">_TIPO_ESCOLA_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"codigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+    <span class="s2">"descricaoSigla"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"dtAtualizacao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">_SUBPREFEITURA_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"codigoSubprefeitura"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nomeSubprefeitura"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+<span class="p">}</span>
+
+<span class="n">_SINCRONIZACAO_UE_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"ueCodigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"dataAtualizacao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"dreCodigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"ueNome"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"tipoEscolaCodigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"tipoEscolaId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"tipoUnidadeId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"subprefeituraId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"dreId"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"codigoIntegracao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">_EQUIPAMENTO_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"cd_equipamento"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nm_exibicao_equipamento"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nm_equipamento"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"cd_tp_equipamento"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"dc_tp_equipamento"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"cd_tp_escola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"dc_tipo_escola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"sg_tp_escola"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"cd_diretoria_referencia"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nm_diretoria_referencia"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"cd_diretoria_portal"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nm_diretoria_portal"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nm_exibicao_diretoria_portal"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"nm_exibicao_diretoria_referencia"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"cd_logradouro"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"logradouro"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"bairro"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"codigoSubprefeitura"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"nomeSubprefeitura"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">"ehCeu"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(),</span>
+<span class="p">}</span>
+
+<span class="n">_UNIDADE_PARCEIRA_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"codigo"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"nome"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"email"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">allow_null</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">_TIPO_UNIDADE_EDUCACAO_FIELDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"sigla"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+    <span class="s2">"descricao"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(),</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_paginar_ues_basicas</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Valida parâmetros de paginação e retorna página de UEs básicas.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        request: Requisição com query params ``limite`` e ``offset``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Response paginada com ``count`` e ``results``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValidationError: Se ``limite`` ou ``offset`` forem inválidos.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">limite</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"limite"</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"offset"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+            <span class="s2">"Os parâmetros 'limite' e 'offset' devem ser inteiros."</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">if</span> <span class="n">limite</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">limite</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+            <span class="s2">"O parâmetro 'limite' deve estar entre 1 e 1000."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">offset</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s2">"O parâmetro 'offset' não pode ser negativo."</span><span class="p">)</span>
+    <span class="n">items</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">listar_ues_basicas</span><span class="p">(</span><span class="n">limite</span><span class="o">=</span><span class="n">limite</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s2">"count"</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span> <span class="s2">"results"</span><span class="p">:</span> <span class="n">items</span><span class="p">})</span>
+
+
+<div class="viewcode-block" id="UnidadeEducacionalAdminSgpView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalAdminSgpView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadeEducacionalAdminSgpView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Administradores SGP de uma UE — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="UnidadeEducacionalAdminSgpView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalAdminSgpView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Logins/RFs de administradores SGP da UE (E01). "</span>
+            <span class="s2">"[CROSS-DOMAIN] Dados não disponíveis no ETL institucional. "</span>
+            <span class="s2">"Competência do microserviço Professores/SSO via Transition Gateway."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E01_administrador_sgp"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnidadeEducacionalDetalheView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalDetalheView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadeEducacionalDetalheView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Retorna dados básicos de uma UE pelo código EOL."""</span>
+
+<div class="viewcode-block" id="UnidadeEducacionalDetalheView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalDetalheView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UeBasicaDetalhe"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_UE_BASICA_FIELDS</span>
+            <span class="p">),</span>
+            <span class="mi">400</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+            <span class="mi">404</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Dados básicos de uma UE (E02)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E02_dados_basicos_ue"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Resposta E02"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">"codigoEscola"</span><span class="p">:</span> <span class="s2">"019251"</span><span class="p">,</span>
+                    <span class="s2">"nomeEscola"</span><span class="p">:</span> <span class="s2">"EMEF EXEMPLO"</span><span class="p">,</span>
+                    <span class="s2">"nomeDRE"</span><span class="p">:</span> <span class="s2">"DIRETORIA REGIONAL DE EDUCACAO IPIRANGA"</span><span class="p">,</span>
+                    <span class="s2">"siglaDRE"</span><span class="p">:</span> <span class="s2">"DRE-IP"</span><span class="p">,</span>
+                    <span class="s2">"codigoDRE"</span><span class="p">:</span> <span class="s2">"108100"</span><span class="p">,</span>
+                    <span class="s2">"tipoEscola"</span><span class="p">:</span> <span class="s2">"ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL"</span><span class="p">,</span>
+                    <span class="s2">"siglaTipoEscola"</span><span class="p">:</span> <span class="s2">"EMEF"</span><span class="p">,</span>
+                    <span class="s2">"codigoTipoEscola"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">response_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">status_codes</span><span class="o">=</span><span class="p">[</span><span class="s2">"200"</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_escola_eol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Retorna dados básicos de uma UE pelo código EOL.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_escola_eol: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dados básicos da UE.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: Se o código for vazio.</span>
+<span class="sd">            NotFound: Se a UE não for encontrada.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">codigo_escola_eol</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s2">"Código da unidade EOL é obrigatório."</span><span class="p">)</span>
+        <span class="n">ue</span> <span class="o">=</span> <span class="n">obter_ue_basica_por_codigo</span><span class="p">(</span><span class="n">codigo_escola_eol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ue</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="n">_MSG_UNIDADE_NAO_ENCONTRADA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">ue</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnidadeEolView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEolView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadeEolView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Retorna dados resumidos de uma UE pelo código EOL."""</span>
+
+<div class="viewcode-block" id="UnidadeEolView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEolView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span><span class="s2">"UeEol"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_UE_EOL_FIELDS</span><span class="p">),</span>
+            <span class="mi">404</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"UE por código EOL (E03)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E03_ue_codigo_eol"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Resposta E03"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">"codigo"</span><span class="p">:</span> <span class="s2">"019251"</span><span class="p">,</span>
+                    <span class="s2">"sigla"</span><span class="p">:</span> <span class="s2">"EMEF"</span><span class="p">,</span>
+                    <span class="s2">"nomeUnidade"</span><span class="p">:</span> <span class="s2">"EMEF EXEMPLO"</span><span class="p">,</span>
+                    <span class="s2">"tipo"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">"codigoReferencia"</span><span class="p">:</span> <span class="s2">"019251"</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">response_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">status_codes</span><span class="o">=</span><span class="p">[</span><span class="s2">"200"</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_eol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Retorna dados resumidos de uma UE pelo código EOL.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_eol: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dados resumidos da UE.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotFound: Se a UE não for encontrada.</span>
+<span class="sd">        """</span>
+        <span class="n">ue</span> <span class="o">=</span> <span class="n">obter_ue_eol</span><span class="p">(</span><span class="n">codigo_eol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ue</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="s2">"Unidade EOL não encontrada."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">ue</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DadosUnidadeEducacionalView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.DadosUnidadeEducacionalView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DadosUnidadeEducacionalView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Retorna dados completos de uma UE pelo código EOL."""</span>
+
+<div class="viewcode-block" id="DadosUnidadeEducacionalView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.DadosUnidadeEducacionalView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span><span class="s2">"UeCompleta"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_UE_COMPLETA_FIELDS</span><span class="p">),</span>
+            <span class="mi">404</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Dados completos de uma UE (E04)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E04_dados_completos_ue"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Resposta E04"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">"nomeDRE"</span><span class="p">:</span> <span class="s2">"DIRETORIA REGIONAL DE EDUCACAO IPIRANGA"</span><span class="p">,</span>
+                    <span class="s2">"siglaDRE"</span><span class="p">:</span> <span class="s2">"DRE-IP"</span><span class="p">,</span>
+                    <span class="s2">"codigoDRE"</span><span class="p">:</span> <span class="s2">"108100"</span><span class="p">,</span>
+                    <span class="s2">"codigoINEP"</span><span class="p">:</span> <span class="s2">"35123456"</span><span class="p">,</span>
+                    <span class="s2">"siglaTipoEscola"</span><span class="p">:</span> <span class="s2">"EMEF"</span><span class="p">,</span>
+                    <span class="s2">"nome"</span><span class="p">:</span> <span class="s2">"EMEF EXEMPLO"</span><span class="p">,</span>
+                    <span class="s2">"nomeExibicao"</span><span class="p">:</span> <span class="s2">"Escola do Bairro"</span><span class="p">,</span>
+                    <span class="s2">"codigo"</span><span class="p">:</span> <span class="s2">"019251"</span><span class="p">,</span>
+                    <span class="s2">"tipoUnidade"</span><span class="p">:</span> <span class="s2">"EMEF"</span><span class="p">,</span>
+                    <span class="s2">"email"</span><span class="p">:</span> <span class="s2">"emef@sme.prefeitura.sp.gov.br"</span><span class="p">,</span>
+                    <span class="s2">"telefone"</span><span class="p">:</span> <span class="s2">"1133330000"</span><span class="p">,</span>
+                    <span class="s2">"tipoLogradouro"</span><span class="p">:</span> <span class="s2">"RUA"</span><span class="p">,</span>
+                    <span class="s2">"logradouro"</span><span class="p">:</span> <span class="s2">"RUA DE EXEMPLO"</span><span class="p">,</span>
+                    <span class="s2">"numero"</span><span class="p">:</span> <span class="s2">"100"</span><span class="p">,</span>
+                    <span class="s2">"bairro"</span><span class="p">:</span> <span class="s2">"IPIRANGA"</span><span class="p">,</span>
+                    <span class="s2">"cep"</span><span class="p">:</span> <span class="mi">4218050</span><span class="p">,</span>
+                    <span class="s2">"municipio"</span><span class="p">:</span> <span class="s2">"SAO PAULO"</span><span class="p">,</span>
+                    <span class="s2">"uf"</span><span class="p">:</span> <span class="s2">"SP"</span><span class="p">,</span>
+                    <span class="s2">"tipoUnidadeAdm"</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+                    <span class="s2">"descTipoUnidadeAdm"</span><span class="p">:</span> <span class="s2">"DIRETORIA REGIONAL DE EDUCACAO"</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">response_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">status_codes</span><span class="o">=</span><span class="p">[</span><span class="s2">"200"</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_escola_eol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Retorna dados completos de uma UE pelo código EOL.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_escola_eol: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dados completos da UE com endereço e DRE.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotFound: Se a UE não for encontrada.</span>
+<span class="sd">        """</span>
+        <span class="n">dados</span> <span class="o">=</span> <span class="n">obter_ue_completa</span><span class="p">(</span><span class="n">codigo_escola_eol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dados</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="s2">"Dados da unidade não encontrados."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">dados</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="QuantidadeAlunosView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.QuantidadeAlunosView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuantidadeAlunosView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Quantidade de alunos de uma UE — competência do domínio Alunos."""</span>
+
+<div class="viewcode-block" id="QuantidadeAlunosView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.QuantidadeAlunosView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Quantidade de alunos de uma UE (E05). "</span>
+            <span class="s2">"[CROSS-DOMAIN] Competência do microserviço Alunos."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E05_quantidade_alunos_ue"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_escola</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Alunos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_escola: Código EOL da escola.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"alunos"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnidadeEducacionalListPostView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalListPostView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadeEducacionalListPostView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista todas as UEs paginadas (GET) ou busca por lista de códigos (POST)."""</span>
+
+<div class="viewcode-block" id="UnidadeEducacionalListPostView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalListPostView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"limite"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Itens por página (padrão 100)."</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"offset"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Posição inicial (padrão 0)."</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UeBasicaRaizPaginado"</span><span class="p">,</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">"count"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+                    <span class="s2">"results"</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                        <span class="s2">"UeBasicaRaiz"</span><span class="p">,</span>
+                        <span class="n">fields</span><span class="o">=</span><span class="n">_UE_BASICA_FIELDS</span><span class="p">,</span>
+                        <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Lista todas as UEs paginadas (GET raiz). "</span>
+            <span class="s2">"Use `limite` e `offset` para navegar."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E27b_lista_todas_ues_raiz"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Lista todas as UEs paginadas.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com query params ``limite`` e ``offset``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Response paginada com ``count`` e ``results``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">_paginar_ues_basicas</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UnidadeEducacionalListPostView.post">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalListPostView.post">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">request</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">"application/json"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+                <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UeBasicaFiltrada"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_UE_BASICA_FIELDS</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">),</span>
+            <span class="mi">400</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Busca UEs por lista de códigos (E06)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E06_buscar_ues_lista_codigos"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Exemplo de Requisição (E06)"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="s2">"019251"</span><span class="p">,</span> <span class="s2">"019252"</span><span class="p">],</span>
+                <span class="n">request_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Busca UEs pela lista de códigos EOL informada.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com lista de códigos EOL no corpo JSON.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            UEs encontradas para os códigos informados.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: Se o corpo não for uma lista não-vazia.</span>
+<span class="sd">        """</span>
+        <span class="n">codigos</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codigos</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">codigos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_MSG_LISTA_OBRIGATORIA</span><span class="p">)</span>
+        <span class="n">items</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">listar_ues_basicas</span><span class="p">(</span><span class="n">codigos</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">items</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnidadeEducacionalRecorteFundMedioView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalRecorteFundMedioView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadeEducacionalRecorteFundMedioView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Filtra UEs por lista de códigos ao recorte de tipo (Fund/Médio)."""</span>
+
+<div class="viewcode-block" id="UnidadeEducacionalRecorteFundMedioView.post">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalRecorteFundMedioView.post">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">request</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">"application/json"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+                <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UeRecorteFundMedio"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_UE_RECORTE_FIELDS</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">),</span>
+            <span class="mi">400</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Filtra UEs por lista de códigos, restritas ao recorte de "</span>
+            <span class="s2">"tipo de escola EMEF/EMEFM/EMEBS/CEU EMEF (1, 3, 4, 16)."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"ues_recorte_fund_medio"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Exemplo de Requisição"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="s2">"019251"</span><span class="p">,</span> <span class="s2">"019252"</span><span class="p">],</span>
+                <span class="n">request_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Filtra as UEs informadas, mantendo só as do recorte de tipo.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com lista de códigos EOL no corpo JSON.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            UEs do recorte de tipo de escola para os códigos informados.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: Se o corpo não for uma lista não-vazia.</span>
+<span class="sd">        """</span>
+        <span class="n">codigos</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codigos</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">codigos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_MSG_LISTA_OBRIGATORIA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">listar_ues_recorte_fund_medio</span><span class="p">(</span><span class="n">codigos</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnidadeEducacionalRecorteEmeiView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalRecorteEmeiView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadeEducacionalRecorteEmeiView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Filtra códigos de UE ao recorte de tipo EMEI/CEU EMEI."""</span>
+
+<div class="viewcode-block" id="UnidadeEducacionalRecorteEmeiView.post">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalRecorteEmeiView.post">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">request</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">"application/json"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+                <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UeRecorteEmei"</span><span class="p">,</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s2">"codigos_ue"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ListField</span><span class="p">(</span>
+                    <span class="n">child</span><span class="o">=</span><span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+                <span class="p">)},</span>
+            <span class="p">),</span>
+            <span class="mi">400</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Filtra a lista de códigos informada, retornando apenas os que "</span>
+            <span class="s2">"são de unidade EMEI/CEU EMEI (tp_escola 2, 17)."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"ues_recorte_emei"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Exemplo de Requisição"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="s2">"019251"</span><span class="p">,</span> <span class="s2">"019252"</span><span class="p">],</span>
+                <span class="n">request_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Filtra os códigos informados, mantendo só os de UE EMEI.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com lista de códigos EOL no corpo JSON.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Códigos EMEI dentre os informados, em ``{"codigos_ue": [...]}``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: Se o corpo não for uma lista não-vazia.</span>
+<span class="sd">        """</span>
+        <span class="n">codigos</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codigos</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">codigos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_MSG_LISTA_OBRIGATORIA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s2">"codigos_ue"</span><span class="p">:</span> <span class="n">listar_codigos_ue_emei</span><span class="p">(</span><span class="n">codigos</span><span class="p">)})</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnidadeEducacionalRecorteTipoSgpView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalRecorteTipoSgpView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadeEducacionalRecorteTipoSgpView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Filtra códigos de UE ao recorte do perfil de professor."""</span>
+
+<div class="viewcode-block" id="UnidadeEducacionalRecorteTipoSgpView.post">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadeEducacionalRecorteTipoSgpView.post">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">request</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">"application/json"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+                <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UeRecorteTipoSgp"</span><span class="p">,</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s2">"codigos_ue"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ListField</span><span class="p">(</span>
+                    <span class="n">child</span><span class="o">=</span><span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+                <span class="p">)},</span>
+            <span class="p">),</span>
+            <span class="mi">400</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Filtra a lista de códigos informada, retornando apenas os de "</span>
+            <span class="s2">"UE cujo tipo de escola está no recorte do perfil de professor "</span>
+            <span class="s2">"(parâmetro EOL tipo_escola_sgp)."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"ues_recorte_tipo_sgp"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Exemplo de Requisição"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="s2">"019251"</span><span class="p">,</span> <span class="s2">"019252"</span><span class="p">],</span>
+                <span class="n">request_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Filtra os códigos informados, mantendo só os do recorte SGP.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com lista de códigos EOL no corpo JSON.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Códigos do recorte SGP em ``{"codigos_ue": [...]}``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: Se o corpo não for uma lista não-vazia.</span>
+<span class="sd">        """</span>
+        <span class="n">codigos</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codigos</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">codigos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_MSG_LISTA_OBRIGATORIA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s2">"codigos_ue"</span><span class="p">:</span> <span class="n">listar_codigos_ue_tipo_sgp</span><span class="p">(</span><span class="n">codigos</span><span class="p">)})</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ProfessoresEscolaAnoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.ProfessoresEscolaAnoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProfessoresEscolaAnoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Professores de uma escola por ano letivo — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="ProfessoresEscolaAnoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.ProfessoresEscolaAnoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E07)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E07_professores_escola_ano"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+        <span class="n">codigo_eol_escola</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ano_letivo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_eol_escola: Código EOL da escola.</span>
+<span class="sd">            ano_letivo: Ano letivo de referência.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ProfessoresEscolaView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.ProfessoresEscolaView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProfessoresEscolaView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Professores de uma escola — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="ProfessoresEscolaView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.ProfessoresEscolaView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E08)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E08_professores_escola"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_eol_escola</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_eol_escola: Código EOL da escola.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ModalidadesEnsinoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.ModalidadesEnsinoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ModalidadesEnsinoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Modalidades de ensino — competência do domínio Pedagógico."""</span>
+
+<div class="viewcode-block" id="ModalidadesEnsinoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.ModalidadesEnsinoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Pedagógico (E09)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E09_modalidades_ensino"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Pedagógico.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"pedagogico"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TiposUnidadeEducacaoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TiposUnidadeEducacaoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TiposUnidadeEducacaoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista os tipos de unidade educacional disponíveis."""</span>
+
+<div class="viewcode-block" id="TiposUnidadeEducacaoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TiposUnidadeEducacaoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"TipoUnidadeEducacao"</span><span class="p">,</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">{</span><span class="s2">"$value"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">()},</span>
+                <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Tipos de unidade de educação (E10). "</span>
+            <span class="s2">"Retorna array de strings com nomes dos tipos de escola."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E10_tipos_unidade_educacional"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Lista as descrições dos tipos de unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Lista de strings com os nomes dos tipos de escola.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">apps.dre.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">TipoEscola</span>
+
+        <span class="n">descricoes</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">TipoEscola</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">descricao__isnull</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"descricao"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"codigo_tipo_escola"</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">descricoes</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TiposEscolasView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TiposEscolasView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TiposEscolasView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista tipos de escola com código e sigla."""</span>
+
+<div class="viewcode-block" id="TiposEscolasView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TiposEscolasView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+            <span class="s2">"TipoEscolaList"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_TIPO_ESCOLA_FIELDS</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Código e sigla de tipos de escola (E11)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E11_codigo_sigla_tipos_escola"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Lista tipos de escola com código e sigla.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tipos de escola com código numérico e sigla.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">listar_tipos_escolas</span><span class="p">())</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SalasAnoLetivoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.SalasAnoLetivoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SalasAnoLetivoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Salas de uma UE por tipo e ano letivo — competência do domínio Pedagógico."""</span>
+
+<div class="viewcode-block" id="SalasAnoLetivoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.SalasAnoLetivoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Pedagógico (E12)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E12_salas_ue_ano_letivo"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+        <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">tipo_sala</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">ano_letivo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Pedagógico.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+<span class="sd">            tipo_sala: Tipo de sala a consultar.</span>
+<span class="sd">            ano_letivo: Ano letivo de referência.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"pedagogico"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncionariosUeView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosUeView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncionariosUeView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Funcionários de uma UE — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="FuncionariosUeView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosUeView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E13)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E13_funcionarios_ue"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncionariosCargoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosCargoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncionariosCargoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Funcionários por cargo — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="FuncionariosCargoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosCargoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E14)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E14_funcionarios_cargo"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">codigo_cargo</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+<span class="sd">            codigo_cargo: Código do cargo a consultar.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncionariosFuncaoExternaView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncaoExternaView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncionariosFuncaoExternaView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Funcionários por função externa — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="FuncionariosFuncaoExternaView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncaoExternaView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E15)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E15_funcionarios_funcao_externa"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">codigo_funcao_externa</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+<span class="sd">            codigo_funcao_externa: Código da função externa a consultar.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncionariosFuncaoAtividadeView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncaoAtividadeView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncionariosFuncaoAtividadeView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Funcionários por função atividade — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="FuncionariosFuncaoAtividadeView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncaoAtividadeView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E16)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E16_funcionarios_funcao_atividade"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">codigo_funcao_atividade</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+<span class="sd">            codigo_funcao_atividade: Código da função-atividade a consultar.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SubprefeituraUnidadeEducacionalView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.SubprefeituraUnidadeEducacionalView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SubprefeituraUnidadeEducacionalView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista subprefeituras de uma unidade educacional."""</span>
+
+<div class="viewcode-block" id="SubprefeituraUnidadeEducacionalView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.SubprefeituraUnidadeEducacionalView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"SubprefeituraUe"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_SUBPREFEITURA_FIELDS</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">),</span>
+            <span class="mi">404</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Subprefeituras da unidade (E17)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E17_subprefeituras_ue"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_escola_eol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Lista subprefeituras de uma unidade educacional.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_escola_eol: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Subprefeituras vinculadas à UE.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotFound: Se a UE não for encontrada.</span>
+<span class="sd">        """</span>
+        <span class="n">subs</span> <span class="o">=</span> <span class="n">obter_subprefeituras_ue</span><span class="p">(</span><span class="n">codigo_escola_eol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">subs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="n">_MSG_UNIDADE_NAO_ENCONTRADA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">subs</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TurmasAnoLetivoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TurmasAnoLetivoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TurmasAnoLetivoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Turmas de uma UE por ano letivo — competência do domínio Pedagógico."""</span>
+
+<div class="viewcode-block" id="TurmasAnoLetivoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TurmasAnoLetivoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Pedagógico (E18)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E18_turmas_ue_ano_letivo"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ano_letivo</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Pedagógico.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+<span class="sd">            ano_letivo: Ano letivo de referência.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"pedagogico"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TurmasSondagemAnoLetivoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TurmasSondagemAnoLetivoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TurmasSondagemAnoLetivoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Turmas de sondagem de uma UE por ano letivo — competência do domínio Pedagógico."""</span>
+
+<div class="viewcode-block" id="TurmasSondagemAnoLetivoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TurmasSondagemAnoLetivoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Pedagógico (E19)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E19_turmas_sondagem_ue_ano_letivo"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_ue</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ano_letivo</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Pedagógico.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_ue: Código EOL da unidade educacional.</span>
+<span class="sd">            ano_letivo: Ano letivo de referência.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"pedagogico"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncionariosCargosListView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosCargosListView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncionariosCargosListView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista cargos dos funcionários de uma UE — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="FuncionariosCargosListView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosCargosListView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"anoLetivo"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">STR</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Ano letivo para filtro de cargos."</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E20)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E20_funcionarios_cargos_lista"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">ue_codigo</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            ue_codigo: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncionariosFuncoesAtividadesListView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncoesAtividadesListView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncionariosFuncoesAtividadesListView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista funções-atividades dos funcionários de uma UE — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="FuncionariosFuncoesAtividadesListView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncoesAtividadesListView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"anoLetivo"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">STR</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Ano letivo para filtro de funções-atividades."</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E21)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E21_funcionarios_funcoes_atividades_lista"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">ue_codigo</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            ue_codigo: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FuncionariosFuncoesExternasListView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncoesExternasListView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FuncionariosFuncoesExternasListView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista funções-externas dos funcionários de uma UE — competência do domínio Professores."""</span>
+
+<div class="viewcode-block" id="FuncionariosFuncoesExternasListView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.FuncionariosFuncoesExternasListView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"anoLetivo"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">STR</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Ano letivo para filtro de funções-externas."</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Professores (E22)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E22_funcionarios_funcoes_externas_lista"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">ue_codigo</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Professores.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            ue_codigo: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"professores"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SincronizacaoUnidadeEducacionalView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.SincronizacaoUnidadeEducacionalView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SincronizacaoUnidadeEducacionalView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Retorna dados de sincronização institucional de uma UE."""</span>
+
+<div class="viewcode-block" id="SincronizacaoUnidadeEducacionalView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.SincronizacaoUnidadeEducacionalView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"SincronizacaoUe"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_SINCRONIZACAO_UE_FIELDS</span>
+            <span class="p">),</span>
+            <span class="mi">404</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Detalhes de sincronização institucional da UE (E23)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E23_detalhes_sincronizacao_institucional_ue"</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Resposta E23"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">"ueCodigo"</span><span class="p">:</span> <span class="s2">"019251"</span><span class="p">,</span>
+                    <span class="s2">"dataAtualizacao"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">"dreCodigo"</span><span class="p">:</span> <span class="s2">"108100"</span><span class="p">,</span>
+                    <span class="s2">"ueNome"</span><span class="p">:</span> <span class="s2">"EMEF EXEMPLO"</span><span class="p">,</span>
+                    <span class="s2">"tipoEscolaCodigo"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="n">response_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">status_codes</span><span class="o">=</span><span class="p">[</span><span class="s2">"200"</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">ue_codigo</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Retorna dados de sincronização institucional de uma UE.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            ue_codigo: Código EOL da unidade educacional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dados de sincronização com data de atualização.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotFound: Se a UE não for encontrada.</span>
+<span class="sd">        """</span>
+        <span class="n">dados</span> <span class="o">=</span> <span class="n">obter_sincronizacao_ue</span><span class="p">(</span><span class="n">ue_codigo</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dados</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="n">_MSG_UNIDADE_NAO_ENCONTRADA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">dados</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MatriculasAlunoView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.MatriculasAlunoView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MatriculasAlunoView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Matrículas de aluno em escola — competência do domínio Alunos."""</span>
+
+<div class="viewcode-block" id="MatriculasAlunoView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.MatriculasAlunoView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">501</span><span class="p">:</span> <span class="n">_CROSS_DOMAIN_SCHEMA</span><span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"[CROSS-DOMAIN] Competência do microserviço Alunos (E24)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_CD</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E24_matriculas_aluno_escola"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">codigo_escola</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">codigo_aluno</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Redireciona para o microserviço Alunos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            _request: Requisição HTTP (não utilizada).</span>
+<span class="sd">            codigo_escola: Código EOL da escola.</span>
+<span class="sd">            codigo_aluno: Código EOL do aluno.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Resposta 501 com indicação de domínio responsável.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cross_domain</span><span class="p">(</span><span class="s2">"alunos"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EquipamentosView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.EquipamentosView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EquipamentosView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista equipamentos SME com filtros opcionais."""</span>
+
+<div class="viewcode-block" id="EquipamentosView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.EquipamentosView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"codigosSubprefeitura"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"codigosDre"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">STR</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"tiposUnidade"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"tiposEscola"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"nomeEscola"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">STR</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span>
+            <span class="p">),</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"codigoEol"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">STR</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+            <span class="s2">"EquipamentoList"</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">_EQUIPAMENTO_FIELDS</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Equipamentos SME com filtros (E25)."</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E25_equipamentos_sme_filtro"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Lista equipamentos SME com filtros opcionais via query params.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com query params de filtro.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Equipamentos que atendem aos filtros informados.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: Se algum parâmetro inteiro contiver valor inválido.</span>
+<span class="sd">        """</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_parse_ints</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">vals</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Parâmetro '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' deve conter inteiros."</span>
+                <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_parse_strs</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">vals</span> <span class="k">if</span> <span class="n">vals</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+            <span class="n">listar_equipamentos</span><span class="p">(</span>
+                <span class="n">codigos_subprefeitura</span><span class="o">=</span><span class="n">_parse_ints</span><span class="p">(</span><span class="s2">"codigosSubprefeitura"</span><span class="p">),</span>
+                <span class="n">codigos_dre</span><span class="o">=</span><span class="n">_parse_strs</span><span class="p">(</span><span class="s2">"codigosDre"</span><span class="p">),</span>
+                <span class="n">tipos_unidade</span><span class="o">=</span><span class="n">_parse_ints</span><span class="p">(</span><span class="s2">"tiposUnidade"</span><span class="p">),</span>
+                <span class="n">tipos_escola</span><span class="o">=</span><span class="n">_parse_ints</span><span class="p">(</span><span class="s2">"tiposEscola"</span><span class="p">),</span>
+                <span class="n">nome_escola</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"nomeEscola"</span><span class="p">),</span>
+                <span class="n">codigo_eol</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"codigoEol"</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UnidadesParceirasView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadesParceirasView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadesParceirasView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Retorna unidades parceiras pelos códigos informados."""</span>
+
+<div class="viewcode-block" id="UnidadesParceirasView.post">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.UnidadesParceirasView.post">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">request</span><span class="o">=</span><span class="p">{</span><span class="s2">"application/json"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span> <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">}}},</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UnidadeParceiraList"</span><span class="p">,</span>
+                <span class="n">fields</span><span class="o">=</span><span class="n">_UNIDADE_PARCEIRA_FIELDS</span><span class="p">,</span>
+                <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="mi">400</span><span class="p">:</span> <span class="n">_PROBLEM_DETAILS_SCHEMA</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Unidades parceiras por lista de códigos (E26)."</span><span class="p">,</span>
+        <span class="n">examples</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiExample</span><span class="p">(</span>
+                <span class="s2">"Exemplo de Requisição (E26)"</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="s2">"019251"</span><span class="p">,</span> <span class="s2">"019252"</span><span class="p">],</span>
+                <span class="n">request_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E26_unidades_parceiras_lista_codigos"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Retorna unidades parceiras pelos códigos informados.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com lista de códigos EOL no corpo JSON.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Unidades parceiras encontradas para os códigos informados.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValidationError: Se o corpo não for uma lista não-vazia.</span>
+<span class="sd">        """</span>
+        <span class="n">codigos</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">codigos</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">codigos</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_MSG_LISTA_OBRIGATORIA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">listar_unidades_parceiras</span><span class="p">(</span><span class="n">codigos</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TodasUnidadesView">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TodasUnidadesView">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TodasUnidadesView</span><span class="p">(</span><span class="n">BaseAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Lista todas as UEs paginadas por limite e offset."""</span>
+
+<div class="viewcode-block" id="TodasUnidadesView.get">
+<a class="viewcode-back" href="../../../../api/unidade_educacional.html#apps.unidade_educacional.api.views.TodasUnidadesView.get">[documentos]</a>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"limite"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Itens por página (padrão 100)."</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">OpenApiParameter</span><span class="p">(</span>
+                <span class="s2">"offset"</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">OpenApiParameter</span><span class="o">.</span><span class="n">QUERY</span><span class="p">,</span>
+                <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">"Posição inicial (padrão 0)."</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span>
+            <span class="mi">200</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                <span class="s2">"UeBasicaTodasPaginado"</span><span class="p">,</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">"count"</span><span class="p">:</span> <span class="n">serializers</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(),</span>
+                    <span class="s2">"results"</span><span class="p">:</span> <span class="n">inline_serializer</span><span class="p">(</span>
+                        <span class="s2">"UeBasicaTodasList"</span><span class="p">,</span>
+                        <span class="n">fields</span><span class="o">=</span><span class="n">_UE_BASICA_FIELDS</span><span class="p">,</span>
+                        <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+        <span class="p">},</span>
+        <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Lista todas as UEs paginadas (E27). "</span>
+            <span class="s2">"Use `limite` e `offset` para navegar."</span>
+        <span class="p">),</span>
+        <span class="n">tags</span><span class="o">=</span><span class="n">_TAG_UE</span><span class="p">,</span>
+        <span class="n">operation_id</span><span class="o">=</span><span class="s2">"E27_lista_todas_ues"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Lista todas as UEs paginadas por limite e offset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request: Requisição com query params ``limite`` e ``offset``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Response paginada com ``count`` e ``results``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">_paginar_ues_basicas</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">SME-IntegracaoEOL-Institucional-Microsservico</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Ir" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navegação</h3>
+<p class="caption" role="heading"><span class="caption-text">Conteúdo:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../arquitetura.html">Arquitetura</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contratos.html">Contratos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cross_domain.html">Cross-Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../desenvolvimento.html">Desenvolvimento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">Referência da API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Código do módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Core &#8212; SME-IntegracaoEOL Institucional</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=c0c8e3fa"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/translations.js?v=71a39b36"></script>
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Buscar" href="../search.html" />
+    <link rel="next" title="DRE — Diretoria Regional de Educação" href="dre.html" />
+    <link rel="prev" title="Referência da API" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="core">
+<h1>Core<a class="headerlink" href="#core" title="Link para este cabeçalho">¶</a></h1>
+<p>Módulos compartilhados: autenticação, middlewares, tipos e view base.</p>
+<section id="module-apps.core.authentication">
+<span id="autenticacao"></span><h2>Autenticação<a class="headerlink" href="#module-apps.core.authentication" title="Link para este cabeçalho">¶</a></h2>
+<p>Autenticação por API Key.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.authentication.ApiKeyAuthentication">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.authentication.</span></span><span class="sig-name descname"><span class="pre">ApiKeyAuthentication</span></span><a class="reference internal" href="../_modules/apps/core/authentication.html#ApiKeyAuthentication"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.authentication.ApiKeyAuthentication" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthentication</span></code></p>
+<p>Autentica requisições via API key no header configurado.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.core.authentication.ApiKeyAuthentication.authenticate">
+<span class="sig-name descname"><span class="pre">authenticate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/authentication.html#ApiKeyAuthentication.authenticate"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.authentication.ApiKeyAuthentication.authenticate" title="Link para esta definição">¶</a></dt>
+<dd><p>Valida a API key da requisição.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>request</strong> – Requisição HTTP recebida.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tupla (usuário, None) se a chave for válida, None se ausente.</p>
+</dd>
+<dt class="field-odd">Levanta<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AuthenticationFailed</strong> – Se o header estiver presente mas a chave
+    for inválida.</p>
+</dd>
+<dt class="field-even">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-odd">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(em Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(em Python v3.14)"><em>Any</em></a>, None] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.core.authentication.ApiKeyAuthentication.authenticate_header">
+<span class="sig-name descname"><span class="pre">authenticate_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/authentication.html#ApiKeyAuthentication.authenticate_header"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.authentication.ApiKeyAuthentication.authenticate_header" title="Link para esta definição">¶</a></dt>
+<dd><p>Return a string to be used as the value of the <cite>WWW-Authenticate</cite>
+header in a <cite>401 Unauthenticated</cite> response, or <cite>None</cite> if the
+authentication scheme should return <cite>403 Permission Denied</cite> responses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-apps.core.middleware">
+<span id="middlewares"></span><h2>Middlewares<a class="headerlink" href="#module-apps.core.middleware" title="Link para este cabeçalho">¶</a></h2>
+<p>Middlewares de observabilidade e roteamento.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.middleware.ObservabilidadeMiddleware">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.middleware.</span></span><span class="sig-name descname"><span class="pre">ObservabilidadeMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/middleware.html#ObservabilidadeMiddleware"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.middleware.ObservabilidadeMiddleware" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Injeta X-Correlation-ID e registra métricas de cada requisição.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>get_response</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(em Python v3.14)"><em>object</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.middleware.PrefixMiddleware">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.middleware.</span></span><span class="sig-name descname"><span class="pre">PrefixMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/middleware.html#PrefixMiddleware"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.middleware.PrefixMiddleware" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Remove o prefixo de path configurado antes do roteamento Django.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>get_response</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(em Python v3.14)"><em>object</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-apps.core.types">
+<span id="tipos-compartilhados"></span><h2>Tipos compartilhados<a class="headerlink" href="#module-apps.core.types" title="Link para este cabeçalho">¶</a></h2>
+<p>Tipos compartilhados entre domínios.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.types.SubPrefeiturarContract">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.types.</span></span><span class="sig-name descname"><span class="pre">SubPrefeiturarContract</span></span><a class="reference internal" href="../_modules/apps/core/types.html#SubPrefeiturarContract"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.types.SubPrefeiturarContract" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Dados de subprefeitura.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.types.SubPrefeiturarContract.codigoSubprefeitura">
+<span class="sig-name descname"><span class="pre">codigoSubprefeitura</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#apps.core.types.SubPrefeiturarContract.codigoSubprefeitura" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.types.SubPrefeiturarContract.nomeSubprefeitura">
+<span class="sig-name descname"><span class="pre">nomeSubprefeitura</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#apps.core.types.SubPrefeiturarContract.nomeSubprefeitura" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.types.CrossDomainResponse">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.types.</span></span><span class="sig-name descname"><span class="pre">CrossDomainResponse</span></span><a class="reference internal" href="../_modules/apps/core/types.html#CrossDomainResponse"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.types.CrossDomainResponse" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Resposta padrão para endpoints de responsabilidade de outro domínio.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.types.CrossDomainResponse.detail">
+<span class="sig-name descname"><span class="pre">detail</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#apps.core.types.CrossDomainResponse.detail" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.types.CrossDomainResponse.dominio">
+<span class="sig-name descname"><span class="pre">dominio</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#apps.core.types.CrossDomainResponse.dominio" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.types.CrossDomainResponse.transitionGateway">
+<span class="sig-name descname"><span class="pre">transitionGateway</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(em Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apps.core.types.CrossDomainResponse.transitionGateway" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.types.ProblemDetails">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.types.</span></span><span class="sig-name descname"><span class="pre">ProblemDetails</span></span><a class="reference internal" href="../_modules/apps/core/types.html#ProblemDetails"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.types.ProblemDetails" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Detalhe de erro em respostas de falha.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.types.ProblemDetails.detail">
+<span class="sig-name descname"><span class="pre">detail</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#apps.core.types.ProblemDetails.detail" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-apps.core.views">
+<span id="view-base"></span><h2>View base<a class="headerlink" href="#module-apps.core.views" title="Link para este cabeçalho">¶</a></h2>
+<p>View base compartilhada por todos os domínios.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.views.BaseAPIView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.views.</span></span><span class="sig-name descname"><span class="pre">BaseAPIView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/views.html#BaseAPIView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.views.BaseAPIView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">APIView</span></code></p>
+<p>View base com autenticação e permissão padrão do projeto.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.core.views.BaseAPIView.cross_domain">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cross_domain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dominio</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/views.html#BaseAPIView.cross_domain"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.views.BaseAPIView.cross_domain" title="Link para esta definição">¶</a></dt>
+<dd><p>Retorna resposta 501 para endpoints de responsabilidade de outro domínio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dominio</strong> – Nome do microserviço responsável (ex: “professores”, “alunos”).</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response 501 com detalhes do domínio competente.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dominio</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-apps.core.health">
+<span id="health-check"></span><h2>Health check<a class="headerlink" href="#module-apps.core.health" title="Link para este cabeçalho">¶</a></h2>
+<p>Endpoints de health check.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.health.LivenessView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.health.</span></span><span class="sig-name descname"><span class="pre">LivenessView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/health.html#LivenessView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.health.LivenessView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">APIView</span></code></p>
+<p>Verifica se o processo está vivo.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.health.LivenessView.authentication_classes">
+<span class="sig-name descname"><span class="pre">authentication_classes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#apps.core.health.LivenessView.authentication_classes" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.health.LivenessView.permission_classes">
+<span class="sig-name descname"><span class="pre">permission_classes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;class</span> <span class="pre">'rest_framework.permissions.AllowAny'&gt;]</span></em><a class="headerlink" href="#apps.core.health.LivenessView.permission_classes" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.core.health.LivenessView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/health.html#LivenessView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.health.LivenessView.get" title="Link para esta definição">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.health.ReadinessView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.health.</span></span><span class="sig-name descname"><span class="pre">ReadinessView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/health.html#ReadinessView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.health.ReadinessView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">APIView</span></code></p>
+<p>Verifica se o serviço está pronto para receber tráfego.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.health.ReadinessView.authentication_classes">
+<span class="sig-name descname"><span class="pre">authentication_classes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#apps.core.health.ReadinessView.authentication_classes" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.health.ReadinessView.permission_classes">
+<span class="sig-name descname"><span class="pre">permission_classes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;class</span> <span class="pre">'rest_framework.permissions.AllowAny'&gt;]</span></em><a class="headerlink" href="#apps.core.health.ReadinessView.permission_classes" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.core.health.ReadinessView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/health.html#ReadinessView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.health.ReadinessView.get" title="Link para esta definição">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.core.health.HealthView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.core.health.</span></span><span class="sig-name descname"><span class="pre">HealthView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/health.html#HealthView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.health.HealthView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">APIView</span></code></p>
+<p>Retorna o status detalhado do serviço.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.health.HealthView.authentication_classes">
+<span class="sig-name descname"><span class="pre">authentication_classes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#apps.core.health.HealthView.authentication_classes" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.core.health.HealthView.permission_classes">
+<span class="sig-name descname"><span class="pre">permission_classes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;class</span> <span class="pre">'rest_framework.permissions.AllowAny'&gt;]</span></em><a class="headerlink" href="#apps.core.health.HealthView.permission_classes" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.core.health.HealthView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/core/health.html#HealthView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.core.health.HealthView.get" title="Link para esta definição">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SME-IntegracaoEOL-Institucional-Microsservico</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Ir" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navegação</h3>
+<p class="caption" role="heading"><span class="caption-text">Conteúdo:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../arquitetura.html">Arquitetura</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contratos.html">Contratos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cross_domain.html">Cross-Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../desenvolvimento.html">Desenvolvimento</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Referência da API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dre.html">DRE — Diretoria Regional de Educação</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unidade_educacional.html">Unidade Educacional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="turmas.html">Turmas</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Referência da API</a><ul>
+      <li>Previous: <a href="index.html" title="capítulo anterior">Referência da API</a></li>
+      <li>Next: <a href="dre.html" title="próximo capítulo">DRE — Diretoria Regional de Educação</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/api/core.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

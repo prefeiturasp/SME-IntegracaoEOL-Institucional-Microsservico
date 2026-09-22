@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Performance &#8212; SME-IntegracaoEOL Institucional</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=c0c8e3fa"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/translations.js?v=71a39b36"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Buscar" href="search.html" />
+    <link rel="next" title="Cross-Domain" href="cross_domain.html" />
+    <link rel="prev" title="Contratos" href="contratos.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="performance">
+<h1>Performance<a class="headerlink" href="#performance" title="Link para este cabeçalho">¶</a></h1>
+<section id="estrategia">
+<h2>Estratégia<a class="headerlink" href="#estrategia" title="Link para este cabeçalho">¶</a></h2>
+<p>O microserviço é otimizado para leitura de alto volume via Transition Gateway.</p>
+</section>
+<section id="queries">
+<h2>Queries<a class="headerlink" href="#queries" title="Link para este cabeçalho">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">listar_dres()</span></code>: query simples com <code class="docutils literal notranslate"><span class="pre">.only()</span></code> em 3 campos</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">listar_escolas_por_dre()</span></code>: carrega DRE + TipoEscola + SubPrefeitura em lookups
+de memória (3 queries totais, independente do número de UEs)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">listar_unidades_por_dre()</span></code>: <code class="docutils literal notranslate"><span class="pre">.values()</span></code> + lookup de SubPrefeitura (2 queries)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">listar_equipamentos()</span></code>: <code class="docutils literal notranslate"><span class="pre">.values()</span></code> + lookups paralelos (4 queries máximo)</p></li>
+</ul>
+</section>
+<section id="sem-n-1">
+<h2>Sem N+1<a class="headerlink" href="#sem-n-1" title="Link para este cabeçalho">¶</a></h2>
+<p>Todos os endpoints de lista carregam relacionamentos em dicionários antes do loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dres</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="o">.</span><span class="n">codigo_dre</span><span class="p">:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">DRE</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">...</span><span class="p">)}</span>
+<span class="n">tipos</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">codigo_tipo_escola</span><span class="p">:</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">TipoEscola</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">...</span><span class="p">)}</span>
+<span class="n">subs</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="o">.</span><span class="n">codigo_sub_prefeitura</span><span class="p">:</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">SubPrefeitura</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">...</span><span class="p">)}</span>
+</pre></div>
+</div>
+</section>
+<section id="indices-esperados-no-banco">
+<h2>Índices Esperados no Banco<a class="headerlink" href="#indices-esperados-no-banco" title="Link para este cabeçalho">¶</a></h2>
+<p>O ETL cria automaticamente:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">idx_ue_dre</span></code> em <code class="docutils literal notranslate"><span class="pre">unidade_educacional(codigo_dre)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">idx_ue_tipo_escola</span></code> em <code class="docutils literal notranslate"><span class="pre">unidade_educacional(codigo_tipo_escola)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">idx_ue_subprefeitura</span></code> em <code class="docutils literal notranslate"><span class="pre">unidade_educacional(codigo_sub_prefeitura)</span></code></p></li>
+</ul>
+</section>
+<section id="endpoints-criticos">
+<h2>Endpoints Críticos<a class="headerlink" href="#endpoints-criticos" title="Link para este cabeçalho">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /api/dres/                     → ~1 query
+GET /api/dres/{cod}/escola/        → ~4 queries
+GET /api/dres/{cod}/ues/           → ~1 query
+GET /api/dres/{cod}/unidades/      → ~2 queries
+GET /api/escolas/{cod}/            → ~3 queries
+POST /api/escolas/                 → ~3 queries
+GET /api/escolas/todas-unidades/   → ~3 queries
+GET /api/escolas/equipamentos/     → ~4 queries
+</pre></div>
+</div>
+<p>Medir via Django Debug Toolbar ou:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-dev.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>institucional<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>python<span class="w"> </span>manage.py<span class="w"> </span>shell<span class="w"> </span>-c<span class="w"> </span><span class="s2">"</span>
+<span class="s2">from django.test.utils import override_settings</span>
+<span class="s2">from django.db import connection, reset_queries</span>
+<span class="s2">from django.conf import settings</span>
+<span class="s2">settings.DEBUG = True</span>
+<span class="s2">reset_queries()</span>
+<span class="s2">from apps.dre.selectors import listar_dres</span>
+<span class="s2">listar_dres()</span>
+<span class="s2">print(len(connection.queries), 'queries')</span>
+<span class="s2">"</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SME-IntegracaoEOL-Institucional-Microsservico</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Ir" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navegação</h3>
+<p class="caption" role="heading"><span class="caption-text">Conteúdo:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="arquitetura.html">Arquitetura</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contratos.html">Contratos</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Performance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#estrategia">Estratégia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#queries">Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sem-n-1">Sem N+1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#indices-esperados-no-banco">Índices Esperados no Banco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#endpoints-criticos">Endpoints Críticos</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cross_domain.html">Cross-Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="desenvolvimento.html">Desenvolvimento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">Referência da API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="contratos.html" title="capítulo anterior">Contratos</a></li>
+      <li>Next: <a href="cross_domain.html" title="próximo capítulo">Cross-Domain</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/performance.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

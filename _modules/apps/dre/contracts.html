@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apps.dre.contracts &#8212; SME-IntegracaoEOL Institucional</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=c0c8e3fa"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/translations.js?v=71a39b36"></script>
+    <link rel="index" title="Índice" href="../../../genindex.html" />
+    <link rel="search" title="Buscar" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Código-fonte para apps.dre.contracts</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Contratos de resposta do domínio DRE."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypedDict</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">apps.core.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubPrefeiturarContract</span>  <span class="c1"># noqa: F401 — re-export</span>
+
+
+<div class="viewcode-block" id="DreResumoContract">
+<a class="viewcode-back" href="../../../api/dre.html#apps.dre.contracts.DreResumoContract">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DreResumoContract</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Dados resumidos de Diretoria Regional de Educação.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        codigoDRE: Código EOL da DRE.</span>
+<span class="sd">        nomeDRE: Nome completo da DRE.</span>
+<span class="sd">        siglaDRE: Sigla da DRE.</span>
+<span class="sd">    """</span>
+
+    <span class="n">codigoDRE</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nomeDRE</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">siglaDRE</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+
+<div class="viewcode-block" id="DreNomeAbreviacaoContract">
+<a class="viewcode-back" href="../../../api/dre.html#apps.dre.contracts.DreNomeAbreviacaoContract">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DreNomeAbreviacaoContract</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Dados de identificação de uma Diretoria Regional de Educação.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        codigo: Código EOL da DRE.</span>
+<span class="sd">        nome: Nome completo da DRE.</span>
+<span class="sd">        abreviacao: Nome abreviado da DRE, quando disponível.</span>
+<span class="sd">    """</span>
+
+    <span class="n">codigo</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nome</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">abreviacao</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="EscolaPorDreContract">
+<a class="viewcode-back" href="../../../api/dre.html#apps.dre.contracts.EscolaPorDreContract">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EscolaPorDreContract</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Dados de escola vinculada a uma DRE.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        codigoEscola: Código EOL da escola.</span>
+<span class="sd">        nomeEscola: Nome da escola.</span>
+<span class="sd">        codigoDRE: Código EOL da DRE.</span>
+<span class="sd">        tipoEscola: Descrição do tipo de escola.</span>
+<span class="sd">        siglaTipoEscola: Sigla do tipo de escola.</span>
+<span class="sd">        nomeDRE: Nome da DRE.</span>
+<span class="sd">        siglaDRE: Sigla da DRE.</span>
+<span class="sd">        codigoSubprefeitura: Código da subprefeitura como string.</span>
+<span class="sd">        nomeSubprefeitura: Nome da subprefeitura.</span>
+<span class="sd">        tipoEscolaId: Código numérico do tipo de escola.</span>
+<span class="sd">        tipoUnidadeId: Código numérico do tipo de unidade (igual a tipoEscolaId).</span>
+<span class="sd">        subprefeituraId: Código numérico da subprefeitura.</span>
+<span class="sd">        dreId: Código EOL da DRE (igual a codigoDRE).</span>
+<span class="sd">        codigoIntegracao: Código de integração externo, ou None.</span>
+<span class="sd">    """</span>
+
+    <span class="n">codigoEscola</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nomeEscola</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">codigoDRE</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">tipoEscola</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">siglaTipoEscola</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nomeDRE</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">siglaDRE</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">codigoSubprefeitura</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nomeSubprefeitura</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">tipoEscolaId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">tipoUnidadeId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">subprefeituraId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">dreId</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">codigoIntegracao</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="UnidadePredialContract">
+<a class="viewcode-back" href="../../../api/dre.html#apps.dre.contracts.UnidadePredialContract">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnidadePredialContract</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Dados completos de unidade predial.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        codigoEol: Código EOL da unidade.</span>
+<span class="sd">        nomeOficial: Nome oficial da unidade.</span>
+<span class="sd">        nomeNaoOficial: Nome não oficial (sigla/apelido), ou None.</span>
+<span class="sd">        tipoUnidadeAdmin: Descrição do tipo de unidade administrativa da DRE, ou None.</span>
+<span class="sd">        tipoUE: Descrição do tipo de escola, ou None.</span>
+<span class="sd">        logadouro: Logradouro do endereço, ou None.</span>
+<span class="sd">        numero: Número do endereço, ou None.</span>
+<span class="sd">        bairro: Bairro, ou None.</span>
+<span class="sd">        cep: CEP como inteiro sem formatação, ou None.</span>
+<span class="sd">        distrito: Distrito, ou None.</span>
+<span class="sd">        subPrefeitura: Nome da subprefeitura, ou None.</span>
+<span class="sd">        nomeDre: Nome da DRE.</span>
+<span class="sd">        email: E-mail de contato, ou None.</span>
+<span class="sd">        telefone1: Telefone principal, ou None.</span>
+<span class="sd">        telefone2: Telefone secundário, ou None.</span>
+<span class="sd">        anoConstrucao: Ano de construção, ou None.</span>
+<span class="sd">        propriedade: Tipo de propriedade do imóvel, ou None.</span>
+<span class="sd">        capacidadeVagasMatutino: Vagas no período matutino.</span>
+<span class="sd">        capacidadeVagasVespertino: Vagas no período vespertino.</span>
+<span class="sd">        capacidadeVagasNoturno: Vagas no período noturno.</span>
+<span class="sd">        capacidadeVagasIntermediario: Vagas no período intermediário.</span>
+<span class="sd">        capacidadeVagasIntegral: Vagas no período integral.</span>
+<span class="sd">        capacidadeVagasTotal: Total de vagas.</span>
+<span class="sd">        organizacaoParceira: Indica se é organização parceira.</span>
+<span class="sd">        quantidadeDeFuncionarios: Quantidade de funcionários.</span>
+<span class="sd">        status: Status da unidade, ou None.</span>
+<span class="sd">        subprefeituraId: Código numérico da subprefeitura, ou None.</span>
+<span class="sd">        tipoUnidadeAdmId: Código numérico do tipo de unidade administrativa da DRE, ou None.</span>
+<span class="sd">    """</span>
+
+    <span class="n">codigoEol</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nomeOficial</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nomeNaoOficial</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">tipoUnidadeAdmin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">tipoUE</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">logadouro</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">numero</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">bairro</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">cep</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">distrito</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">subPrefeitura</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">nomeDre</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">telefone1</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">telefone2</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">anoConstrucao</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">propriedade</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">capacidadeVagasMatutino</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">capacidadeVagasVespertino</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">capacidadeVagasNoturno</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">capacidadeVagasIntermediario</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">capacidadeVagasIntegral</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">capacidadeVagasTotal</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">organizacaoParceira</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">quantidadeDeFuncionarios</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">subprefeituraId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">tipoUnidadeAdmId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="CodigoIntegracaoContract">
+<a class="viewcode-back" href="../../../api/dre.html#apps.dre.contracts.CodigoIntegracaoContract">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CodigoIntegracaoContract</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Dados de código de integração de uma UE.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        codigoUe: Código EOL da unidade.</span>
+<span class="sd">        nomeUe: Nome da unidade.</span>
+<span class="sd">        codigoIntegracao: Código de integração externo, ou None.</span>
+<span class="sd">        tipoEscolaId: Código numérico do tipo de escola.</span>
+<span class="sd">        tipoUnidadeId: Código numérico do tipo de unidade (igual a tipoEscolaId).</span>
+<span class="sd">        subprefeituraId: Código numérico da subprefeitura.</span>
+<span class="sd">        dreId: Código EOL da DRE.</span>
+<span class="sd">    """</span>
+
+    <span class="n">codigoUe</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">nomeUe</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">codigoIntegracao</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">tipoEscolaId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">tipoUnidadeId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">subprefeituraId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">dreId</span><span class="p">:</span> <span class="nb">str</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">SME-IntegracaoEOL-Institucional-Microsservico</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Ir" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navegação</h3>
+<p class="caption" role="heading"><span class="caption-text">Conteúdo:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../arquitetura.html">Arquitetura</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contratos.html">Contratos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cross_domain.html">Cross-Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../desenvolvimento.html">Desenvolvimento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">Referência da API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Código do módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

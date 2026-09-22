@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>DRE — Diretoria Regional de Educação &#8212; SME-IntegracaoEOL Institucional</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=c0c8e3fa"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/translations.js?v=71a39b36"></script>
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Buscar" href="../search.html" />
+    <link rel="next" title="Unidade Educacional" href="unidade_educacional.html" />
+    <link rel="prev" title="Core" href="core.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="dre-diretoria-regional-de-educacao">
+<h1>DRE — Diretoria Regional de Educação<a class="headerlink" href="#dre-diretoria-regional-de-educacao" title="Link para este cabeçalho">¶</a></h1>
+<p>Domínio responsável pelos endpoints D01-D11.</p>
+<section id="module-apps.dre.models">
+<span id="models"></span><h2>Models<a class="headerlink" href="#module-apps.dre.models" title="Link para este cabeçalho">¶</a></h2>
+<p>Models de leitura do domínio DRE.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.models.</span></span><span class="sig-name descname"><span class="pre">TipoEscola</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/models.html#TipoEscola"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.models.TipoEscola" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Tipo de unidade educacional (EMEF, EMEI, CEI, etc.).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola.codigo_tipo_escola">
+<span class="sig-name descname"><span class="pre">codigo_tipo_escola</span></span><a class="headerlink" href="#apps.dre.models.TipoEscola.codigo_tipo_escola" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola.sigla">
+<span class="sig-name descname"><span class="pre">sigla</span></span><a class="headerlink" href="#apps.dre.models.TipoEscola.sigla" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola.descricao">
+<span class="sig-name descname"><span class="pre">descricao</span></span><a class="headerlink" href="#apps.dre.models.TipoEscola.descricao" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola.data_atualizacao">
+<span class="sig-name descname"><span class="pre">data_atualizacao</span></span><a class="headerlink" href="#apps.dre.models.TipoEscola.data_atualizacao" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola.DoesNotExist">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#apps.dre.models.TipoEscola.DoesNotExist" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola.MultipleObjectsReturned">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#apps.dre.models.TipoEscola.MultipleObjectsReturned" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.TipoEscola.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#apps.dre.models.TipoEscola.objects" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.models.DRE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.models.</span></span><span class="sig-name descname"><span class="pre">DRE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/models.html#DRE"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.models.DRE" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Diretoria Regional de Educação.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.codigo_dre">
+<span class="sig-name descname"><span class="pre">codigo_dre</span></span><a class="headerlink" href="#apps.dre.models.DRE.codigo_dre" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.nome">
+<span class="sig-name descname"><span class="pre">nome</span></span><a class="headerlink" href="#apps.dre.models.DRE.nome" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.sigla">
+<span class="sig-name descname"><span class="pre">sigla</span></span><a class="headerlink" href="#apps.dre.models.DRE.sigla" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.tipo_unidade_adm">
+<span class="sig-name descname"><span class="pre">tipo_unidade_adm</span></span><a class="headerlink" href="#apps.dre.models.DRE.tipo_unidade_adm" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.descricao_unidade_adm">
+<span class="sig-name descname"><span class="pre">descricao_unidade_adm</span></span><a class="headerlink" href="#apps.dre.models.DRE.descricao_unidade_adm" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.DoesNotExist">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#apps.dre.models.DRE.DoesNotExist" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.MultipleObjectsReturned">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#apps.dre.models.DRE.MultipleObjectsReturned" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DRE.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#apps.dre.models.DRE.objects" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.models.</span></span><span class="sig-name descname"><span class="pre">DREAbrangencia</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/models.html#DREAbrangencia"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.models.DREAbrangencia" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>DRE com oferta educacional válida para consultas de abrangência.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia.codigo_dre">
+<span class="sig-name descname"><span class="pre">codigo_dre</span></span><a class="headerlink" href="#apps.dre.models.DREAbrangencia.codigo_dre" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia.nome">
+<span class="sig-name descname"><span class="pre">nome</span></span><a class="headerlink" href="#apps.dre.models.DREAbrangencia.nome" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia.abreviacao">
+<span class="sig-name descname"><span class="pre">abreviacao</span></span><a class="headerlink" href="#apps.dre.models.DREAbrangencia.abreviacao" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia.ordem">
+<span class="sig-name descname"><span class="pre">ordem</span></span><a class="headerlink" href="#apps.dre.models.DREAbrangencia.ordem" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia.DoesNotExist">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#apps.dre.models.DREAbrangencia.DoesNotExist" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia.MultipleObjectsReturned">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#apps.dre.models.DREAbrangencia.MultipleObjectsReturned" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.DREAbrangencia.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#apps.dre.models.DREAbrangencia.objects" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.models.SubPrefeitura">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.models.</span></span><span class="sig-name descname"><span class="pre">SubPrefeitura</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/models.html#SubPrefeitura"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.models.SubPrefeitura" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Subprefeitura do município de São Paulo.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.SubPrefeitura.codigo_sub_prefeitura">
+<span class="sig-name descname"><span class="pre">codigo_sub_prefeitura</span></span><a class="headerlink" href="#apps.dre.models.SubPrefeitura.codigo_sub_prefeitura" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.SubPrefeitura.sigla">
+<span class="sig-name descname"><span class="pre">sigla</span></span><a class="headerlink" href="#apps.dre.models.SubPrefeitura.sigla" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.SubPrefeitura.nome">
+<span class="sig-name descname"><span class="pre">nome</span></span><a class="headerlink" href="#apps.dre.models.SubPrefeitura.nome" title="Link para esta definição">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.SubPrefeitura.DoesNotExist">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#apps.dre.models.SubPrefeitura.DoesNotExist" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apps.dre.models.SubPrefeitura.MultipleObjectsReturned">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#apps.dre.models.SubPrefeitura.MultipleObjectsReturned" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.djangoproject.com/en/stable/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(em Django v6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.models.SubPrefeitura.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#apps.dre.models.SubPrefeitura.objects" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-apps.dre.contracts">
+<span id="contratos"></span><h2>Contratos<a class="headerlink" href="#module-apps.dre.contracts" title="Link para este cabeçalho">¶</a></h2>
+<p>Contratos de resposta do domínio DRE.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreResumoContract">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.contracts.</span></span><span class="sig-name descname"><span class="pre">DreResumoContract</span></span><a class="reference internal" href="../_modules/apps/dre/contracts.html#DreResumoContract"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.contracts.DreResumoContract" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Dados resumidos de Diretoria Regional de Educação.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreResumoContract.codigoDRE">
+<span class="sig-name descname"><span class="pre">codigoDRE</span></span><a class="headerlink" href="#apps.dre.contracts.DreResumoContract.codigoDRE" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreResumoContract.nomeDRE">
+<span class="sig-name descname"><span class="pre">nomeDRE</span></span><a class="headerlink" href="#apps.dre.contracts.DreResumoContract.nomeDRE" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome completo da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreResumoContract.siglaDRE">
+<span class="sig-name descname"><span class="pre">siglaDRE</span></span><a class="headerlink" href="#apps.dre.contracts.DreResumoContract.siglaDRE" title="Link para esta definição">¶</a></dt>
+<dd><p>Sigla da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">codigoDRE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id0" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">nomeDRE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id1" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">siglaDRE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id2" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreNomeAbreviacaoContract">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.contracts.</span></span><span class="sig-name descname"><span class="pre">DreNomeAbreviacaoContract</span></span><a class="reference internal" href="../_modules/apps/dre/contracts.html#DreNomeAbreviacaoContract"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.contracts.DreNomeAbreviacaoContract" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Dados de identificação de uma Diretoria Regional de Educação.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreNomeAbreviacaoContract.codigo">
+<span class="sig-name descname"><span class="pre">codigo</span></span><a class="headerlink" href="#apps.dre.contracts.DreNomeAbreviacaoContract.codigo" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreNomeAbreviacaoContract.nome">
+<span class="sig-name descname"><span class="pre">nome</span></span><a class="headerlink" href="#apps.dre.contracts.DreNomeAbreviacaoContract.nome" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome completo da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.DreNomeAbreviacaoContract.abreviacao">
+<span class="sig-name descname"><span class="pre">abreviacao</span></span><a class="headerlink" href="#apps.dre.contracts.DreNomeAbreviacaoContract.abreviacao" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome abreviado da DRE, quando disponível.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">codigo</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id3" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">nome</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id4" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">abreviacao</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id5" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.contracts.</span></span><span class="sig-name descname"><span class="pre">EscolaPorDreContract</span></span><a class="reference internal" href="../_modules/apps/dre/contracts.html#EscolaPorDreContract"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Dados de escola vinculada a uma DRE.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.codigoEscola">
+<span class="sig-name descname"><span class="pre">codigoEscola</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.codigoEscola" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da escola.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.nomeEscola">
+<span class="sig-name descname"><span class="pre">nomeEscola</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.nomeEscola" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome da escola.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.codigoDRE">
+<span class="sig-name descname"><span class="pre">codigoDRE</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.codigoDRE" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.tipoEscola">
+<span class="sig-name descname"><span class="pre">tipoEscola</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.tipoEscola" title="Link para esta definição">¶</a></dt>
+<dd><p>Descrição do tipo de escola.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.siglaTipoEscola">
+<span class="sig-name descname"><span class="pre">siglaTipoEscola</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.siglaTipoEscola" title="Link para esta definição">¶</a></dt>
+<dd><p>Sigla do tipo de escola.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.nomeDRE">
+<span class="sig-name descname"><span class="pre">nomeDRE</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.nomeDRE" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.siglaDRE">
+<span class="sig-name descname"><span class="pre">siglaDRE</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.siglaDRE" title="Link para esta definição">¶</a></dt>
+<dd><p>Sigla da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.codigoSubprefeitura">
+<span class="sig-name descname"><span class="pre">codigoSubprefeitura</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.codigoSubprefeitura" title="Link para esta definição">¶</a></dt>
+<dd><p>Código da subprefeitura como string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.nomeSubprefeitura">
+<span class="sig-name descname"><span class="pre">nomeSubprefeitura</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.nomeSubprefeitura" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome da subprefeitura.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.tipoEscolaId">
+<span class="sig-name descname"><span class="pre">tipoEscolaId</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.tipoEscolaId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico do tipo de escola.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.tipoUnidadeId">
+<span class="sig-name descname"><span class="pre">tipoUnidadeId</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.tipoUnidadeId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico do tipo de unidade (igual a tipoEscolaId).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.subprefeituraId">
+<span class="sig-name descname"><span class="pre">subprefeituraId</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.subprefeituraId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico da subprefeitura.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.dreId">
+<span class="sig-name descname"><span class="pre">dreId</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.dreId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da DRE (igual a codigoDRE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.EscolaPorDreContract.codigoIntegracao">
+<span class="sig-name descname"><span class="pre">codigoIntegracao</span></span><a class="headerlink" href="#apps.dre.contracts.EscolaPorDreContract.codigoIntegracao" title="Link para esta definição">¶</a></dt>
+<dd><p>Código de integração externo, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">codigoEscola</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id6" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">nomeEscola</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id7" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">codigoDRE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id8" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">tipoEscola</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id9" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">siglaTipoEscola</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id10" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">nomeDRE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id11" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">siglaDRE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id12" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">codigoSubprefeitura</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id13" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">nomeSubprefeitura</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id14" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">tipoEscolaId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id15" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">tipoUnidadeId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id16" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">subprefeituraId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id17" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">dreId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id18" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">codigoIntegracao</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id19" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.contracts.</span></span><span class="sig-name descname"><span class="pre">UnidadePredialContract</span></span><a class="reference internal" href="../_modules/apps/dre/contracts.html#UnidadePredialContract"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Dados completos de unidade predial.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.codigoEol">
+<span class="sig-name descname"><span class="pre">codigoEol</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.codigoEol" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da unidade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.nomeOficial">
+<span class="sig-name descname"><span class="pre">nomeOficial</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.nomeOficial" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome oficial da unidade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.nomeNaoOficial">
+<span class="sig-name descname"><span class="pre">nomeNaoOficial</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.nomeNaoOficial" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome não oficial (sigla/apelido), ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.tipoUnidadeAdmin">
+<span class="sig-name descname"><span class="pre">tipoUnidadeAdmin</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.tipoUnidadeAdmin" title="Link para esta definição">¶</a></dt>
+<dd><p>Descrição do tipo de unidade administrativa da DRE, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.tipoUE">
+<span class="sig-name descname"><span class="pre">tipoUE</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.tipoUE" title="Link para esta definição">¶</a></dt>
+<dd><p>Descrição do tipo de escola, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.logadouro">
+<span class="sig-name descname"><span class="pre">logadouro</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.logadouro" title="Link para esta definição">¶</a></dt>
+<dd><p>Logradouro do endereço, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.numero">
+<span class="sig-name descname"><span class="pre">numero</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.numero" title="Link para esta definição">¶</a></dt>
+<dd><p>Número do endereço, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.bairro">
+<span class="sig-name descname"><span class="pre">bairro</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.bairro" title="Link para esta definição">¶</a></dt>
+<dd><p>Bairro, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.cep">
+<span class="sig-name descname"><span class="pre">cep</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.cep" title="Link para esta definição">¶</a></dt>
+<dd><p>CEP como inteiro sem formatação, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.distrito">
+<span class="sig-name descname"><span class="pre">distrito</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.distrito" title="Link para esta definição">¶</a></dt>
+<dd><p>Distrito, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.subPrefeitura">
+<span class="sig-name descname"><span class="pre">subPrefeitura</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.subPrefeitura" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome da subprefeitura, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.nomeDre">
+<span class="sig-name descname"><span class="pre">nomeDre</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.nomeDre" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.email">
+<span class="sig-name descname"><span class="pre">email</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.email" title="Link para esta definição">¶</a></dt>
+<dd><p>E-mail de contato, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.telefone1">
+<span class="sig-name descname"><span class="pre">telefone1</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.telefone1" title="Link para esta definição">¶</a></dt>
+<dd><p>Telefone principal, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.telefone2">
+<span class="sig-name descname"><span class="pre">telefone2</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.telefone2" title="Link para esta definição">¶</a></dt>
+<dd><p>Telefone secundário, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.anoConstrucao">
+<span class="sig-name descname"><span class="pre">anoConstrucao</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.anoConstrucao" title="Link para esta definição">¶</a></dt>
+<dd><p>Ano de construção, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.propriedade">
+<span class="sig-name descname"><span class="pre">propriedade</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.propriedade" title="Link para esta definição">¶</a></dt>
+<dd><p>Tipo de propriedade do imóvel, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.capacidadeVagasMatutino">
+<span class="sig-name descname"><span class="pre">capacidadeVagasMatutino</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.capacidadeVagasMatutino" title="Link para esta definição">¶</a></dt>
+<dd><p>Vagas no período matutino.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.capacidadeVagasVespertino">
+<span class="sig-name descname"><span class="pre">capacidadeVagasVespertino</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.capacidadeVagasVespertino" title="Link para esta definição">¶</a></dt>
+<dd><p>Vagas no período vespertino.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.capacidadeVagasNoturno">
+<span class="sig-name descname"><span class="pre">capacidadeVagasNoturno</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.capacidadeVagasNoturno" title="Link para esta definição">¶</a></dt>
+<dd><p>Vagas no período noturno.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.capacidadeVagasIntermediario">
+<span class="sig-name descname"><span class="pre">capacidadeVagasIntermediario</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.capacidadeVagasIntermediario" title="Link para esta definição">¶</a></dt>
+<dd><p>Vagas no período intermediário.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.capacidadeVagasIntegral">
+<span class="sig-name descname"><span class="pre">capacidadeVagasIntegral</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.capacidadeVagasIntegral" title="Link para esta definição">¶</a></dt>
+<dd><p>Vagas no período integral.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.capacidadeVagasTotal">
+<span class="sig-name descname"><span class="pre">capacidadeVagasTotal</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.capacidadeVagasTotal" title="Link para esta definição">¶</a></dt>
+<dd><p>Total de vagas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.organizacaoParceira">
+<span class="sig-name descname"><span class="pre">organizacaoParceira</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.organizacaoParceira" title="Link para esta definição">¶</a></dt>
+<dd><p>Indica se é organização parceira.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(em Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.quantidadeDeFuncionarios">
+<span class="sig-name descname"><span class="pre">quantidadeDeFuncionarios</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.quantidadeDeFuncionarios" title="Link para esta definição">¶</a></dt>
+<dd><p>Quantidade de funcionários.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.status">
+<span class="sig-name descname"><span class="pre">status</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.status" title="Link para esta definição">¶</a></dt>
+<dd><p>Status da unidade, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.subprefeituraId">
+<span class="sig-name descname"><span class="pre">subprefeituraId</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.subprefeituraId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico da subprefeitura, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.UnidadePredialContract.tipoUnidadeAdmId">
+<span class="sig-name descname"><span class="pre">tipoUnidadeAdmId</span></span><a class="headerlink" href="#apps.dre.contracts.UnidadePredialContract.tipoUnidadeAdmId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico do tipo de unidade administrativa da DRE, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">codigoEol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id20" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">nomeOficial</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id21" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">nomeNaoOficial</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id22" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">tipoUnidadeAdmin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id23" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">tipoUE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id24" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id25">
+<span class="sig-name descname"><span class="pre">logadouro</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id25" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id26">
+<span class="sig-name descname"><span class="pre">numero</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id26" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id27">
+<span class="sig-name descname"><span class="pre">bairro</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id27" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id28">
+<span class="sig-name descname"><span class="pre">cep</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id28" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id29">
+<span class="sig-name descname"><span class="pre">distrito</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id29" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id30">
+<span class="sig-name descname"><span class="pre">subPrefeitura</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id30" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id31">
+<span class="sig-name descname"><span class="pre">nomeDre</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id31" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id32">
+<span class="sig-name descname"><span class="pre">email</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id32" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id33">
+<span class="sig-name descname"><span class="pre">telefone1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id33" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id34">
+<span class="sig-name descname"><span class="pre">telefone2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id34" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id35">
+<span class="sig-name descname"><span class="pre">anoConstrucao</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id35" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id36">
+<span class="sig-name descname"><span class="pre">propriedade</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id36" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id37">
+<span class="sig-name descname"><span class="pre">capacidadeVagasMatutino</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#id37" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id38">
+<span class="sig-name descname"><span class="pre">capacidadeVagasVespertino</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#id38" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id39">
+<span class="sig-name descname"><span class="pre">capacidadeVagasNoturno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#id39" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id40">
+<span class="sig-name descname"><span class="pre">capacidadeVagasIntermediario</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#id40" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id41">
+<span class="sig-name descname"><span class="pre">capacidadeVagasIntegral</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#id41" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id42">
+<span class="sig-name descname"><span class="pre">capacidadeVagasTotal</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#id42" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id43">
+<span class="sig-name descname"><span class="pre">organizacaoParceira</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(em Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#id43" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id44">
+<span class="sig-name descname"><span class="pre">quantidadeDeFuncionarios</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#id44" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id45">
+<span class="sig-name descname"><span class="pre">status</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id45" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id46">
+<span class="sig-name descname"><span class="pre">subprefeituraId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id46" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id47">
+<span class="sig-name descname"><span class="pre">tipoUnidadeAdmId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id47" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.contracts.</span></span><span class="sig-name descname"><span class="pre">CodigoIntegracaoContract</span></span><a class="reference internal" href="../_modules/apps/dre/contracts.html#CodigoIntegracaoContract"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(em Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Dados de código de integração de uma UE.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract.codigoUe">
+<span class="sig-name descname"><span class="pre">codigoUe</span></span><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract.codigoUe" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da unidade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract.nomeUe">
+<span class="sig-name descname"><span class="pre">nomeUe</span></span><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract.nomeUe" title="Link para esta definição">¶</a></dt>
+<dd><p>Nome da unidade.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract.codigoIntegracao">
+<span class="sig-name descname"><span class="pre">codigoIntegracao</span></span><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract.codigoIntegracao" title="Link para esta definição">¶</a></dt>
+<dd><p>Código de integração externo, ou None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract.tipoEscolaId">
+<span class="sig-name descname"><span class="pre">tipoEscolaId</span></span><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract.tipoEscolaId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico do tipo de escola.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract.tipoUnidadeId">
+<span class="sig-name descname"><span class="pre">tipoUnidadeId</span></span><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract.tipoUnidadeId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico do tipo de unidade (igual a tipoEscolaId).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract.subprefeituraId">
+<span class="sig-name descname"><span class="pre">subprefeituraId</span></span><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract.subprefeituraId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código numérico da subprefeitura.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)">int</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.dre.contracts.CodigoIntegracaoContract.dreId">
+<span class="sig-name descname"><span class="pre">dreId</span></span><a class="headerlink" href="#apps.dre.contracts.CodigoIntegracaoContract.dreId" title="Link para esta definição">¶</a></dt>
+<dd><p>Código EOL da DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id48">
+<span class="sig-name descname"><span class="pre">codigoUe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id48" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id49">
+<span class="sig-name descname"><span class="pre">nomeUe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id49" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id50">
+<span class="sig-name descname"><span class="pre">codigoIntegracao</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id50" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id51">
+<span class="sig-name descname"><span class="pre">tipoEscolaId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id51" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id52">
+<span class="sig-name descname"><span class="pre">tipoUnidadeId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id52" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id53">
+<span class="sig-name descname"><span class="pre">subprefeituraId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(em Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#id53" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id54">
+<span class="sig-name descname"><span class="pre">dreId</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#id54" title="Link para esta definição">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-apps.dre.selectors">
+<span id="selectors"></span><h2>Selectors<a class="headerlink" href="#module-apps.dre.selectors" title="Link para este cabeçalho">¶</a></h2>
+<p>Selectors do domínio DRE.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_dres">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_dres</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_dres"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_dres" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista todas as Diretorias Regionais de Educação.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Retorna<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DREs cadastradas ordenadas por nome.</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference internal" href="#apps.dre.contracts.DreResumoContract" title="apps.dre.contracts.DreResumoContract"><em>DreResumoContract</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_codigos_dres_abrangencia">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_codigos_dres_abrangencia</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_codigos_dres_abrangencia"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_codigos_dres_abrangencia" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista os códigos das DREs com oferta educacional válida.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Retorna<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Códigos das DREs na ordem produzida pela consulta de origem.</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_nomes_abreviacoes_dres">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_nomes_abreviacoes_dres</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_nomes_abreviacoes_dres"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_nomes_abreviacoes_dres" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista a identificação das DREs com oferta educacional válida.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Retorna<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dados das DREs na ordem produzida pela consulta de origem.</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference internal" href="#apps.dre.contracts.DreNomeAbreviacaoContract" title="apps.dre.contracts.DreNomeAbreviacaoContract"><em>DreNomeAbreviacaoContract</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.filtrar_dres_por_codigos">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">filtrar_dres_por_codigos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#filtrar_dres_por_codigos"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.filtrar_dres_por_codigos" title="Link para esta definição">¶</a></dt>
+<dd><p>Filtra DREs pela lista de códigos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigos</strong> – Códigos EOL das DREs a serem buscadas.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>DREs encontradas para os códigos informados.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigos</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference internal" href="#apps.dre.contracts.DreResumoContract" title="apps.dre.contracts.DreResumoContract"><em>DreResumoContract</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.obter_dre_por_codigo">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">obter_dre_por_codigo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#obter_dre_por_codigo"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.obter_dre_por_codigo" title="Link para esta definição">¶</a></dt>
+<dd><p>Retorna uma DRE pelo código ou None se não existir.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo</strong> – Código EOL da DRE.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dados resumidos da DRE, ou None se não encontrada.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#apps.dre.contracts.DreResumoContract" title="apps.dre.contracts.DreResumoContract"><em>DreResumoContract</em></a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_subprefeituras_por_dre">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_subprefeituras_por_dre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_subprefeituras_por_dre"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_subprefeituras_por_dre" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista subprefeituras distintas das UEs de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> – Código EOL da DRE.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Subprefeituras distintas referenciadas pelas UEs da DRE.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference internal" href="core.html#apps.core.types.SubPrefeiturarContract" title="apps.core.types.SubPrefeiturarContract"><em>SubPrefeiturarContract</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_escolas_por_dre">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_escolas_por_dre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo_dre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tipo_escola_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_escolas_por_dre"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_escolas_por_dre" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista escolas de uma DRE, opcionalmente filtradas por tipo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>codigo_dre</strong> – Código EOL da DRE.</p></li>
+<li><p><strong>tipo_escola_id</strong> – Código do tipo de escola para filtro opcional.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Escolas da DRE com dados de tipo e subprefeitura resolvidos.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>codigo_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>tipo_escola_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference internal" href="#apps.dre.contracts.EscolaPorDreContract" title="apps.dre.contracts.EscolaPorDreContract"><em>EscolaPorDreContract</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_codigos_ues_por_dre">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_codigos_ues_por_dre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_codigos_ues_por_dre"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_codigos_ues_por_dre" title="Link para esta definição">¶</a></dt>
+<dd><p>Retorna lista de códigos EOL das UEs de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> – Código EOL da DRE.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Códigos EOL das UEs vinculadas, ordenados.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_unidades_por_dre">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_unidades_por_dre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_unidades_por_dre"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_unidades_por_dre" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista unidades prediais de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> – Código EOL da DRE.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Unidades com endereço, vagas e dados de subprefeitura resolvidos.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference internal" href="#apps.dre.contracts.UnidadePredialContract" title="apps.dre.contracts.UnidadePredialContract"><em>UnidadePredialContract</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.dre.selectors.listar_codigos_integracao_por_dre">
+<span class="sig-prename descclassname"><span class="pre">apps.dre.selectors.</span></span><span class="sig-name descname"><span class="pre">listar_codigos_integracao_por_dre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/selectors.html#listar_codigos_integracao_por_dre"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.selectors.listar_codigos_integracao_por_dre" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista UEs com código de integração de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> – Código EOL da DRE.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>UEs da DRE com seus respectivos códigos de integração.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>codigo_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(em Python v3.14)">list</a>[<a class="reference internal" href="#apps.dre.contracts.CodigoIntegracaoContract" title="apps.dre.contracts.CodigoIntegracaoContract"><em>CodigoIntegracaoContract</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-apps.dre.api.views">
+<span id="views"></span><h2>Views<a class="headerlink" href="#module-apps.dre.api.views" title="Link para este cabeçalho">¶</a></h2>
+<p>Views do domínio DRE.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.CodigosDresAbrangenciaView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">CodigosDresAbrangenciaView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#CodigosDresAbrangenciaView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.CodigosDresAbrangenciaView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista os códigos das Diretorias Regionais de Educação.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.CodigosDresAbrangenciaView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#CodigosDresAbrangenciaView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.CodigosDresAbrangenciaView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista os códigos das DREs com abrangência educacional.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.NomesAbreviacoesDresView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">NomesAbreviacoesDresView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#NomesAbreviacoesDresView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.NomesAbreviacoesDresView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista nomes e abreviações das Diretorias Regionais de Educação.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.NomesAbreviacoesDresView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#NomesAbreviacoesDresView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.NomesAbreviacoesDresView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista a identificação das DREs com abrangência educacional.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreListView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreListView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreListView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreListView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista e filtra Diretorias Regionais de Educação.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreListView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreListView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreListView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista todas as DREs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista com todas as DREs ordenadas por nome.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreListView.post">
+<span class="sig-name descname"><span class="pre">post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreListView.post"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreListView.post" title="Link para esta definição">¶</a></dt>
+<dd><p>Filtra DREs pela lista de códigos informada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>request</strong> – Requisição com lista de códigos EOL no corpo JSON.</p>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>DREs encontradas, ou 204 se nenhuma for localizada.</p>
+</dd>
+<dt class="field-odd">Levanta<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValidationError</strong> – Se o corpo não for uma lista.</p>
+</dd>
+<dt class="field-even">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>request</strong> (<em>Request</em>)</p>
+</dd>
+<dt class="field-odd">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreDetalheView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreDetalheView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreDetalheView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreDetalheView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Retorna dados de uma DRE pelo código EOL.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreDetalheView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codigo_eol_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreDetalheView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreDetalheView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Retorna dados de uma DRE pelo código EOL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>codigo_eol_dre</strong> – Código EOL da DRE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista com os dados resumidos da DRE.</p>
+</dd>
+<dt class="field-odd">Levanta<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotFound</strong> – Se a DRE não for encontrada.</p>
+</dd>
+<dt class="field-even">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>codigo_eol_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreEscolasTipoView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreEscolasTipoView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreEscolasTipoView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreEscolasTipoView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista escolas de uma DRE filtradas por tipo.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreEscolasTipoView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codigo_eol_dre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tipo_escola_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreEscolasTipoView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreEscolasTipoView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista escolas de uma DRE filtradas pelo tipo informado.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>codigo_eol_dre</strong> – Código EOL da DRE.</p></li>
+<li><p><strong>tipo_escola_id</strong> – Código numérico do tipo de escola.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Escolas da DRE do tipo informado.</p>
+</dd>
+<dt class="field-odd">Levanta<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValidationError</strong> – Se o código EOL da DRE for vazio.</p>
+</dd>
+<dt class="field-even">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>codigo_eol_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>tipo_escola_id</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(em Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreEscolasView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreEscolasView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreEscolasView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreEscolasView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista todas as escolas de uma DRE.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreEscolasView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codigo_eol_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreEscolasView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreEscolasView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista todas as escolas de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>codigo_eol_dre</strong> – Código EOL da DRE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Escolas da DRE ou 204 se não houver resultados.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>codigo_eol_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreSubprefeiturasView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreSubprefeiturasView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreSubprefeiturasView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreSubprefeiturasView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista subprefeituras de uma DRE.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreSubprefeiturasView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dre_codigo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreSubprefeiturasView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreSubprefeiturasView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista subprefeituras das UEs de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>dre_codigo</strong> – Código EOL da DRE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Subprefeituras distintas referenciadas pelas UEs da DRE.</p>
+</dd>
+<dt class="field-odd">Levanta<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValidationError</strong> – Se o código da DRE for vazio.</p>
+</dd>
+<dt class="field-even">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>dre_codigo</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreUesView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreUesView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreUesView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreUesView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista os códigos das UEs de uma DRE.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreUesView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dre_codigo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreUesView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreUesView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Retorna os códigos EOL das UEs de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>dre_codigo</strong> – Código EOL da DRE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista de códigos EOL das UEs vinculadas à DRE.</p>
+</dd>
+<dt class="field-odd">Levanta<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValidationError</strong> – Se o código da DRE for vazio.</p>
+</dd>
+<dt class="field-even">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>dre_codigo</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreEscolasSigpaeView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreEscolasSigpaeView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreEscolasSigpaeView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreEscolasSigpaeView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista escolas de uma DRE no formato SIGPAE.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreEscolasSigpaeView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codigo_eol_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreEscolasSigpaeView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreEscolasSigpaeView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista escolas de uma DRE no formato esperado pelo SIGPAE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>codigo_eol_dre</strong> – Código EOL da DRE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Escolas da DRE ou 204 se não houver resultados.</p>
+</dd>
+<dt class="field-odd">Levanta<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValidationError</strong> – Se o código EOL da DRE for vazio.</p>
+</dd>
+<dt class="field-even">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>codigo_eol_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreUnidadesView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreUnidadesView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreUnidadesView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreUnidadesView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Retorna unidades prediais completas de uma DRE.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreUnidadesView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dre_codigo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreUnidadesView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreUnidadesView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Retorna unidades prediais completas de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>dre_codigo</strong> – Código EOL da DRE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>Unidades prediais com endereço e vagas.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>dre_codigo</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreCodigosIntegracaoView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreCodigosIntegracaoView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreCodigosIntegracaoView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreCodigosIntegracaoView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Lista os códigos de integração das UEs de uma DRE.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreCodigosIntegracaoView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dre_codigo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreCodigosIntegracaoView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreCodigosIntegracaoView.get" title="Link para esta definição">¶</a></dt>
+<dd><p>Lista os códigos de integração das UEs de uma DRE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> – Requisição HTTP (não utilizada).</p></li>
+<li><p><strong>dre_codigo</strong> – Código EOL da DRE.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Retorna<span class="colon">:</span></dt>
+<dd class="field-even"><p>UEs com seus códigos de integração.</p>
+</dd>
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>dre_codigo</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreSupervisoresView">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.dre.api.views.</span></span><span class="sig-name descname"><span class="pre">DreSupervisoresView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreSupervisoresView"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreSupervisoresView" title="Link para esta definição">¶</a></dt>
+<dd><p>Base: <a class="reference internal" href="core.html#apps.core.views.BaseAPIView" title="apps.core.views.BaseAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAPIView</span></code></a></p>
+<p>Supervisores de uma DRE — competência do domínio Professores.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apps.dre.api.views.DreSupervisoresView.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codigo_eol_dre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/dre/api/views.html#DreSupervisoresView.get"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#apps.dre.api.views.DreSupervisoresView.get" title="Link para esta definição">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parâmetros<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_request</strong> (<em>Request</em>)</p></li>
+<li><p><strong>codigo_eol_dre</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(em Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Tipo de retorno<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Response</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SME-IntegracaoEOL-Institucional-Microsservico</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Ir" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navegação</h3>
+<p class="caption" role="heading"><span class="caption-text">Conteúdo:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../arquitetura.html">Arquitetura</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contratos.html">Contratos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cross_domain.html">Cross-Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../desenvolvimento.html">Desenvolvimento</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Referência da API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="core.html">Core</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">DRE — Diretoria Regional de Educação</a></li>
+<li class="toctree-l2"><a class="reference internal" href="unidade_educacional.html">Unidade Educacional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="turmas.html">Turmas</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Referência da API</a><ul>
+      <li>Previous: <a href="core.html" title="capítulo anterior">Core</a></li>
+      <li>Next: <a href="unidade_educacional.html" title="próximo capítulo">Unidade Educacional</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/api/dre.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

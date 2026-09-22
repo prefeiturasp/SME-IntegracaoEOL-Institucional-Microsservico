@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>SME-IntegracaoEOL-Institucional-Microsservico &#8212; SME-IntegracaoEOL Institucional</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=c0c8e3fa"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/translations.js?v=71a39b36"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Buscar" href="search.html" />
+    <link rel="next" title="Arquitetura" href="arquitetura.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="sme-integracaoeol-institucional-microsservico">
+<h1>SME-IntegracaoEOL-Institucional-Microsservico<a class="headerlink" href="#sme-integracaoeol-institucional-microsservico" title="Link para este cabeçalho">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Conteúdo:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="arquitetura.html">Arquitetura</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="arquitetura.html#visao-geral">Visão Geral</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arquitetura.html#fluxo-de-dados">Fluxo de Dados</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arquitetura.html#estrutura-de-dominios">Estrutura de Domínios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arquitetura.html#regras-de-dominio">Regras de Domínio</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">Endpoints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#abrangencia-base-api-v1-institucional-abrangencia">Abrangência — base <code class="docutils literal notranslate"><span class="pre">/api/v1/institucional/abrangencia/</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#dre-base-api-dres">DRE — base <code class="docutils literal notranslate"><span class="pre">/api/dres/</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="endpoints.html#escola-ue-base-api-escolas">Escola/UE — base <code class="docutils literal notranslate"><span class="pre">/api/escolas/</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contratos.html">Contratos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#estrategia">Estratégia</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#queries">Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#sem-n-1">Sem N+1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#indices-esperados-no-banco">Índices Esperados no Banco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="performance.html#endpoints-criticos">Endpoints Críticos</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cross_domain.html">Cross-Domain</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cross_domain.html#resumo">Resumo</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="desenvolvimento.html">Desenvolvimento</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="desenvolvimento.html#variaveis-de-ambiente">Variáveis de Ambiente</a></li>
+<li class="toctree-l2"><a class="reference internal" href="desenvolvimento.html#executar-com-docker-producao">Executar com Docker (produção)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="desenvolvimento.html#executar-com-docker-desenvolvimento-debugpy">Executar com Docker (desenvolvimento + debugpy)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="desenvolvimento.html#testes">Testes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="desenvolvimento.html#lint">Lint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="desenvolvimento.html#swagger-openapi">Swagger / OpenAPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="desenvolvimento.html#gerar-documentacao-sphinx">Gerar documentação Sphinx</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">Referência da API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/core.html">Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/dre.html">DRE — Diretoria Regional de Educação</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/unidade_educacional.html">Unidade Educacional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/turmas.html">Turmas</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">SME-IntegracaoEOL-Institucional-Microsservico</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Ir" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navegação</h3>
+<p class="caption" role="heading"><span class="caption-text">Conteúdo:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="arquitetura.html">Arquitetura</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoints.html">Endpoints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contratos.html">Contratos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cross_domain.html">Cross-Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="desenvolvimento.html">Desenvolvimento</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">Referência da API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="arquitetura.html" title="próximo capítulo">Arquitetura</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
