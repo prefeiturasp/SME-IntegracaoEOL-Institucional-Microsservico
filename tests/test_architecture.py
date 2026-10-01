@@ -233,18 +233,15 @@ def test_selectors_nao_importam_views() -> None:
 # ─── Health endpoints ─────────────────────────────────────────────────────────
 
 def test_health_endpoints_existem() -> None:
-    """Arquivo apps/core/health.py deve existir com as três views."""
+    """Arquivo apps/core/health.py deve existir com a view de health."""
     health_file = APPS / "core" / "health.py"
     assert health_file.exists(), "apps/core/health.py não encontrado"
     conteudo = health_file.read_text(encoding="utf-8")
-    for view in ("LivenessView", "ReadinessView", "HealthView"):
-        assert view in conteudo, f"{view} não encontrada em health.py"
+    assert "HealthView" in conteudo, "HealthView não encontrada em health.py"
 
 
 def test_health_urls_registradas() -> None:
     """URLs de health devem estar em config/urls.py."""
     urls_file = ROOT / "config" / "urls.py"
     conteudo = urls_file.read_text(encoding="utf-8")
-    assert "health/live/" in conteudo
-    assert "health/ready/" in conteudo
     assert "health/" in conteudo

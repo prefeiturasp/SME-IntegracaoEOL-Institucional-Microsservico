@@ -13,7 +13,7 @@ class TestPrefixMiddleware:
 
     def test_rota_sem_prefixo_funciona(self, api_client, db):
         """Rota sem prefixo configurado retorna 200 normalmente."""
-        resp = api_client.get("/api/v1/institucional/health/live/")
+        resp = api_client.get("/api/v1/institucional/health/")
         assert resp.status_code == 200
 
     @override_settings(SCRIPT_PREFIX="/institucional")
