@@ -1,0 +1,20 @@
+services:
+  institucional:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: sme_sgp_ms_institucional_dev
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+    volumes:
+      - .:/app
+    command: >
+      python -Xfrozen_modules=off -m debugpy
+      --listen 0.0.0.0:5679 manage.py runserver 0.0.0.0:8002
+    ports:
+      - "${PORT_WEB:-8002}:${PORT_WEB:-8002}"
+      - "${PORT_DEBUGPY:-5679}:${PORT_DEBUGPY:-5679}"
+    restart: unless-stopped

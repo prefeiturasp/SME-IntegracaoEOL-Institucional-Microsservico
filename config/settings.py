@@ -1,0 +1,194 @@
+"""Configurações Django do microserviço Institucional."""
+
+import os
+import secrets
+import urllib.parse
+from pathlib import Path
+from typing import Any
+
+from django.core.exceptions import ImproperlyConfigured
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "5"))
+_POOL_OPTIONS = {
+    "POOL_SIZE": DB_POOL_SIZE,
+    "MAX_OVERFLOW": 0,
+    "POOL_TIMEOUT": 30,
+    "POOL_RECYCLE": 1800,
+    "PRE_PING": True,
+}
+
+
+def _parse_db_url(url: Any) -> dict:
+    """Converte uma URL postgres em dicionário de configuração Django.
+
+    Args:
+        url: URL de conexão no formato ``postgres://user:pass@host:port/db``.
+            Aceita string ou bytes. Se vazio ou None, retorna SQLite in-memory.
+
+    Returns:
+        Dicionário de configuração de banco compatível com ``DATABASES``
+        do Django, usando o backend ``dj_db_conn_pool`` com pool configurado.
+    """
+    if not url:
+        return {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+
+    if isinstance(url, bytes):
+        url = url.decode("utf-8")
+
+    parsed = urllib.parse.urlparse(str(url))
+    return {
+        "ENGINE": "dj_db_conn_pool.backends.postgresql",
+        "NAME": parsed.path.lstrip("/"),
+        "USER": parsed.username or "postgres",
+        "PASSWORD": parsed.password or "postgres",
+        "HOST": parsed.hostname or "localhost",
+        "PORT": str(parsed.port or 5432),
+        "POOL_OPTIONS": _POOL_OPTIONS,
+    }
+
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if os.getenv("DJANGO_DEBUG", "1") == "0":
+        raise ImproperlyConfigured(
+            "A variável DJANGO_SECRET_KEY é obrigatória em produção."
+        )
+    SECRET_KEY = secrets.token_hex(32)
+
+DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
+ALLOWED_HOSTS = [
+    host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
+]
+
+INSTALLED_APPS = [
+    "django.contrib.contenttypes",
+    "django.contrib.auth",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "drf_spectacular",
+    "apps.core.apps.CoreConfig",
+    "apps.dre",
+    "apps.unidade_educacional",
+]
+
+MIDDLEWARE = [
+    "sme_sidecar_sdk.integrations.django.ObservabilityMiddleware",
+    "apps.core.middleware.PrefixMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware"
+]
+
+ROOT_URLCONF = "config.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = "config.wsgi.application"
+
+URL_BANCO_INSTITUCIONAL = os.getenv("URL_BANCO_INSTITUCIONAL")
+
+DATABASES = {
+    "default": _parse_db_url(URL_BANCO_INSTITUCIONAL),
+}
+
+AUTH_PASSWORD_VALIDATORS: list[dict[str, object]] = []
+
+LANGUAGE_CODE = "pt-br"
+TIME_ZONE = "America/Sao_Paulo"
+USE_I18N = True
+USE_TZ = True
+
+SCRIPT_PREFIX = os.getenv("APP_PREFIX", "")
+
+FORCE_SCRIPT_NAME = SCRIPT_PREFIX or None
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+_static_prefix = SCRIPT_PREFIX.rstrip("/") if SCRIPT_PREFIX else ""
+STATIC_URL = f"{_static_prefix}/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+NOME_APLICACAO = os.getenv(
+    "NOME_APLICACAO", "SME-IntegracaoEOL-Institucional-Microsservico"
+)
+AMBIENTE_APLICACAO = os.getenv("AMBIENTE_APLICACAO", "local")
+NIVEL_LOG = os.getenv("NIVEL_LOG", "INFO")
+
+API_KEY = os.getenv("API_KEY", "dev-key-default")
+API_KEY_HEADER = os.getenv("API_KEY_HEADER", "X-API-Key")
+
+CACHE_TTL_DRE_SECONDS = int(os.getenv("CACHE_TTL_DRE_SECONDS", "300"))
+CACHE_TTL_TIPO_ESCOLA_SECONDS = int(
+    os.getenv("CACHE_TTL_TIPO_ESCOLA_SECONDS", "900")
+)
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "apps.core.authentication.ApiKeyAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+_openapi_server_url = SCRIPT_PREFIX if SCRIPT_PREFIX else ""
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SME-IntegracaoEOL-Institucional-Microsservico API",
+    "DESCRIPTION": (
+        "Endpoints do domínio Institucional — SGP EOL.\n\n"
+        "Consome dados do banco institucional populado pelo ETL "
+        "SME-SGP-MS-ETL/apps/institucional."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVERS": [{"url": _openapi_server_url}],
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": API_KEY_HEADER,
+            }
+        }
+    },
+    "SECURITY": [{"ApiKeyAuth": []}],
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "padrao": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "padrao",
+        }
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": NIVEL_LOG,
+    },
+}
