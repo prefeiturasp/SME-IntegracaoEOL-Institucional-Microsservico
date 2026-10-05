@@ -38,6 +38,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">connection</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">OperationalError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">drf_spectacular.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenApiTypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">drf_spectacular.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">extend_schema</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.permissions</span><span class="w"> </span><span class="kn">import</span> <span class="n">AllowAny</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">Request</span>
@@ -61,49 +62,6 @@
         <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="nb">round</span><span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="LivenessView">
-<a class="viewcode-back" href="../../../api/core.html#apps.core.health.LivenessView">[documentos]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">LivenessView</span><span class="p">(</span><span class="n">APIView</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Verifica se o processo está vivo."""</span>
-
-    <span class="n">authentication_classes</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">AllowAny</span><span class="p">]</span>
-
-<div class="viewcode-block" id="LivenessView.get">
-<a class="viewcode-back" href="../../../api/core.html#apps.core.health.LivenessView.get">[documentos]</a>
-    <span class="nd">@extend_schema</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">})</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="ReadinessView">
-<a class="viewcode-back" href="../../../api/core.html#apps.core.health.ReadinessView">[documentos]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ReadinessView</span><span class="p">(</span><span class="n">APIView</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Verifica se o serviço está pronto para receber tráfego."""</span>
-
-    <span class="n">authentication_classes</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">AllowAny</span><span class="p">]</span>
-
-<div class="viewcode-block" id="ReadinessView.get">
-<a class="viewcode-back" href="../../../api/core.html#apps.core.health.ReadinessView.get">[documentos]</a>
-    <span class="nd">@extend_schema</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
-        <span class="n">db_ok</span><span class="p">,</span> <span class="n">db_ms</span> <span class="o">=</span> <span class="n">_db_ok</span><span class="p">()</span>
-        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span> <span class="k">if</span> <span class="n">db_ok</span> <span class="k">else</span> <span class="s2">"degraded"</span><span class="p">,</span>
-            <span class="s2">"version"</span><span class="p">:</span> <span class="n">_VERSION</span><span class="p">,</span>
-            <span class="s2">"checks"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"database"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"ok"</span><span class="p">:</span> <span class="n">db_ok</span><span class="p">,</span> <span class="s2">"latency_ms"</span><span class="p">:</span> <span class="n">db_ms</span><span class="p">},</span>
-            <span class="p">},</span>
-        <span class="p">}</span>
-        <span class="n">status_code</span> <span class="o">=</span> <span class="mi">200</span> <span class="k">if</span> <span class="n">db_ok</span> <span class="k">else</span> <span class="mi">503</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status_code</span><span class="p">)</span></div>
-</div>
-
-
-
 <div class="viewcode-block" id="HealthView">
 <a class="viewcode-back" href="../../../api/core.html#apps.core.health.HealthView">[documentos]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HealthView</span><span class="p">(</span><span class="n">APIView</span><span class="p">):</span>
@@ -114,7 +72,11 @@
 
 <div class="viewcode-block" id="HealthView.get">
 <a class="viewcode-back" href="../../../api/core.html#apps.core.health.HealthView.get">[documentos]</a>
-    <span class="nd">@extend_schema</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@extend_schema</span><span class="p">(</span>
+        <span class="n">summary</span><span class="o">=</span><span class="s2">"Verificar health"</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"Health"</span><span class="p">],</span>
+        <span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="mi">200</span><span class="p">:</span> <span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">OBJECT</span><span class="p">,</span> <span class="mi">503</span><span class="p">:</span> <span class="n">OpenApiTypes</span><span class="o">.</span><span class="n">OBJECT</span><span class="p">},</span>
+    <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
         <span class="n">db_ok</span><span class="p">,</span> <span class="n">db_ms</span> <span class="o">=</span> <span class="n">_db_ok</span><span class="p">()</span>
         <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
