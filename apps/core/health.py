@@ -4,6 +4,7 @@ import time
 
 from django.db import connection
 from django.db.utils import OperationalError
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -27,44 +28,17 @@ def _db_ok() -> tuple[bool, float]:
         return False, round((time.monotonic() - t0) * 1000, 2)
 
 
-class LivenessView(APIView):
-    """Verifica se o processo está vivo."""
-
-    authentication_classes = []
-    permission_classes = [AllowAny]
-
-    @extend_schema(exclude=True)
-    def get(self, _request: Request) -> Response:
-        return Response({"status": "ok"})
-
-
-class ReadinessView(APIView):
-    """Verifica se o serviço está pronto para receber tráfego."""
-
-    authentication_classes = []
-    permission_classes = [AllowAny]
-
-    @extend_schema(exclude=True)
-    def get(self, _request: Request) -> Response:
-        db_ok, db_ms = _db_ok()
-        payload = {
-            "status": "ok" if db_ok else "degraded",
-            "version": _VERSION,
-            "checks": {
-                "database": {"ok": db_ok, "latency_ms": db_ms},
-            },
-        }
-        status_code = 200 if db_ok else 503
-        return Response(payload, status=status_code)
-
-
 class HealthView(APIView):
     """Retorna o status detalhado do serviço."""
 
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @extend_schema(exclude=True)
+    @extend_schema(
+        summary="Verificar health",
+        tags=["Health"],
+        responses={200: OpenApiTypes.OBJECT, 503: OpenApiTypes.OBJECT},
+    )
     def get(self, _request: Request) -> Response:
         db_ok, db_ms = _db_ok()
         payload = {
