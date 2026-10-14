@@ -187,8 +187,7 @@ def listar_ues_basicas(
     """Lista UEs com dados básicos.
 
     A página sem filtro de códigos (listagem paginada completa) é
-    cacheada por (limite, offset). O legado não cacheava esta consulta,
-    por isso usa o TTL recomendado.
+    mantida em cache por (limite, offset).
 
     Args:
         codigos: Lista de códigos EOL para filtro. Se None, retorna todas.
@@ -849,8 +848,7 @@ def listar_equipamentos(
 ) -> list[EquipamentoContract]:
     """Lista equipamentos SME com filtros opcionais.
 
-    Resultado cacheado por combinação de filtros. O legado não cacheava
-    esta consulta, por isso usa o TTL recomendado.
+    O resultado é mantido em cache por combinação de filtros.
 
     Args:
         codigos_subprefeitura: Códigos de subprefeitura para filtro.

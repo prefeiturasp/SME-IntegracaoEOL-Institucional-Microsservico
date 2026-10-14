@@ -35,7 +35,7 @@ def listar_dres() -> list[DreResumoContract]:
 def listar_codigos_dres_abrangencia() -> list[str]:
     """Lista os códigos das DREs com oferta educacional válida.
 
-    O legado não cacheava esta consulta, por isso usa o TTL recomendado.
+    O resultado é mantido em cache.
 
     Returns:
         Códigos das DREs na ordem produzida pela consulta de origem.
@@ -195,7 +195,7 @@ def listar_escolas_por_dre(
 ) -> list[EscolaPorDreContract]:
     """Lista escolas de uma DRE, opcionalmente filtradas por tipo.
 
-    O legado cacheava esta consulta com o TTL padrão (1440 min), mantido aqui.
+    O resultado é mantido em cache por DRE e tipo de escola.
 
     Args:
         codigo_dre: Código EOL da DRE.

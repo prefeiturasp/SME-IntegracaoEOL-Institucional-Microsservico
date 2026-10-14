@@ -230,54 +230,6 @@ Extensões ativas:
 
 Ver `docs/cross_domain_endpoints.md` para detalhes dos endpoints cross-domain.
 
-### Medição de performance com K6
-
-O script `scripts/teste_performance_endpoints.js` mede as rotas GET institucionais com dados reais,
-distribuindo as requisições entre os endpoints. Endpoints cross-domain (501) e operações POST foram
-excluídos. O relatório destaca respostas individuais acima de 600 ms e aplica um limite de p95 de
-600 ms por endpoint; também valida que 99% das respostas sejam 2xx/3xx.
-
-Com o K6 instalado, execute na raiz deste microsserviço. Para HMG, disponibilize a chave no shell
-como `API_KEY_HMG` e rode:
-
-```bash
-k6 run \
-  -e AMBIENTE=hmg \
-  -e API_KEY="$API_KEY_HMG" \
-  -e DRE_CODE=108100 \
-  -e UE_CODE=019251 \
-  -e VUS=5 \
-  -e DURATION=2m \
-  scripts/teste_performance_endpoints.js
-```
-
-Para QA, use a chave `API_KEY_QA`:
-
-```bash
-k6 run \
-  -e AMBIENTE=qa \
-  -e API_KEY="$API_KEY_QA" \
-  -e DRE_CODE=108100 \
-  -e UE_CODE=019251 \
-  -e VUS=5 \
-  -e DURATION=2m \
-  scripts/teste_performance_endpoints.js
-```
-
-Para execução local, informe `-e BASE_URL=http://localhost:8002` e a chave local com `-e API_KEY=...`.
-O script aceita `AMBIENTE=qa` ou `AMBIENTE=hmg`; `BASE_URL` informado diretamente tem precedência.
-Não coloque chaves reais em arquivos versionados ou no histórico do shell.
-
-Configure `DRE_CODE`, `UE_CODE` e `TIPO_ESCOLA` com valores existentes no ambiente testado. Os valores
-acima são exemplos usados nos testes automatizados e podem não existir em QA/produção. `API_KEY_HEADER`
-permite trocar o nome do header, `PAUSE_SECONDS` adiciona intervalo entre chamadas e `REQUEST_TIMEOUT`
-altera o timeout HTTP. `BASE_URL` pode incluir o prefixo de caminho configurado no Ingress.
-
-O resumo aparece no terminal e os dados por endpoint são gravados em
-`scripts/relatorio_performance_endpoints_hmg.json` ou
-`scripts/relatorio_performance_endpoints_qa.json`. Faça medições representativas antes de executar
-cargas maiores; o teste não altera dados, mas aumenta consultas ao banco.
-
 ---
 
 ## Status HTTP
