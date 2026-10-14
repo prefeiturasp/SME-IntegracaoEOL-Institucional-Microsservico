@@ -1,8 +1,11 @@
 """Selectors do domínio UE."""
 
+import functools
+import hashlib
 import re as _re
 from zoneinfo import ZoneInfo
 
+from apps.core import cache
 from apps.core.types import SubPrefeiturarContract
 from apps.dre.models import DRE, SubPrefeitura, TipoEscola
 from apps.unidade_educacional.contracts import (
@@ -136,12 +139,56 @@ def _build_ue_basica(
     )
 
 
+def _coletar_ids(
+    rows: list[dict],
+) -> tuple[set[str], set[int], set[int]]:
+    """Coleta, em uma única passada, os ids de DRE, tipo e subprefeitura.
+
+    Args:
+        rows: Linhas de UE com ``codigo_dre``, ``codigo_tipo_escola`` e
+            ``codigo_sub_prefeitura``.
+
+    Returns:
+        Tupla (ids de DRE, ids de tipo, ids de subprefeitura); ids vazios
+        ou nulos de tipo e subprefeitura são ignorados.
+    """
+    dre_ids: set[str] = set()
+    tipo_ids: set[int] = set()
+    sub_ids: set[int] = set()
+    for r in rows:
+        dre_ids.add(r["codigo_dre"])
+        if r["codigo_tipo_escola"]:
+            tipo_ids.add(r["codigo_tipo_escola"])
+        if r["codigo_sub_prefeitura"]:
+            sub_ids.add(r["codigo_sub_prefeitura"])
+    return dre_ids, tipo_ids, sub_ids
+
+
+def _montar_ues_basicas(rows: list[dict]) -> list[UeBasicaContract]:
+    """Resolve DRE e tipo das linhas com um lookup por tabela.
+
+    Args:
+        rows: Linhas de UE (campos do .values()).
+
+    Returns:
+        Contratos básicos de UE, na mesma ordem das linhas.
+    """
+    dre_ids, tipo_ids, _ = _coletar_ids(rows)
+    dres = _lookup_dres(dre_ids)
+    tipos = _lookup_tipos(tipo_ids)
+    return [_build_ue_basica(r, dres, tipos) for r in rows]
+
+
 def listar_ues_basicas(
     codigos: list[str] | None = None,
     limite: int | None = None,
     offset: int = 0,
 ) -> tuple[list[UeBasicaContract], int]:
     """Lista UEs com dados básicos.
+
+    A página sem filtro de códigos (listagem paginada completa) é
+    cacheada por (limite, offset). O legado não cacheava esta consulta,
+    por isso usa o TTL recomendado.
 
     Args:
         codigos: Lista de códigos EOL para filtro. Se None, retorna todas.
@@ -151,34 +198,49 @@ def listar_ues_basicas(
     Returns:
         Tupla (itens, total), onde total é o total sem paginação.
     """
-    qs = UnidadeEducacional.objects.values(
+    campos = (
         "codigo_ue",
         "nome",
         "codigo_dre",
         "codigo_tipo_escola",
         "codigo_sub_prefeitura",
         "codigo_ue_integracao",
-    ).order_by("nome")
+    )
     if codigos is not None:
-        qs = qs.filter(codigo_ue__in=codigos)
-        rows = list(qs)
-        total = len(rows)
-    else:
-        total = qs.count()
-        if limite is not None:
-            qs = qs[offset: offset + limite]
-        rows = list(qs)
+        qs = UnidadeEducacional.objects.values(*campos).order_by("nome")
+        rows = list(qs.filter(codigo_ue__in=codigos))
+        if not rows:
+            return [], 0
+        return _montar_ues_basicas(rows), len(rows)
 
+    return cache.obter_ou_calcular(
+        f"ues-basicas-pagina:v1:{limite}:{offset}",
+        lambda: _calcular_pagina_ues_basicas(campos, limite, offset),
+        cache.TTL_RECOMENDADO_MINUTOS,
+    )
+
+
+def _calcular_pagina_ues_basicas(
+    campos: tuple[str, ...], limite: int | None, offset: int
+) -> tuple[list[UeBasicaContract], int]:
+    """Consulta uma página de UEs básicas sem filtro de códigos.
+
+    Args:
+        campos: Campos a buscar na tabela de UE.
+        limite: Número máximo de itens por página, ou None para todas.
+        offset: Posição inicial da página.
+
+    Returns:
+        Tupla (itens, total), onde total é o total sem paginação.
+    """
+    qs = UnidadeEducacional.objects.values(*campos).order_by("nome")
+    total = qs.count()
+    if limite is not None:
+        qs = qs[offset: offset + limite]
+    rows = list(qs)
     if not rows:
         return [], total
-
-    dre_ids = {r["codigo_dre"] for r in rows}
-    tipo_ids = {
-        r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]
-    }
-    dres = _lookup_dres(dre_ids)
-    tipos = _lookup_tipos(tipo_ids)
-    return [_build_ue_basica(r, dres, tipos) for r in rows], total
+    return _montar_ues_basicas(rows), total
 
 
 def _build_ue_recorte(
@@ -489,8 +551,37 @@ def obter_subprefeituras_ue(
     ]
 
 
+@functools.cache
+def _consultar_coluna_existe(tabela: str, coluna: str) -> bool:
+    """Consulta o information_schema; propaga erros para não memorizá-los.
+
+    Args:
+        tabela: Nome da tabela no banco de dados.
+        coluna: Nome da coluna a verificar.
+
+    Returns:
+        True se a coluna existir, False caso contrário.
+
+    Raises:
+        Exception: Falha de conexão ou de consulta ao banco, propagada para
+            que o resultado não seja memorizado.
+    """
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT 1 FROM information_schema.columns "
+            "WHERE table_name=%s AND column_name=%s LIMIT 1",
+            [tabela, coluna],
+        )
+        return cursor.fetchone() is not None
+
+
 def _coluna_existe(tabela: str, coluna: str) -> bool:
     """Verifica em tempo de execução se uma coluna existe no banco.
+
+    O schema não muda durante a vida do worker, então respostas válidas são
+    memorizadas em processo; falhas de conexão não são memorizadas.
 
     Args:
         tabela: Nome da tabela no banco de dados.
@@ -499,16 +590,8 @@ def _coluna_existe(tabela: str, coluna: str) -> bool:
     Returns:
         True se a coluna existir, False caso contrário ou em caso de erro.
     """
-    from django.db import connection
-
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT 1 FROM information_schema.columns "
-                "WHERE table_name=%s AND column_name=%s LIMIT 1",
-                [tabela, coluna],
-            )
-            return cursor.fetchone() is not None
+        return _consultar_coluna_existe(tabela, coluna)
     except Exception:
         return False
 
@@ -621,80 +704,139 @@ def _montar_logradouro(r: dict) -> str | None:
         Logradouro formatado (ex: "RUA APUCARANA Nº 215"), ou None se vazio.
     """
     partes = []
-    if r.get("tipo_logradouro"):
-        partes.append(r["tipo_logradouro"].strip().upper())
-    if r.get("logradouro"):
-        partes.append(r["logradouro"].strip().upper())
-    if r.get("numero"):
-        partes.append(f"Nº {r['numero'].strip()}")
+    tipo_logradouro = r.get("tipo_logradouro")
+    if tipo_logradouro:
+        partes.append(tipo_logradouro.strip().upper())
+    logradouro = r.get("logradouro")
+    if logradouro:
+        partes.append(logradouro.strip().upper())
+    numero = r.get("numero")
+    if numero:
+        partes.append(f"Nº {numero.strip()}")
     return " ".join(partes) if partes else None
+
+
+# Valores usados quando a DRE ou o tipo da UE não existem nos lookups.
+_DRE_AUSENTE: tuple[str, str | None] = ("", None)
+_TIPO_AUSENTE: tuple[str, str] = ("", "")
+
+
+def _resumir_dres(
+    dres: dict[str, DRE],
+) -> dict[str, tuple[str, str | None]]:
+    """Normaliza cada DRE uma vez, em vez de uma vez por UE.
+
+    Args:
+        dres: Lookup de DREs indexado por código EOL.
+
+    Returns:
+        Dict código -> (nome, sigla sem espaços ou None se vazia).
+    """
+    return {
+        codigo: (d.nome, (d.sigla or "").strip() or None)
+        for codigo, d in dres.items()
+    }
+
+
+def _resumir_tipos(
+    tipos: dict[int, TipoEscola],
+) -> dict[int, tuple[str, str]]:
+    """Normaliza cada tipo de escola uma vez, em vez de uma vez por UE.
+
+    Args:
+        tipos: Lookup de tipos de escola indexado por código.
+
+    Returns:
+        Dict código -> (sigla sem espaços ou "", descrição).
+    """
+    return {
+        codigo: ((t.sigla or "").strip(), t.descricao)
+        for codigo, t in tipos.items()
+    }
 
 
 def _build_equipamento(
     r: dict,
-    dres: dict,
-    tipos: dict,
-    subs: dict,
+    dres: dict[str, tuple[str, str | None]],
+    tipos: dict[int, tuple[str, str]],
+    subs: dict[int, str],
 ) -> EquipamentoContract:
     """Monta contrato de equipamento a partir dos dados brutos da UE.
 
     Args:
         r: Linha de dados brutos da UE (campos do .values()).
-        dres: Lookup de DREs indexado por código EOL.
-        tipos: Lookup de tipos de escola indexado por código.
-        subs: Lookup de subprefeituras indexado por código.
+        dres: Resumo das DREs (nome, sigla) indexado por código EOL.
+        tipos: Resumo dos tipos (sigla, descrição) indexado por código.
+        subs: Nome das subprefeituras indexado por código.
 
     Returns:
         Contrato de equipamento com campos prefixados (cd_, nm_, dc_, sg_).
     """
-    dre = dres.get(r["codigo_dre"])
-    cd_tp_eq = r.get("codigo_tipo_unidade_educacao")
-    dc_tp_eq = r.get("tipo_ue")
-    tipo_escola = (
-        tipos.get(r["codigo_tipo_escola"]) if r["codigo_tipo_escola"] else None
-    )
-    sub = (
-        subs.get(r["codigo_sub_prefeitura"])
-        if r["codigo_sub_prefeitura"]
-        else None
-    )
-    dre_nome = dre.nome if dre else ""
-    dre_sigla = (dre.sigla or "").strip() if dre else ""
-    tipo_sigla = (
-        tipo_escola.sigla.strip() if tipo_escola and tipo_escola.sigla else ""
-    )
-    tipo_desc = tipo_escola.descricao if tipo_escola else ""
-    cd_tp_escola = (
-        r["codigo_tipo_escola"]
-        if r["codigo_tipo_escola"] is not None
-        else 0
-    )
+    codigo_dre = r["codigo_dre"]
+    codigo_tipo = r["codigo_tipo_escola"]
+    codigo_sub = r["codigo_sub_prefeitura"]
+    nome = r["nome"]
+    dre_nome, dre_sigla = dres.get(codigo_dre, _DRE_AUSENTE)
+    tipo_sigla, tipo_desc = tipos.get(codigo_tipo, _TIPO_AUSENTE)
     return EquipamentoContract(
         cd_equipamento=r["codigo_ue"],
-        nm_exibicao_equipamento=r["nome_nao_oficial"] or r["nome"],
-        nm_equipamento=r["nome"],
-        cd_tp_equipamento=cd_tp_eq,
-        dc_tp_equipamento=dc_tp_eq,
-        cd_tp_escola=cd_tp_escola,
+        nm_exibicao_equipamento=r["nome_nao_oficial"] or nome,
+        nm_equipamento=nome,
+        cd_tp_equipamento=r.get("codigo_tipo_unidade_educacao"),
+        dc_tp_equipamento=r.get("tipo_ue"),
+        cd_tp_escola=codigo_tipo if codigo_tipo is not None else 0,
         dc_tipo_escola=tipo_desc,
         sg_tp_escola=tipo_sigla,
-        cd_diretoria_referencia=r["codigo_dre"],
+        cd_diretoria_referencia=codigo_dre,
         nm_diretoria_referencia=dre_nome,
-        cd_diretoria_portal=r["codigo_dre"],
+        cd_diretoria_portal=codigo_dre,
         nm_diretoria_portal=dre_nome,
-        nm_exibicao_diretoria_portal=dre_sigla or None,
-        nm_exibicao_diretoria_referencia=dre_sigla or None,
+        nm_exibicao_diretoria_portal=dre_sigla,
+        nm_exibicao_diretoria_referencia=dre_sigla,
         cd_logradouro=r.get("codigo_logradouro"),
         logradouro=_montar_logradouro(r),
         bairro=r["bairro"],
-        codigoSubprefeitura=(
-            str(r["codigo_sub_prefeitura"])
-            if r["codigo_sub_prefeitura"]
-            else None
-        ),
-        nomeSubprefeitura=sub.nome if sub else None,
+        codigoSubprefeitura=str(codigo_sub) if codigo_sub else None,
+        nomeSubprefeitura=subs.get(codigo_sub) if codigo_sub else None,
         ehCeu=bool(r.get("eh_ceu", False)),
     )
+
+
+def _assinatura_filtros_equipamentos(
+    codigos_subprefeitura: list[int] | None,
+    codigos_dre: list[str] | None,
+    tipos_unidade: list[int] | None,
+    tipos_escola: list[int] | None,
+    nome_escola: str | None,
+    codigo_eol: str | None,
+) -> str:
+    """Gera uma chave de cache estável a partir da combinação de filtros.
+
+    A ordem dos itens de cada lista e a caixa do nome não alteram a chave.
+
+    Args:
+        codigos_subprefeitura: Códigos de subprefeitura do filtro.
+        codigos_dre: Códigos EOL de DRE do filtro.
+        tipos_unidade: Códigos de tipo de unidade do filtro.
+        tipos_escola: Códigos de tipo de escola do filtro.
+        nome_escola: Trecho do nome da escola do filtro.
+        codigo_eol: Código EOL exato da escola do filtro.
+
+    Returns:
+        Chave no formato ``equipamentos:v1:<md5 dos filtros>``.
+    """
+    partes = "|".join([
+        ",".join(sorted(str(v) for v in (codigos_subprefeitura or []))),
+        ",".join(sorted(codigos_dre or [])),
+        ",".join(sorted(str(v) for v in (tipos_unidade or []))),
+        ",".join(sorted(str(v) for v in (tipos_escola or []))),
+        (nome_escola or "").strip().lower(),
+        (codigo_eol or "").strip(),
+    ])
+    # md5 usado apenas para gerar uma chave curta e estável, sem fins
+    # criptográficos.
+    digest = hashlib.md5(partes.encode("utf-8"), usedforsecurity=False)
+    return f"equipamentos:v1:{digest.hexdigest()}"
 
 
 def listar_equipamentos(
@@ -706,6 +848,52 @@ def listar_equipamentos(
     codigo_eol: str | None = None,
 ) -> list[EquipamentoContract]:
     """Lista equipamentos SME com filtros opcionais.
+
+    Resultado cacheado por combinação de filtros. O legado não cacheava
+    esta consulta, por isso usa o TTL recomendado.
+
+    Args:
+        codigos_subprefeitura: Códigos de subprefeitura para filtro.
+        codigos_dre: Códigos EOL de DRE para filtro.
+        tipos_unidade: Códigos de tipo de unidade para filtro.
+        tipos_escola: Códigos de tipo de escola para filtro.
+        nome_escola: Substring do nome da escola para filtro.
+        codigo_eol: Código EOL exato da escola para filtro.
+
+    Returns:
+        Equipamentos que atendem aos filtros, ordenados por código EOL.
+    """
+    chave = _assinatura_filtros_equipamentos(
+        codigos_subprefeitura,
+        codigos_dre,
+        tipos_unidade,
+        tipos_escola,
+        nome_escola,
+        codigo_eol,
+    )
+    return cache.obter_ou_calcular(
+        chave,
+        lambda: _calcular_equipamentos(
+            codigos_subprefeitura,
+            codigos_dre,
+            tipos_unidade,
+            tipos_escola,
+            nome_escola,
+            codigo_eol,
+        ),
+        cache.TTL_RECOMENDADO_MINUTOS,
+    )
+
+
+def _calcular_equipamentos(
+    codigos_subprefeitura: list[int] | None,
+    codigos_dre: list[str] | None,
+    tipos_unidade: list[int] | None,
+    tipos_escola: list[int] | None,
+    nome_escola: str | None,
+    codigo_eol: str | None,
+) -> list[EquipamentoContract]:
+    """Consulta e monta os equipamentos SME sem passar pelo cache.
 
     Args:
         codigos_subprefeitura: Códigos de subprefeitura para filtro.
@@ -749,17 +937,12 @@ def listar_equipamentos(
     if not rows:
         return []
 
-    dres = _lookup_dres({r["codigo_dre"] for r in rows})
-    tipos = _lookup_tipos(
-        {r["codigo_tipo_escola"] for r in rows if r["codigo_tipo_escola"]}
-    )
-    subs = _lookup_subs(
-        {
-            r["codigo_sub_prefeitura"]
-            for r in rows
-            if r["codigo_sub_prefeitura"]
-        }
-    )
+    dre_ids, tipo_ids, sub_ids = _coletar_ids(rows)
+    dres = _resumir_dres(_lookup_dres(dre_ids))
+    tipos = _resumir_tipos(_lookup_tipos(tipo_ids))
+    subs = {
+        codigo: s.nome for codigo, s in _lookup_subs(sub_ids).items()
+    }
     return [_build_equipamento(r, dres, tipos, subs) for r in rows]
 
 

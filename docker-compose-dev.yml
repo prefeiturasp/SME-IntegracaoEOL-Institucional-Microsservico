@@ -9,6 +9,9 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
+      URL_KEYDB: ${URL_KEYDB:-redis://keydb:6379/0}
+    depends_on:
+      - keydb
     volumes:
       - .:/app
     command: >
@@ -17,4 +20,10 @@ services:
     ports:
       - "${PORT_WEB:-8002}:${PORT_WEB:-8002}"
       - "${PORT_DEBUGPY:-5679}:${PORT_DEBUGPY:-5679}"
+    restart: unless-stopped
+
+  keydb:
+    image: eqalpha/keydb:latest
+    platform: linux/amd64
+    command: keydb-server --appendonly no --save ""
     restart: unless-stopped
