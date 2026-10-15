@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from apps.core import cache
 from apps.core.types import SubPrefeiturarContract
 from apps.dre.contracts import (
     CodigoIntegracaoContract,
@@ -34,13 +35,19 @@ def listar_dres() -> list[DreResumoContract]:
 def listar_codigos_dres_abrangencia() -> list[str]:
     """Lista os códigos das DREs com oferta educacional válida.
 
+    O resultado é mantido em cache.
+
     Returns:
         Códigos das DREs na ordem produzida pela consulta de origem.
     """
-    return list(
-        DREAbrangencia.objects.values_list("codigo_dre", flat=True).order_by(
-            "ordem"
-        )
+    return cache.obter_ou_calcular(
+        "abrangencia-codigos-dres:v1",
+        lambda: list(
+            DREAbrangencia.objects.values_list(
+                "codigo_dre", flat=True
+            ).order_by("ordem")
+        ),
+        cache.TTL_RECOMENDADO_MINUTOS,
     )
 
 
@@ -188,6 +195,27 @@ def listar_escolas_por_dre(
 ) -> list[EscolaPorDreContract]:
     """Lista escolas de uma DRE, opcionalmente filtradas por tipo.
 
+    O resultado é mantido em cache por DRE e tipo de escola.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+        tipo_escola_id: Código do tipo de escola para filtro opcional.
+
+    Returns:
+        Escolas da DRE com dados de tipo e subprefeitura resolvidos.
+    """
+    return cache.obter_ou_calcular(
+        f"escolas-por-dre:v1:{codigo_dre}:{tipo_escola_id}",
+        lambda: _calcular_escolas_por_dre(codigo_dre, tipo_escola_id),
+        cache.TTL_LEGADO_PADRAO_MINUTOS,
+    )
+
+
+def _calcular_escolas_por_dre(
+    codigo_dre: str, tipo_escola_id: int | None
+) -> list[EscolaPorDreContract]:
+    """Consulta e monta as escolas de uma DRE sem passar pelo cache.
+
     Args:
         codigo_dre: Código EOL da DRE.
         tipo_escola_id: Código do tipo de escola para filtro opcional.
@@ -207,53 +235,53 @@ def listar_escolas_por_dre(
     if not rows:
         return []
 
-    tipo_ids = {
-        r["codigo_tipo_escola"]
-        for r in rows
-        if r["codigo_tipo_escola"]
-    }
+    tipo_ids: set[int] = set()
+    sub_ids: set[int] = set()
+    for r in rows:
+        if r["codigo_tipo_escola"]:
+            tipo_ids.add(r["codigo_tipo_escola"])
+        if r["codigo_sub_prefeitura"]:
+            sub_ids.add(r["codigo_sub_prefeitura"])
+
     tipos = {
-        t.codigo_tipo_escola: t
+        t.codigo_tipo_escola: (t.descricao, t.sigla)
         for t in TipoEscola.objects.filter(
             codigo_tipo_escola__in=tipo_ids
         ).only("codigo_tipo_escola", "sigla", "descricao")
     }
-
-    sub_ids = {
-        r["codigo_sub_prefeitura"]
-        for r in rows
-        if r["codigo_sub_prefeitura"]
-    }
     subs = {
-        s.codigo_sub_prefeitura: s
+        s.codigo_sub_prefeitura: s.nome
         for s in SubPrefeitura.objects.filter(
             codigo_sub_prefeitura__in=sub_ids
         ).only("codigo_sub_prefeitura", "nome")
     }
 
+    # Valores da DRE são iguais para todas as linhas da resposta.
+    dre_codigo = dre_obj.codigo_dre
+    dre_nome = dre_obj.nome
+    dre_sigla = dre_obj.sigla or ""
+    tipo_ausente = ("", "")
+
     result: list[EscolaPorDreContract] = []
     for r in rows:
-        tipo = tipos.get(r["codigo_tipo_escola"])
-        sub = subs.get(r["codigo_sub_prefeitura"])
+        codigo_tipo = r["codigo_tipo_escola"]
+        codigo_sub = r["codigo_sub_prefeitura"]
+        tipo_descricao, tipo_sigla = tipos.get(codigo_tipo, tipo_ausente)
         result.append(
             EscolaPorDreContract(
                 codigoEscola=r["codigo_ue"],
                 nomeEscola=r["nome"],
-                codigoDRE=dre_obj.codigo_dre,
-                tipoEscola=tipo.descricao if tipo else "",
-                siglaTipoEscola=tipo.sigla if tipo else "",
-                nomeDRE=dre_obj.nome,
-                siglaDRE=dre_obj.sigla or "",
-                codigoSubprefeitura=(
-                    str(r["codigo_sub_prefeitura"])
-                    if r["codigo_sub_prefeitura"]
-                    else ""
-                ),
-                nomeSubprefeitura=sub.nome if sub else "",
-                tipoEscolaId=r["codigo_tipo_escola"],
-                tipoUnidadeId=r["codigo_tipo_escola"],
-                subprefeituraId=r["codigo_sub_prefeitura"],
-                dreId=dre_obj.codigo_dre,
+                codigoDRE=dre_codigo,
+                tipoEscola=tipo_descricao,
+                siglaTipoEscola=tipo_sigla,
+                nomeDRE=dre_nome,
+                siglaDRE=dre_sigla,
+                codigoSubprefeitura=str(codigo_sub) if codigo_sub else "",
+                nomeSubprefeitura=subs.get(codigo_sub, ""),
+                tipoEscolaId=codigo_tipo,
+                tipoUnidadeId=codigo_tipo,
+                subprefeituraId=codigo_sub,
+                dreId=dre_codigo,
                 codigoIntegracao=r.get("codigo_ue_integracao"),
             )
         )

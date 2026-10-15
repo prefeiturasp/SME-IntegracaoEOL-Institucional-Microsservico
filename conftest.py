@@ -79,6 +79,16 @@ def django_db_setup(django_test_environment, django_db_blocker):
                     cursor.execute(stmt)
 
 
+@pytest.fixture(autouse=True)
+def _limpar_cache_django():
+    """Isola os testes do cache de leitura usado pelos selectors."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
+
+
 @pytest.fixture
 def api_client():
     """Cliente REST com API key configurada."""
