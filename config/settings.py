@@ -125,6 +125,20 @@ STATIC_URL = f"{_static_prefix}/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# KeyDB
+URL_KEYDB = os.getenv("URL_KEYDB", "redis://localhost:6379/0")
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": URL_KEYDB,
+        "KEY_PREFIX": "institucional",
+        "OPTIONS": {
+            "socket_connect_timeout": 5,
+            "socket_timeout": 10,
+        },
+    },
+}
+
 NOME_APLICACAO = os.getenv(
     "NOME_APLICACAO", "SME-IntegracaoEOL-Institucional-Microsservico"
 )

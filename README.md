@@ -58,6 +58,7 @@ cp .env.example .env
 | `API_KEY_HEADER` | Nome do header | `X-API-Key` |
 | `URL_BANCO_INSTITUCIONAL` | URL PostgreSQL do banco institucional | SQLite in-memory |
 | `APP_PREFIX` | Prefixo de path no Ingress (ex: `institucional`) | vazio |
+| `URL_KEYDB` | URL do KeyDB usado como cache de leitura (TTL fixo em `apps/core/cache.py`) | `redis://localhost:6379/0` |
 | `CACHE_TTL_DRE_SECONDS` | TTL de cache para DREs | `300` |
 | `CACHE_TTL_TIPO_ESCOLA_SECONDS` | TTL de cache para tipos de escola | `900` |
 
