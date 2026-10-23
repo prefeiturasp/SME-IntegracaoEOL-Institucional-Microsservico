@@ -36,6 +36,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">apps.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">apps.core.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubPrefeiturarContract</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">apps.dre.contracts</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CodigoIntegracaoContract</span><span class="p">,</span>
@@ -73,13 +74,19 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">listar_codigos_dres_abrangencia</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Lista os códigos das DREs com oferta educacional válida.</span>
 
+<span class="sd">    O resultado é mantido em cache.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Códigos das DREs na ordem produzida pela consulta de origem.</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
-        <span class="n">DREAbrangencia</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"codigo_dre"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span>
-            <span class="s2">"ordem"</span>
-        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">cache</span><span class="o">.</span><span class="n">obter_ou_calcular</span><span class="p">(</span>
+        <span class="s2">"abrangencia-codigos-dres:v1"</span><span class="p">,</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">DREAbrangencia</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span>
+                <span class="s2">"codigo_dre"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"ordem"</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">TTL_RECOMENDADO_MINUTOS</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -242,6 +249,28 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">EscolaPorDreContract</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Lista escolas de uma DRE, opcionalmente filtradas por tipo.</span>
 
+<span class="sd">    O resultado é mantido em cache por DRE e tipo de escola.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        codigo_dre: Código EOL da DRE.</span>
+<span class="sd">        tipo_escola_id: Código do tipo de escola para filtro opcional.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Escolas da DRE com dados de tipo e subprefeitura resolvidos.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">cache</span><span class="o">.</span><span class="n">obter_ou_calcular</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"escolas-por-dre:v1:</span><span class="si">{</span><span class="n">codigo_dre</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">tipo_escola_id</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">_calcular_escolas_por_dre</span><span class="p">(</span><span class="n">codigo_dre</span><span class="p">,</span> <span class="n">tipo_escola_id</span><span class="p">),</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">TTL_LEGADO_PADRAO_MINUTOS</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calcular_escolas_por_dre</span><span class="p">(</span>
+    <span class="n">codigo_dre</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tipo_escola_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">EscolaPorDreContract</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Consulta e monta as escolas de uma DRE sem passar pelo cache.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        codigo_dre: Código EOL da DRE.</span>
 <span class="sd">        tipo_escola_id: Código do tipo de escola para filtro opcional.</span>
@@ -261,58 +290,57 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
-    <span class="n">tipo_ids</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span>
-        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span>
-    <span class="p">}</span>
+    <span class="n">tipo_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">sub_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]:</span>
+            <span class="n">tipo_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]:</span>
+            <span class="n">sub_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">])</span>
+
     <span class="n">tipos</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">t</span><span class="o">.</span><span class="n">codigo_tipo_escola</span><span class="p">:</span> <span class="n">t</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">codigo_tipo_escola</span><span class="p">:</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">descricao</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">sigla</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">TipoEscola</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
             <span class="n">codigo_tipo_escola__in</span><span class="o">=</span><span class="n">tipo_ids</span>
         <span class="p">)</span><span class="o">.</span><span class="n">only</span><span class="p">(</span><span class="s2">"codigo_tipo_escola"</span><span class="p">,</span> <span class="s2">"sigla"</span><span class="p">,</span> <span class="s2">"descricao"</span><span class="p">)</span>
     <span class="p">}</span>
-
-    <span class="n">sub_ids</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span>
-        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
-    <span class="p">}</span>
     <span class="n">subs</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">s</span><span class="o">.</span><span class="n">codigo_sub_prefeitura</span><span class="p">:</span> <span class="n">s</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">codigo_sub_prefeitura</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">nome</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">SubPrefeitura</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
             <span class="n">codigo_sub_prefeitura__in</span><span class="o">=</span><span class="n">sub_ids</span>
         <span class="p">)</span><span class="o">.</span><span class="n">only</span><span class="p">(</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">,</span> <span class="s2">"nome"</span><span class="p">)</span>
     <span class="p">}</span>
 
+    <span class="c1"># Valores da DRE são iguais para todas as linhas da resposta.</span>
+    <span class="n">dre_codigo</span> <span class="o">=</span> <span class="n">dre_obj</span><span class="o">.</span><span class="n">codigo_dre</span>
+    <span class="n">dre_nome</span> <span class="o">=</span> <span class="n">dre_obj</span><span class="o">.</span><span class="n">nome</span>
+    <span class="n">dre_sigla</span> <span class="o">=</span> <span class="n">dre_obj</span><span class="o">.</span><span class="n">sigla</span> <span class="ow">or</span> <span class="s2">""</span>
+    <span class="n">tipo_ausente</span> <span class="o">=</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+
     <span class="n">result</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">EscolaPorDreContract</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-        <span class="n">tipo</span> <span class="o">=</span> <span class="n">tipos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">])</span>
-        <span class="n">sub</span> <span class="o">=</span> <span class="n">subs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">])</span>
+        <span class="n">codigo_tipo</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span>
+        <span class="n">codigo_sub</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
+        <span class="n">tipo_descricao</span><span class="p">,</span> <span class="n">tipo_sigla</span> <span class="o">=</span> <span class="n">tipos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">codigo_tipo</span><span class="p">,</span> <span class="n">tipo_ausente</span><span class="p">)</span>
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="n">EscolaPorDreContract</span><span class="p">(</span>
                 <span class="n">codigoEscola</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_ue"</span><span class="p">],</span>
                 <span class="n">nomeEscola</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"nome"</span><span class="p">],</span>
-                <span class="n">codigoDRE</span><span class="o">=</span><span class="n">dre_obj</span><span class="o">.</span><span class="n">codigo_dre</span><span class="p">,</span>
-                <span class="n">tipoEscola</span><span class="o">=</span><span class="n">tipo</span><span class="o">.</span><span class="n">descricao</span> <span class="k">if</span> <span class="n">tipo</span> <span class="k">else</span> <span class="s2">""</span><span class="p">,</span>
-                <span class="n">siglaTipoEscola</span><span class="o">=</span><span class="n">tipo</span><span class="o">.</span><span class="n">sigla</span> <span class="k">if</span> <span class="n">tipo</span> <span class="k">else</span> <span class="s2">""</span><span class="p">,</span>
-                <span class="n">nomeDRE</span><span class="o">=</span><span class="n">dre_obj</span><span class="o">.</span><span class="n">nome</span><span class="p">,</span>
-                <span class="n">siglaDRE</span><span class="o">=</span><span class="n">dre_obj</span><span class="o">.</span><span class="n">sigla</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">,</span>
-                <span class="n">codigoSubprefeitura</span><span class="o">=</span><span class="p">(</span>
-                    <span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
-                    <span class="k">else</span> <span class="s2">""</span>
-                <span class="p">),</span>
-                <span class="n">nomeSubprefeitura</span><span class="o">=</span><span class="n">sub</span><span class="o">.</span><span class="n">nome</span> <span class="k">if</span> <span class="n">sub</span> <span class="k">else</span> <span class="s2">""</span><span class="p">,</span>
-                <span class="n">tipoEscolaId</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">],</span>
-                <span class="n">tipoUnidadeId</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">],</span>
-                <span class="n">subprefeituraId</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">],</span>
-                <span class="n">dreId</span><span class="o">=</span><span class="n">dre_obj</span><span class="o">.</span><span class="n">codigo_dre</span><span class="p">,</span>
+                <span class="n">codigoDRE</span><span class="o">=</span><span class="n">dre_codigo</span><span class="p">,</span>
+                <span class="n">tipoEscola</span><span class="o">=</span><span class="n">tipo_descricao</span><span class="p">,</span>
+                <span class="n">siglaTipoEscola</span><span class="o">=</span><span class="n">tipo_sigla</span><span class="p">,</span>
+                <span class="n">nomeDRE</span><span class="o">=</span><span class="n">dre_nome</span><span class="p">,</span>
+                <span class="n">siglaDRE</span><span class="o">=</span><span class="n">dre_sigla</span><span class="p">,</span>
+                <span class="n">codigoSubprefeitura</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">codigo_sub</span><span class="p">)</span> <span class="k">if</span> <span class="n">codigo_sub</span> <span class="k">else</span> <span class="s2">""</span><span class="p">,</span>
+                <span class="n">nomeSubprefeitura</span><span class="o">=</span><span class="n">subs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">codigo_sub</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+                <span class="n">tipoEscolaId</span><span class="o">=</span><span class="n">codigo_tipo</span><span class="p">,</span>
+                <span class="n">tipoUnidadeId</span><span class="o">=</span><span class="n">codigo_tipo</span><span class="p">,</span>
+                <span class="n">subprefeituraId</span><span class="o">=</span><span class="n">codigo_sub</span><span class="p">,</span>
+                <span class="n">dreId</span><span class="o">=</span><span class="n">dre_codigo</span><span class="p">,</span>
                 <span class="n">codigoIntegracao</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"codigo_ue_integracao"</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span></div>
-
+    <span class="k">return</span> <span class="n">result</span>
 
 
 <span class="c1"># --- Códigos de UEs ---</span>

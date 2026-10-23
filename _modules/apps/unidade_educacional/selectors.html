@@ -34,9 +34,12 @@
   <h1>Código-fonte para apps.unidade_educacional.selectors</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Selectors do domínio UE."""</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zoneinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZoneInfo</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">apps.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">apps.core.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubPrefeiturarContract</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">apps.dre.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">DRE</span><span class="p">,</span> <span class="n">SubPrefeitura</span><span class="p">,</span> <span class="n">TipoEscola</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">apps.unidade_educacional.contracts</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -170,6 +173,46 @@
     <span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_coletar_ids</span><span class="p">(</span>
+    <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Coleta, em uma única passada, os ids de DRE, tipo e subprefeitura.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rows: Linhas de UE com ``codigo_dre``, ``codigo_tipo_escola`` e</span>
+<span class="sd">            ``codigo_sub_prefeitura``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tupla (ids de DRE, ids de tipo, ids de subprefeitura); ids vazios</span>
+<span class="sd">        ou nulos de tipo e subprefeitura são ignorados.</span>
+<span class="sd">    """</span>
+    <span class="n">dre_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">tipo_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">sub_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="n">dre_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_dre"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]:</span>
+            <span class="n">tipo_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]:</span>
+            <span class="n">sub_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">dre_ids</span><span class="p">,</span> <span class="n">tipo_ids</span><span class="p">,</span> <span class="n">sub_ids</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_montar_ues_basicas</span><span class="p">(</span><span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">UeBasicaContract</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Resolve DRE e tipo das linhas com um lookup por tabela.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rows: Linhas de UE (campos do .values()).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Contratos básicos de UE, na mesma ordem das linhas.</span>
+<span class="sd">    """</span>
+    <span class="n">dre_ids</span><span class="p">,</span> <span class="n">tipo_ids</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_coletar_ids</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+    <span class="n">dres</span> <span class="o">=</span> <span class="n">_lookup_dres</span><span class="p">(</span><span class="n">dre_ids</span><span class="p">)</span>
+    <span class="n">tipos</span> <span class="o">=</span> <span class="n">_lookup_tipos</span><span class="p">(</span><span class="n">tipo_ids</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">_build_ue_basica</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">dres</span><span class="p">,</span> <span class="n">tipos</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+
+
 <div class="viewcode-block" id="listar_ues_basicas">
 <a class="viewcode-back" href="../../../api/unidade_educacional.html#apps.unidade_educacional.selectors.listar_ues_basicas">[documentos]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">listar_ues_basicas</span><span class="p">(</span>
@@ -179,6 +222,9 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">UeBasicaContract</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Lista UEs com dados básicos.</span>
 
+<span class="sd">    A página sem filtro de códigos (listagem paginada completa) é</span>
+<span class="sd">    mantida em cache por (limite, offset).</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        codigos: Lista de códigos EOL para filtro. Se None, retorna todas.</span>
 <span class="sd">        limite: Número máximo de itens por página.</span>
@@ -187,35 +233,50 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        Tupla (itens, total), onde total é o total sem paginação.</span>
 <span class="sd">    """</span>
-    <span class="n">qs</span> <span class="o">=</span> <span class="n">UnidadeEducacional</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+    <span class="n">campos</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">"codigo_ue"</span><span class="p">,</span>
         <span class="s2">"nome"</span><span class="p">,</span>
         <span class="s2">"codigo_dre"</span><span class="p">,</span>
         <span class="s2">"codigo_tipo_escola"</span><span class="p">,</span>
         <span class="s2">"codigo_sub_prefeitura"</span><span class="p">,</span>
         <span class="s2">"codigo_ue_integracao"</span><span class="p">,</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"nome"</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">codigos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">codigo_ue__in</span><span class="o">=</span><span class="n">codigos</span><span class="p">)</span>
-        <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
-        <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">total</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">limite</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">limite</span><span class="p">]</span>
-        <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">UnidadeEducacional</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="o">*</span><span class="n">campos</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"nome"</span><span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">qs</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">codigo_ue__in</span><span class="o">=</span><span class="n">codigos</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">_montar_ues_basicas</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 
+    <span class="k">return</span> <span class="n">cache</span><span class="o">.</span><span class="n">obter_ou_calcular</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"ues-basicas-pagina:v1:</span><span class="si">{</span><span class="n">limite</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">offset</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">_calcular_pagina_ues_basicas</span><span class="p">(</span><span class="n">campos</span><span class="p">,</span> <span class="n">limite</span><span class="p">,</span> <span class="n">offset</span><span class="p">),</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">TTL_RECOMENDADO_MINUTOS</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calcular_pagina_ues_basicas</span><span class="p">(</span>
+    <span class="n">campos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">limite</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">UeBasicaContract</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Consulta uma página de UEs básicas sem filtro de códigos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        campos: Campos a buscar na tabela de UE.</span>
+<span class="sd">        limite: Número máximo de itens por página, ou None para todas.</span>
+<span class="sd">        offset: Posição inicial da página.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tupla (itens, total), onde total é o total sem paginação.</span>
+<span class="sd">    """</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">UnidadeEducacional</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="o">*</span><span class="n">campos</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">"nome"</span><span class="p">)</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">limite</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">limite</span><span class="p">]</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[],</span> <span class="n">total</span>
-
-    <span class="n">dre_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_dre"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">}</span>
-    <span class="n">tipo_ids</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span>
-    <span class="p">}</span>
-    <span class="n">dres</span> <span class="o">=</span> <span class="n">_lookup_dres</span><span class="p">(</span><span class="n">dre_ids</span><span class="p">)</span>
-    <span class="n">tipos</span> <span class="o">=</span> <span class="n">_lookup_tipos</span><span class="p">(</span><span class="n">tipo_ids</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">_build_ue_basica</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">dres</span><span class="p">,</span> <span class="n">tipos</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="n">total</span></div>
-
+    <span class="k">return</span> <span class="n">_montar_ues_basicas</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">total</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_ue_recorte</span><span class="p">(</span>
@@ -550,8 +611,37 @@
 
 
 
+<span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_consultar_coluna_existe</span><span class="p">(</span><span class="n">tabela</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">coluna</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Consulta o information_schema; propaga erros para não memorizá-los.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tabela: Nome da tabela no banco de dados.</span>
+<span class="sd">        coluna: Nome da coluna a verificar.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True se a coluna existir, False caso contrário.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: Falha de conexão ou de consulta ao banco, propagada para</span>
+<span class="sd">            que o resultado não seja memorizado.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">connection</span>
+
+    <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="s2">"SELECT 1 FROM information_schema.columns "</span>
+            <span class="s2">"WHERE table_name=</span><span class="si">%s</span><span class="s2"> AND column_name=</span><span class="si">%s</span><span class="s2"> LIMIT 1"</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">tabela</span><span class="p">,</span> <span class="n">coluna</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_coluna_existe</span><span class="p">(</span><span class="n">tabela</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">coluna</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Verifica em tempo de execução se uma coluna existe no banco.</span>
+
+<span class="sd">    O schema não muda durante a vida do worker, então respostas válidas são</span>
+<span class="sd">    memorizadas em processo; falhas de conexão não são memorizadas.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tabela: Nome da tabela no banco de dados.</span>
@@ -560,16 +650,8 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        True se a coluna existir, False caso contrário ou em caso de erro.</span>
 <span class="sd">    """</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">connection</span>
-
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="s2">"SELECT 1 FROM information_schema.columns "</span>
-                <span class="s2">"WHERE table_name=</span><span class="si">%s</span><span class="s2"> AND column_name=</span><span class="si">%s</span><span class="s2"> LIMIT 1"</span><span class="p">,</span>
-                <span class="p">[</span><span class="n">tabela</span><span class="p">,</span> <span class="n">coluna</span><span class="p">],</span>
-            <span class="p">)</span>
-            <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_consultar_coluna_existe</span><span class="p">(</span><span class="n">tabela</span><span class="p">,</span> <span class="n">coluna</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
@@ -685,80 +767,139 @@
 <span class="sd">        Logradouro formatado (ex: "RUA APUCARANA Nº 215"), ou None se vazio.</span>
 <span class="sd">    """</span>
     <span class="n">partes</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tipo_logradouro"</span><span class="p">):</span>
-        <span class="n">partes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"tipo_logradouro"</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"logradouro"</span><span class="p">):</span>
-        <span class="n">partes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"logradouro"</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"numero"</span><span class="p">):</span>
-        <span class="n">partes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nº </span><span class="si">{</span><span class="n">r</span><span class="p">[</span><span class="s1">'numero'</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">tipo_logradouro</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tipo_logradouro"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tipo_logradouro</span><span class="p">:</span>
+        <span class="n">partes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tipo_logradouro</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+    <span class="n">logradouro</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"logradouro"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logradouro</span><span class="p">:</span>
+        <span class="n">partes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">logradouro</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+    <span class="n">numero</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"numero"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">numero</span><span class="p">:</span>
+        <span class="n">partes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Nº </span><span class="si">{</span><span class="n">numero</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">partes</span><span class="p">)</span> <span class="k">if</span> <span class="n">partes</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="c1"># Valores usados quando a DRE ou o tipo da UE não existem nos lookups.</span>
+<span class="n">_DRE_AUSENTE</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">_TIPO_AUSENTE</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resumir_dres</span><span class="p">(</span>
+    <span class="n">dres</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DRE</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Normaliza cada DRE uma vez, em vez de uma vez por UE.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dres: Lookup de DREs indexado por código EOL.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict código -&gt; (nome, sigla sem espaços ou None se vazia).</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">codigo</span><span class="p">:</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">nome</span><span class="p">,</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">sigla</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">codigo</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dres</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resumir_tipos</span><span class="p">(</span>
+    <span class="n">tipos</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">TipoEscola</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Normaliza cada tipo de escola uma vez, em vez de uma vez por UE.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tipos: Lookup de tipos de escola indexado por código.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict código -&gt; (sigla sem espaços ou "", descrição).</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">codigo</span><span class="p">:</span> <span class="p">((</span><span class="n">t</span><span class="o">.</span><span class="n">sigla</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">t</span><span class="o">.</span><span class="n">descricao</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">codigo</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tipos</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_equipamento</span><span class="p">(</span>
     <span class="n">r</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-    <span class="n">dres</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-    <span class="n">tipos</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-    <span class="n">subs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">dres</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]],</span>
+    <span class="n">tipos</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+    <span class="n">subs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EquipamentoContract</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Monta contrato de equipamento a partir dos dados brutos da UE.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        r: Linha de dados brutos da UE (campos do .values()).</span>
-<span class="sd">        dres: Lookup de DREs indexado por código EOL.</span>
-<span class="sd">        tipos: Lookup de tipos de escola indexado por código.</span>
-<span class="sd">        subs: Lookup de subprefeituras indexado por código.</span>
+<span class="sd">        dres: Resumo das DREs (nome, sigla) indexado por código EOL.</span>
+<span class="sd">        tipos: Resumo dos tipos (sigla, descrição) indexado por código.</span>
+<span class="sd">        subs: Nome das subprefeituras indexado por código.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Contrato de equipamento com campos prefixados (cd_, nm_, dc_, sg_).</span>
 <span class="sd">    """</span>
-    <span class="n">dre</span> <span class="o">=</span> <span class="n">dres</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_dre"</span><span class="p">])</span>
-    <span class="n">cd_tp_eq</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"codigo_tipo_unidade_educacao"</span><span class="p">)</span>
-    <span class="n">dc_tp_eq</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tipo_ue"</span><span class="p">)</span>
-    <span class="n">tipo_escola</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">tipos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">])</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
-    <span class="p">)</span>
-    <span class="n">sub</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">subs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
-        <span class="k">else</span> <span class="kc">None</span>
-    <span class="p">)</span>
-    <span class="n">dre_nome</span> <span class="o">=</span> <span class="n">dre</span><span class="o">.</span><span class="n">nome</span> <span class="k">if</span> <span class="n">dre</span> <span class="k">else</span> <span class="s2">""</span>
-    <span class="n">dre_sigla</span> <span class="o">=</span> <span class="p">(</span><span class="n">dre</span><span class="o">.</span><span class="n">sigla</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="n">dre</span> <span class="k">else</span> <span class="s2">""</span>
-    <span class="n">tipo_sigla</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">tipo_escola</span><span class="o">.</span><span class="n">sigla</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="n">tipo_escola</span> <span class="ow">and</span> <span class="n">tipo_escola</span><span class="o">.</span><span class="n">sigla</span> <span class="k">else</span> <span class="s2">""</span>
-    <span class="p">)</span>
-    <span class="n">tipo_desc</span> <span class="o">=</span> <span class="n">tipo_escola</span><span class="o">.</span><span class="n">descricao</span> <span class="k">if</span> <span class="n">tipo_escola</span> <span class="k">else</span> <span class="s2">""</span>
-    <span class="n">cd_tp_escola</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">else</span> <span class="mi">0</span>
-    <span class="p">)</span>
+    <span class="n">codigo_dre</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_dre"</span><span class="p">]</span>
+    <span class="n">codigo_tipo</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span>
+    <span class="n">codigo_sub</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
+    <span class="n">nome</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">"nome"</span><span class="p">]</span>
+    <span class="n">dre_nome</span><span class="p">,</span> <span class="n">dre_sigla</span> <span class="o">=</span> <span class="n">dres</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">codigo_dre</span><span class="p">,</span> <span class="n">_DRE_AUSENTE</span><span class="p">)</span>
+    <span class="n">tipo_sigla</span><span class="p">,</span> <span class="n">tipo_desc</span> <span class="o">=</span> <span class="n">tipos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">codigo_tipo</span><span class="p">,</span> <span class="n">_TIPO_AUSENTE</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">EquipamentoContract</span><span class="p">(</span>
         <span class="n">cd_equipamento</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_ue"</span><span class="p">],</span>
-        <span class="n">nm_exibicao_equipamento</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"nome_nao_oficial"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">r</span><span class="p">[</span><span class="s2">"nome"</span><span class="p">],</span>
-        <span class="n">nm_equipamento</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"nome"</span><span class="p">],</span>
-        <span class="n">cd_tp_equipamento</span><span class="o">=</span><span class="n">cd_tp_eq</span><span class="p">,</span>
-        <span class="n">dc_tp_equipamento</span><span class="o">=</span><span class="n">dc_tp_eq</span><span class="p">,</span>
-        <span class="n">cd_tp_escola</span><span class="o">=</span><span class="n">cd_tp_escola</span><span class="p">,</span>
+        <span class="n">nm_exibicao_equipamento</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"nome_nao_oficial"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">nome</span><span class="p">,</span>
+        <span class="n">nm_equipamento</span><span class="o">=</span><span class="n">nome</span><span class="p">,</span>
+        <span class="n">cd_tp_equipamento</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"codigo_tipo_unidade_educacao"</span><span class="p">),</span>
+        <span class="n">dc_tp_equipamento</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tipo_ue"</span><span class="p">),</span>
+        <span class="n">cd_tp_escola</span><span class="o">=</span><span class="n">codigo_tipo</span> <span class="k">if</span> <span class="n">codigo_tipo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">dc_tipo_escola</span><span class="o">=</span><span class="n">tipo_desc</span><span class="p">,</span>
         <span class="n">sg_tp_escola</span><span class="o">=</span><span class="n">tipo_sigla</span><span class="p">,</span>
-        <span class="n">cd_diretoria_referencia</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_dre"</span><span class="p">],</span>
+        <span class="n">cd_diretoria_referencia</span><span class="o">=</span><span class="n">codigo_dre</span><span class="p">,</span>
         <span class="n">nm_diretoria_referencia</span><span class="o">=</span><span class="n">dre_nome</span><span class="p">,</span>
-        <span class="n">cd_diretoria_portal</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_dre"</span><span class="p">],</span>
+        <span class="n">cd_diretoria_portal</span><span class="o">=</span><span class="n">codigo_dre</span><span class="p">,</span>
         <span class="n">nm_diretoria_portal</span><span class="o">=</span><span class="n">dre_nome</span><span class="p">,</span>
-        <span class="n">nm_exibicao_diretoria_portal</span><span class="o">=</span><span class="n">dre_sigla</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">nm_exibicao_diretoria_referencia</span><span class="o">=</span><span class="n">dre_sigla</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">nm_exibicao_diretoria_portal</span><span class="o">=</span><span class="n">dre_sigla</span><span class="p">,</span>
+        <span class="n">nm_exibicao_diretoria_referencia</span><span class="o">=</span><span class="n">dre_sigla</span><span class="p">,</span>
         <span class="n">cd_logradouro</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"codigo_logradouro"</span><span class="p">),</span>
         <span class="n">logradouro</span><span class="o">=</span><span class="n">_montar_logradouro</span><span class="p">(</span><span class="n">r</span><span class="p">),</span>
         <span class="n">bairro</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s2">"bairro"</span><span class="p">],</span>
-        <span class="n">codigoSubprefeitura</span><span class="o">=</span><span class="p">(</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
-            <span class="k">else</span> <span class="kc">None</span>
-        <span class="p">),</span>
-        <span class="n">nomeSubprefeitura</span><span class="o">=</span><span class="n">sub</span><span class="o">.</span><span class="n">nome</span> <span class="k">if</span> <span class="n">sub</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">codigoSubprefeitura</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">codigo_sub</span><span class="p">)</span> <span class="k">if</span> <span class="n">codigo_sub</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">nomeSubprefeitura</span><span class="o">=</span><span class="n">subs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">codigo_sub</span><span class="p">)</span> <span class="k">if</span> <span class="n">codigo_sub</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ehCeu</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"eh_ceu"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)),</span>
     <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_assinatura_filtros_equipamentos</span><span class="p">(</span>
+    <span class="n">codigos_subprefeitura</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">codigos_dre</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tipos_unidade</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tipos_escola</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">nome_escola</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">codigo_eol</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Gera uma chave de cache estável a partir da combinação de filtros.</span>
+
+<span class="sd">    A ordem dos itens de cada lista e a caixa do nome não alteram a chave.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        codigos_subprefeitura: Códigos de subprefeitura do filtro.</span>
+<span class="sd">        codigos_dre: Códigos EOL de DRE do filtro.</span>
+<span class="sd">        tipos_unidade: Códigos de tipo de unidade do filtro.</span>
+<span class="sd">        tipos_escola: Códigos de tipo de escola do filtro.</span>
+<span class="sd">        nome_escola: Trecho do nome da escola do filtro.</span>
+<span class="sd">        codigo_eol: Código EOL exato da escola do filtro.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Chave no formato ``equipamentos:v1:&lt;md5 dos filtros&gt;``.</span>
+<span class="sd">    """</span>
+    <span class="n">partes</span> <span class="o">=</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+        <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">codigos_subprefeitura</span> <span class="ow">or</span> <span class="p">[]))),</span>
+        <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">codigos_dre</span> <span class="ow">or</span> <span class="p">[])),</span>
+        <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">tipos_unidade</span> <span class="ow">or</span> <span class="p">[]))),</span>
+        <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">tipos_escola</span> <span class="ow">or</span> <span class="p">[]))),</span>
+        <span class="p">(</span><span class="n">nome_escola</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+        <span class="p">(</span><span class="n">codigo_eol</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+    <span class="p">])</span>
+    <span class="c1"># md5 usado apenas para gerar uma chave curta e estável, sem fins</span>
+    <span class="c1"># criptográficos.</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">partes</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">),</span> <span class="n">usedforsecurity</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"equipamentos:v1:</span><span class="si">{</span><span class="n">digest</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
 
 
 <div class="viewcode-block" id="listar_equipamentos">
@@ -772,6 +913,52 @@
     <span class="n">codigo_eol</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">EquipamentoContract</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Lista equipamentos SME com filtros opcionais.</span>
+
+<span class="sd">    O resultado é mantido em cache por combinação de filtros.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        codigos_subprefeitura: Códigos de subprefeitura para filtro.</span>
+<span class="sd">        codigos_dre: Códigos EOL de DRE para filtro.</span>
+<span class="sd">        tipos_unidade: Códigos de tipo de unidade para filtro.</span>
+<span class="sd">        tipos_escola: Códigos de tipo de escola para filtro.</span>
+<span class="sd">        nome_escola: Substring do nome da escola para filtro.</span>
+<span class="sd">        codigo_eol: Código EOL exato da escola para filtro.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Equipamentos que atendem aos filtros, ordenados por código EOL.</span>
+<span class="sd">    """</span>
+    <span class="n">chave</span> <span class="o">=</span> <span class="n">_assinatura_filtros_equipamentos</span><span class="p">(</span>
+        <span class="n">codigos_subprefeitura</span><span class="p">,</span>
+        <span class="n">codigos_dre</span><span class="p">,</span>
+        <span class="n">tipos_unidade</span><span class="p">,</span>
+        <span class="n">tipos_escola</span><span class="p">,</span>
+        <span class="n">nome_escola</span><span class="p">,</span>
+        <span class="n">codigo_eol</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">cache</span><span class="o">.</span><span class="n">obter_ou_calcular</span><span class="p">(</span>
+        <span class="n">chave</span><span class="p">,</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">_calcular_equipamentos</span><span class="p">(</span>
+            <span class="n">codigos_subprefeitura</span><span class="p">,</span>
+            <span class="n">codigos_dre</span><span class="p">,</span>
+            <span class="n">tipos_unidade</span><span class="p">,</span>
+            <span class="n">tipos_escola</span><span class="p">,</span>
+            <span class="n">nome_escola</span><span class="p">,</span>
+            <span class="n">codigo_eol</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">cache</span><span class="o">.</span><span class="n">TTL_RECOMENDADO_MINUTOS</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calcular_equipamentos</span><span class="p">(</span>
+    <span class="n">codigos_subprefeitura</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">codigos_dre</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tipos_unidade</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tipos_escola</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">nome_escola</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">codigo_eol</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">EquipamentoContract</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Consulta e monta os equipamentos SME sem passar pelo cache.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        codigos_subprefeitura: Códigos de subprefeitura para filtro.</span>
@@ -815,19 +1002,13 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
-    <span class="n">dres</span> <span class="o">=</span> <span class="n">_lookup_dres</span><span class="p">({</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_dre"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
-    <span class="n">tipos</span> <span class="o">=</span> <span class="n">_lookup_tipos</span><span class="p">(</span>
-        <span class="p">{</span><span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_tipo_escola"</span><span class="p">]}</span>
-    <span class="p">)</span>
-    <span class="n">subs</span> <span class="o">=</span> <span class="n">_lookup_subs</span><span class="p">(</span>
-        <span class="p">{</span>
-            <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span>
-            <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">"codigo_sub_prefeitura"</span><span class="p">]</span>
-        <span class="p">}</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">_build_equipamento</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">dres</span><span class="p">,</span> <span class="n">tipos</span><span class="p">,</span> <span class="n">subs</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span></div>
-
+    <span class="n">dre_ids</span><span class="p">,</span> <span class="n">tipo_ids</span><span class="p">,</span> <span class="n">sub_ids</span> <span class="o">=</span> <span class="n">_coletar_ids</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+    <span class="n">dres</span> <span class="o">=</span> <span class="n">_resumir_dres</span><span class="p">(</span><span class="n">_lookup_dres</span><span class="p">(</span><span class="n">dre_ids</span><span class="p">))</span>
+    <span class="n">tipos</span> <span class="o">=</span> <span class="n">_resumir_tipos</span><span class="p">(</span><span class="n">_lookup_tipos</span><span class="p">(</span><span class="n">tipo_ids</span><span class="p">))</span>
+    <span class="n">subs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">codigo</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">nome</span> <span class="k">for</span> <span class="n">codigo</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">_lookup_subs</span><span class="p">(</span><span class="n">sub_ids</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">_build_equipamento</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">dres</span><span class="p">,</span> <span class="n">tipos</span><span class="p">,</span> <span class="n">subs</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_nome_com_tipo</span><span class="p">(</span><span class="n">nome</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tipo</span><span class="p">:</span> <span class="s2">"TipoEscola | None"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
