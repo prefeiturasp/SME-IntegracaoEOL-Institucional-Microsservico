@@ -1,7 +1,12 @@
 """Testes comportamentais e de contrato — domínio DRE (D01-D11)."""
 
+from collections.abc import Callable
+
 import pytest
+from pytest_django.fixtures import DjangoAssertNumQueries
 from rest_framework.test import APIClient
+
+from apps.unidade_educacional.models import UnidadeEducacional
 
 pytestmark = pytest.mark.django_db
 
@@ -12,6 +17,33 @@ _URL_NOMES_ABRANGENCIA = (
     "/api/v1/institucional/abrangencia/nome-abreviacao-dres/"
 )
 _URLS_ABRANGENCIA = (_URL_CODIGOS_ABRANGENCIA, _URL_NOMES_ABRANGENCIA)
+
+
+class TestCacheViewsDre:
+    """Valida o contrato HTTP das listagens em cache por DRE."""
+
+    @pytest.mark.parametrize(
+        "sufixo", ["ues/", "unidades/", "unidades/codigo-integracao/"]
+    )
+    def test_preserva_json_sem_consultar_banco(
+        self,
+        sufixo: str,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+        django_assert_num_queries: DjangoAssertNumQueries,
+    ) -> None:
+        """D08, D10 e D11 preservam o JSON sem SQL após aquecer o cache."""
+        ue = ue_factory()
+        url = f"/api/v1/institucional/dres/{ue.codigo_dre}/{sufixo}"
+        primeira = api_client.get(url)
+        assert primeira.status_code == 200
+        assert len(primeira.json()) == 1
+
+        with django_assert_num_queries(0):
+            segunda = api_client.get(url)
+
+        assert segunda.status_code == 200
+        assert segunda.json() == primeira.json()
 
 
 class TestEndpointsAbrangencia:

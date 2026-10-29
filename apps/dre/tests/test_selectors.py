@@ -1,11 +1,17 @@
 """Testes unitários dos selectors DRE — cobertura de branches."""
 
+from collections.abc import Callable
+
 import pytest
+from pytest_django.fixtures import DjangoAssertNumQueries
 
 from apps.dre.selectors import (
     listar_codigos_dres_abrangencia,
+    listar_codigos_ues_por_dre,
     listar_nomes_abreviacoes_dres,
+    listar_unidades_por_dre,
 )
+from apps.unidade_educacional.models import UnidadeEducacional
 
 pytestmark = pytest.mark.django_db
 
@@ -226,6 +232,89 @@ class TestListarEscolasPorDre:
 class TestListarUnidadesPorDre:
     """Cobre listar_unidades_por_dre(): CEP inválido e DRE inexistente."""
 
+    @pytest.mark.parametrize(
+        ("cep", "esperado"),
+        [("01.310-100", 1310100), (None, None), ("", None), ("X", None)],
+    )
+    def test_contrato_completo_preservado(
+        self,
+        ue_factory: Callable[..., UnidadeEducacional],
+        cep: str | None,
+        esperado: int | None,
+    ) -> None:
+        """A montagem otimizada preserva todos os campos e valores nulos."""
+        ue = ue_factory(cep=cep)
+        resultado = listar_unidades_por_dre(ue.codigo_dre)
+
+        assert resultado == [
+            {
+                "codigoEol": ue.codigo_ue,
+                "nomeOficial": ue.nome,
+                "nomeNaoOficial": ue.nome_nao_oficial,
+                "tipoUnidadeAdmin": "DIRETORIA REGIONAL DE EDUCACAO",
+                "tipoUE": "ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL 1",
+                "logadouro": ue.logradouro,
+                "numero": ue.numero,
+                "bairro": ue.bairro,
+                "cep": esperado,
+                "distrito": ue.distrito,
+                "subPrefeitura": "SUBPREFEITURA 1",
+                "nomeDre": "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA 1",
+                "email": ue.email,
+                "telefone1": ue.telefone_1,
+                "telefone2": None,
+                "anoConstrucao": ue.ano_construcao,
+                "propriedade": ue.propriedade,
+                "capacidadeVagasMatutino": ue.vagas_matutino,
+                "capacidadeVagasVespertino": ue.vagas_vespertino,
+                "capacidadeVagasNoturno": ue.vagas_noturno,
+                "capacidadeVagasIntermediario": ue.vagas_intermediario,
+                "capacidadeVagasIntegral": ue.vagas_integral,
+                "capacidadeVagasTotal": ue.vagas_total,
+                "organizacaoParceira": ue.organizacao_parceira,
+                "quantidadeDeFuncionarios": ue.quantidade_funcionarios,
+                "status": ue.status,
+                "subprefeituraId": ue.codigo_sub_prefeitura,
+                "tipoUnidadeAdmId": 24,
+            }
+        ]
+
+    @pytest.mark.parametrize("codigo", [None, 999999])
+    def test_relacionamentos_ausentes_preservam_nulos(
+        self,
+        ue_factory: Callable[..., UnidadeEducacional],
+        codigo: int | None,
+    ) -> None:
+        """Tipos e subprefeituras ausentes continuam nulos na resposta."""
+        ue = ue_factory(
+            codigo_tipo_escola=codigo, codigo_sub_prefeitura=codigo
+        )
+        resultado = listar_unidades_por_dre(ue.codigo_dre)[0]
+
+        assert resultado["tipoUE"] is None
+        assert resultado["subPrefeitura"] is None
+        assert resultado["subprefeituraId"] == codigo
+
+    def test_quantidade_consultas_nao_cresce_com_unidades(
+        self,
+        ue_factory: Callable[..., UnidadeEducacional],
+        django_assert_num_queries: DjangoAssertNumQueries,
+    ) -> None:
+        """Várias UEs usam quatro consultas e mantêm a ordem por código."""
+        primeira = ue_factory(codigo_ue="000002")
+        segunda = ue_factory(
+            codigo_ue="000001", codigo_dre=primeira.codigo_dre
+        )
+        ue_factory(codigo_dre="OUTRA")
+
+        with django_assert_num_queries(4):
+            resultado = listar_unidades_por_dre(primeira.codigo_dre)
+
+        assert [r["codigoEol"] for r in resultado] == [
+            segunda.codigo_ue,
+            primeira.codigo_ue,
+        ]
+
     def test_dre_nao_existente_retorna_vazio(self, db):
         """DRE inexistente retorna lista vazia."""
         from apps.dre.selectors import listar_unidades_por_dre
@@ -248,6 +337,26 @@ class TestListarUnidadesPorDre:
         )
         resultado = listar_unidades_por_dre(dre.codigo_dre)
         assert resultado[0]["cep"] is None
+
+
+class TestListarCodigosUesPorDre:
+    """Preserva filtros e ordenação da listagem D08."""
+
+    def test_filtra_ues_administrativas_sem_tipo_e_de_outras_dres(
+        self, ue_factory: Callable[..., UnidadeEducacional]
+    ) -> None:
+        """Somente UEs válidas da DRE entram na lista ordenada de códigos."""
+        primeira = ue_factory(codigo_ue="000002")
+        dre = primeira.codigo_dre
+        segunda = ue_factory(codigo_ue="000001", codigo_dre=dre)
+        ue_factory(codigo_dre=dre, tipo_ue="UNIDADE ADMINISTRATIVA")
+        ue_factory(codigo_dre=dre, codigo_tipo_escola=None)
+        ue_factory()
+
+        assert listar_codigos_ues_por_dre(dre) == [
+            segunda.codigo_ue,
+            primeira.codigo_ue,
+        ]
 
 
 class TestListarEscolasPorDreCamposExpandidos:
