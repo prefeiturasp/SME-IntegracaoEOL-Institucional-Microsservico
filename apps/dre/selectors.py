@@ -294,6 +294,24 @@ def _calcular_escolas_por_dre(
 def listar_codigos_ues_por_dre(codigo_dre: str) -> list[str]:
     """Retorna lista de códigos EOL das UEs de uma DRE.
 
+    O resultado é mantido em cache por DRE.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+
+    Returns:
+        Códigos EOL das UEs vinculadas, ordenados.
+    """
+    return cache.obter_ou_calcular(
+        f"codigos-ues-por-dre:v1:{codigo_dre}",
+        lambda: _calcular_codigos_ues_por_dre(codigo_dre),
+        cache.TTL_RECOMENDADO_MINUTOS,
+    )
+
+
+def _calcular_codigos_ues_por_dre(codigo_dre: str) -> list[str]:
+    """Consulta os códigos das UEs de uma DRE sem passar pelo cache.
+
     Args:
         codigo_dre: Código EOL da DRE.
 
@@ -317,6 +335,26 @@ def listar_codigos_ues_por_dre(codigo_dre: str) -> list[str]:
 def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
     """Lista unidades prediais de uma DRE.
 
+    O resultado é mantido em cache por DRE.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+
+    Returns:
+        Unidades com endereço, vagas e dados de subprefeitura resolvidos.
+    """
+    return cache.obter_ou_calcular(
+        f"unidades-prediais-por-dre:v1:{codigo_dre}",
+        lambda: _calcular_unidades_por_dre(codigo_dre),
+        cache.TTL_RECOMENDADO_MINUTOS,
+    )
+
+
+def _calcular_unidades_por_dre(
+    codigo_dre: str,
+) -> list[UnidadePredialContract]:
+    """Consulta e monta as unidades prediais de uma DRE sem cache.
+
     Args:
         codigo_dre: Código EOL da DRE.
 
@@ -326,20 +364,18 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
     try:
         dre_obj = DRE.objects.only(
             "codigo_dre", "nome", "tipo_unidade_adm", "descricao_unidade_adm"
-        ).get(
-            codigo_dre=codigo_dre
-        )
+        ).get(codigo_dre=codigo_dre)
     except DRE.DoesNotExist:
         return []
 
     rows = list(
         UnidadeEducacional.objects.filter(
             codigo_dre=codigo_dre,
-        ).values(
+        )
+        .values(
             "codigo_ue",
             "nome",
             "nome_nao_oficial",
-            "tipo_logradouro",
             "logradouro",
             "numero",
             "bairro",
@@ -361,45 +397,42 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
             "status",
             "codigo_sub_prefeitura",
             "codigo_tipo_escola",
-        ).order_by("codigo_ue")
+        )
+        .order_by("codigo_ue")
     )
     if not rows:
         return []
 
-    tipo_ids = {
-        r["codigo_tipo_escola"]
-        for r in rows
-        if r["codigo_tipo_escola"]
-    }
-    tipos = {
-        t.codigo_tipo_escola: t
-        for t in TipoEscola.objects.filter(
-            codigo_tipo_escola__in=tipo_ids
-        ).only("codigo_tipo_escola", "descricao")
-    }
+    tipo_ids: set[int] = set()
+    sub_ids: set[int] = set()
+    for r in rows:
+        if r["codigo_tipo_escola"]:
+            tipo_ids.add(r["codigo_tipo_escola"])
+        if r["codigo_sub_prefeitura"]:
+            sub_ids.add(r["codigo_sub_prefeitura"])
 
-    sub_ids = {
-        r["codigo_sub_prefeitura"]
-        for r in rows
-        if r["codigo_sub_prefeitura"]
-    }
-    subs = {
-        s.codigo_sub_prefeitura: s
-        for s in SubPrefeitura.objects.filter(
+    tipos = dict(
+        TipoEscola.objects.filter(codigo_tipo_escola__in=tipo_ids).values_list(
+            "codigo_tipo_escola", "descricao"
+        )
+    )
+
+    subs = dict(
+        SubPrefeitura.objects.filter(
             codigo_sub_prefeitura__in=sub_ids
-        ).only("codigo_sub_prefeitura", "nome")
-    }
+        ).values_list("codigo_sub_prefeitura", "nome")
+    )
+
+    dre_nome = dre_obj.nome
+    dre_tipo = dre_obj.tipo_unidade_adm
+    dre_descricao = dre_obj.descricao_unidade_adm or None
 
     result: list[UnidadePredialContract] = []
     for r in rows:
-        tipo = tipos.get(r["codigo_tipo_escola"])
-        sub = subs.get(r["codigo_sub_prefeitura"])
         cep_val: int | None = None
         if r["cep"]:
             try:
-                cep_val = int(
-                    str(r["cep"]).replace("-", "").replace(".", "")
-                )
+                cep_val = int(str(r["cep"]).replace("-", "").replace(".", ""))
             except (ValueError, TypeError):
                 cep_val = None
         result.append(
@@ -407,15 +440,15 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
                 codigoEol=r["codigo_ue"],
                 nomeOficial=r["nome"],
                 nomeNaoOficial=r["nome_nao_oficial"],
-                tipoUnidadeAdmin=dre_obj.descricao_unidade_adm or None,
-                tipoUE=tipo.descricao if tipo else None,
+                tipoUnidadeAdmin=dre_descricao,
+                tipoUE=tipos.get(r["codigo_tipo_escola"]),
                 logadouro=r["logradouro"],
                 numero=r["numero"],
                 bairro=r["bairro"],
                 cep=cep_val,
                 distrito=r["distrito"],
-                subPrefeitura=sub.nome if sub else None,
-                nomeDre=dre_obj.nome,
+                subPrefeitura=subs.get(r["codigo_sub_prefeitura"]),
+                nomeDre=dre_nome,
                 email=r["email"],
                 telefone1=r["telefone_1"],
                 telefone2=r["telefone_2"],
@@ -431,7 +464,7 @@ def listar_unidades_por_dre(codigo_dre: str) -> list[UnidadePredialContract]:
                 quantidadeDeFuncionarios=r["quantidade_funcionarios"],
                 status=r["status"],
                 subprefeituraId=r["codigo_sub_prefeitura"],
-                tipoUnidadeAdmId=dre_obj.tipo_unidade_adm,
+                tipoUnidadeAdmId=dre_tipo,
             )
         )
     return result
@@ -441,6 +474,26 @@ def listar_codigos_integracao_por_dre(
     codigo_dre: str,
 ) -> list[CodigoIntegracaoContract]:
     """Lista UEs com código de integração de uma DRE.
+
+    O resultado é mantido em cache por DRE.
+
+    Args:
+        codigo_dre: Código EOL da DRE.
+
+    Returns:
+        UEs da DRE com seus respectivos códigos de integração.
+    """
+    return cache.obter_ou_calcular(
+        f"codigos-integracao-por-dre:v1:{codigo_dre}",
+        lambda: _calcular_codigos_integracao_por_dre(codigo_dre),
+        cache.TTL_RECOMENDADO_MINUTOS,
+    )
+
+
+def _calcular_codigos_integracao_por_dre(
+    codigo_dre: str,
+) -> list[CodigoIntegracaoContract]:
+    """Consulta e monta os códigos de integração de uma DRE sem cache.
 
     Args:
         codigo_dre: Código EOL da DRE.

@@ -384,6 +384,24 @@ def obter_ue_basica_por_codigo(codigo: str) -> UeBasicaContract | None:
 def obter_ue_eol(codigo: str) -> UeEolContract | None:
     """Retorna dados resumidos de uma UE pelo código EOL.
 
+    Os dados encontrados são mantidos em cache por código EOL.
+
+    Args:
+        codigo: Código EOL da UE.
+
+    Returns:
+        Dados resumidos da UE, ou None se não encontrada.
+    """
+    return cache.obter_ou_calcular(
+        f"ue-eol:v1:{codigo}",
+        lambda: _calcular_ue_eol(codigo),
+        cache.TTL_LEGADO_PADRAO_MINUTOS,
+    )
+
+
+def _calcular_ue_eol(codigo: str) -> UeEolContract | None:
+    """Consulta os dados resumidos de uma UE sem passar pelo cache.
+
     Args:
         codigo: Código EOL da UE.
 
