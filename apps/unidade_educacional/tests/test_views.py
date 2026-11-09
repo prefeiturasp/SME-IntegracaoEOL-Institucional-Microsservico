@@ -1,6 +1,12 @@
 """Testes comportamentais e de contrato — domínio UE (E01-E27)."""
 
+from collections.abc import Callable
+
 import pytest
+from pytest_django.fixtures import DjangoAssertNumQueries
+from rest_framework.test import APIClient
+
+from apps.unidade_educacional.models import UnidadeEducacional
 
 pytestmark = pytest.mark.django_db
 
@@ -98,6 +104,38 @@ class TestE02DadosBasicosUe:
 
 class TestE03UnidadeEol:
     """E03 — GET /api/escolas/unidade-eol/{codigoEol}/"""
+
+    def test_cache_preserva_json_sem_consultar_banco(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+        django_assert_num_queries: DjangoAssertNumQueries,
+    ) -> None:
+        """A segunda requisição mantém o JSON completo e dispensa SQL."""
+        ue = ue_factory()
+        url = f"/api/v1/institucional/escolas/unidade-eol/{ue.codigo_ue}/"
+        primeira = api_client.get(url)
+        assert primeira.status_code == 200
+
+        with django_assert_num_queries(0):
+            segunda = api_client.get(url)
+
+        assert segunda.status_code == 200
+        assert segunda.json() == primeira.json()
+
+    def test_ausencia_nao_impede_ue_criada_depois(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """O 404 anterior não esconde uma UE que passa a existir na origem."""
+        url = "/api/v1/institucional/escolas/unidade-eol/019251/"
+        assert api_client.get(url).status_code == 404
+        ue_factory(codigo_ue="019251")
+
+        resposta = api_client.get(url)
+        assert resposta.status_code == 200
+        assert resposta.json()["codigo"] == "019251"
 
     def test_retorna_200_com_contrato(self, api_client, ue_factory):
         """Retorna 200 com todos os campos do contrato E03."""
