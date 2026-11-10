@@ -1,11 +1,13 @@
-"""Testes comportamentais e de contrato — domínio DRE (D01-D11)."""
+"""Testes comportamentais e de contrato — domínio DRE (D01-D12)."""
 
 from collections.abc import Callable
 
 import pytest
+from django.urls import reverse
 from pytest_django.fixtures import DjangoAssertNumQueries
 from rest_framework.test import APIClient
 
+from apps.dre.models import DRE
 from apps.unidade_educacional.models import UnidadeEducacional
 
 pytestmark = pytest.mark.django_db
@@ -650,3 +652,230 @@ class TestD03Supervisores:
         )
         assert resp.status_code == 501
         assert resp.data["dominio"] == "professores"
+
+class TestD12EscolasConsolidadas:
+    """D12 — GET /api/v1/institucional/dres/{codigoEolDRE}/escolas/."""
+
+    def test_retorna_todas_as_escolas_apenas_da_dre_informada(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """Sem filtro, lista escolas de tipos distintos apenas da DRE pedida."""
+        primeira = ue_factory()
+        segunda = ue_factory(codigo_dre=primeira.codigo_dre)
+        ue_factory()
+        url = reverse(
+            "dre-escolas-consolidadas",
+            kwargs={"codigo_eol_dre": primeira.codigo_dre},
+        )
+        resp = api_client.get(url)
+        assert url == (
+            f"/api/v1/institucional/dres/{primeira.codigo_dre}/escolas/"
+        )
+        assert resp.status_code == 200
+        assert [item["codigoEscola"] for item in resp.data] == [
+            primeira.codigo_ue,
+            segunda.codigo_ue,
+        ]
+
+    @pytest.mark.parametrize("tipo_escola_id", [0, 1])
+    def test_retorna_escolas_filtradas_por_tipo(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+        tipo_escola_id: int,
+    ) -> None:
+        """O filtro inclui somente escolas do tipo e da DRE informados."""
+        ue = ue_factory(codigo_tipo_escola=tipo_escola_id)
+        ue_factory(codigo_dre=ue.codigo_dre, codigo_tipo_escola=2)
+        ue_factory(codigo_tipo_escola=tipo_escola_id)
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/",
+            {"tipo_escola_id": str(tipo_escola_id)},
+        )
+        assert resp.status_code == 200
+        assert [item["codigoEscola"] for item in resp.data] == [ue.codigo_ue]
+        assert resp.data[0]["tipoEscolaId"] == tipo_escola_id
+
+    def test_tipo_inexistente_retorna_lista_vazia(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """Um tipo sem escolas correspondentes retorna 200 com lista vazia."""
+        ue = ue_factory()
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/",
+            {"tipo_escola_id": "999999"},
+        )
+        assert resp.status_code == 200
+        assert resp.data == []
+
+    @pytest.mark.parametrize(
+        ("parametros", "status_esperado"),
+        [
+            ({}, 204),
+            ({"tipo_escola_id": "1"}, 200),
+            ({"tipo_escola_id": "0"}, 200),
+        ],
+    )
+    def test_dre_sem_escolas_preserva_status_por_filtro(
+        self,
+        api_client: APIClient,
+        dre_factory: Callable[..., DRE],
+        parametros: dict[str, str],
+        status_esperado: int,
+    ) -> None:
+        """DRE sem escolas retorna 204 sem filtro ou 200 com lista vazia."""
+        dre = dre_factory()
+
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{dre.codigo_dre}/escolas/", parametros
+        )
+
+        assert resp.status_code == status_esperado
+        if status_esperado == 204:
+            assert resp.data is None
+            assert resp.content == b""
+        else:
+            assert resp.data == []
+
+    @pytest.mark.parametrize(
+        ("parametros", "status_esperado"),
+        [({}, 204), ({"tipo_escola_id": "1"}, 200)],
+    )
+    def test_dre_inexistente_preserva_status_por_filtro(
+        self,
+        api_client: APIClient,
+        parametros: dict[str, str],
+        status_esperado: int,
+    ) -> None:
+        """DRE inexistente também respeita o contrato de resultado vazio."""
+        resp = api_client.get(
+            "/api/v1/institucional/dres/999999/escolas/", parametros
+        )
+
+        assert resp.status_code == status_esperado
+        assert resp.data == (None if status_esperado == 204 else [])
+
+    @pytest.mark.parametrize("com_filtro", [False, True])
+    def test_contrato_campos_legados_e_expandidos(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+        com_filtro: bool,
+    ) -> None:
+        """Preserva campos, IDs, tipos e código de integração da escola."""
+        ue = ue_factory(codigo_ue_integracao="INT001")
+        parametros = (
+            {"tipo_escola_id": str(ue.codigo_tipo_escola)}
+            if com_filtro
+            else {}
+        )
+
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/", parametros
+        )
+
+        assert resp.status_code == 200
+        assert len(resp.data) == 1
+        item = resp.data[0]
+        assert set(item) == {
+            "codigoEscola",
+            "nomeEscola",
+            "codigoDRE",
+            "tipoEscola",
+            "siglaTipoEscola",
+            "nomeDRE",
+            "siglaDRE",
+            "codigoSubprefeitura",
+            "nomeSubprefeitura",
+            "tipoEscolaId",
+            "tipoUnidadeId",
+            "subprefeituraId",
+            "dreId",
+            "codigoIntegracao",
+        }
+        assert item["codigoEscola"] == ue.codigo_ue
+        assert item["nomeEscola"] == ue.nome
+        assert item["codigoDRE"] == item["dreId"] == ue.codigo_dre
+        assert item["tipoEscolaId"] == ue.codigo_tipo_escola
+        assert item["tipoUnidadeId"] == item["tipoEscolaId"]
+        assert isinstance(item["tipoEscolaId"], int)
+        assert item["subprefeituraId"] == ue.codigo_sub_prefeitura
+        assert isinstance(item["subprefeituraId"], int)
+        assert item["codigoSubprefeitura"] == str(ue.codigo_sub_prefeitura)
+        assert item["codigoIntegracao"] == "INT001"
+
+    def test_ue_sem_tipo_subprefeitura_e_integracao_preserva_nulos(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """Dados opcionais ausentes mantêm IDs nulos e descrições vazias."""
+        ue = ue_factory(
+            codigo_tipo_escola=None,
+            codigo_sub_prefeitura=None,
+            codigo_ue_integracao=None,
+        )
+
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/"
+        )
+
+        assert resp.status_code == 200
+        assert len(resp.data) == 1
+        item = resp.data[0]
+        for campo in (
+            "tipoEscolaId",
+            "tipoUnidadeId",
+            "subprefeituraId",
+            "codigoIntegracao",
+        ):
+            assert item[campo] is None
+        for campo in (
+            "tipoEscola",
+            "siglaTipoEscola",
+            "codigoSubprefeitura",
+            "nomeSubprefeitura",
+        ):
+            assert item[campo] == ""
+
+    @pytest.mark.parametrize("parametros", [{}, {"tipo_escola_id": "1"}])
+    def test_codigo_dre_vazio_retorna_400(
+        self, api_client: APIClient, parametros: dict[str, str]
+    ) -> None:
+        """Rejeita código de DRE em branco com e sem filtro por tipo."""
+        resp = api_client.get(
+            "/api/v1/institucional/dres/%20/escolas/", parametros
+        )
+
+        assert resp.status_code == 400
+        assert resp.json() == {"detail": "Código EOL da DRE é obrigatório."}
+
+    @pytest.mark.parametrize(
+        "tipo_escola_id", ["", " ", "abc", "1.5", "-1", "null", "true"]
+    )
+    def test_tipo_invalido_retorna_400_sem_consultar_banco(
+        self,
+        api_client: APIClient,
+        django_assert_num_queries: DjangoAssertNumQueries,
+        tipo_escola_id: str,
+    ) -> None:
+        """Rejeita filtro vazio, negativo ou não inteiro antes de consultar."""
+        with django_assert_num_queries(0):
+            resp = api_client.get(
+                "/api/v1/institucional/dres/108100/escolas/",
+                {"tipo_escola_id": tipo_escola_id},
+            )
+
+        assert resp.status_code == 400
+        assert resp.json()["tipo_escola_id"]
+
+    def test_sem_api_key_retorna_401_ou_403(self) -> None:
+        """Exige API key na listagem consolidada de escolas."""
+        resp = APIClient().get("/api/v1/institucional/dres/108100/escolas/")
+
+        assert resp.status_code in (401, 403)
+

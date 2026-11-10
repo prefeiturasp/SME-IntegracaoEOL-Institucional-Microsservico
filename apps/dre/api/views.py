@@ -614,7 +614,9 @@ class DreEscolasConsolidadasView(BaseAPIView):
                 {"detail": "Código EOL da DRE é obrigatório."}
             )
 
-        parametros = DreEscolasQuerySerializer(data=request.query_params)
+        parametros = DreEscolasQuerySerializer(
+            data=request.query_params.dict()
+        )
         parametros.is_valid(raise_exception=True)
         tipo_escola_id = parametros.validated_data.get("tipo_escola_id")
 
