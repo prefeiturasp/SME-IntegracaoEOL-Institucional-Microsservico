@@ -18,6 +18,7 @@ from apps.core.views import (
     _PROBLEM_DETAILS_SCHEMA,
     BaseAPIView,
 )
+from apps.dre.api.serializers import DreEscolasQuerySerializer
 from apps.dre.selectors import (
     filtrar_dres_por_codigos,
     listar_codigos_dres_abrangencia,
@@ -288,11 +289,13 @@ class DreDetalheView(BaseAPIView):
         examples=[
             OpenApiExample(
                 "Resposta D04",
-                value=[{
-                    "codigoDRE": "108100",
-                    "nomeDRE": "DRE IPIRANGA",
-                    "siglaDRE": "DRE-IP",
-                }],
+                value=[
+                    {
+                        "codigoDRE": "108100",
+                        "nomeDRE": "DRE IPIRANGA",
+                        "siglaDRE": "DRE-IP",
+                    }
+                ],
                 response_only=True,
                 status_codes=["200"],
             )
@@ -426,14 +429,16 @@ class DreUesView(BaseAPIView):
     """Lista os códigos das UEs de uma DRE."""
 
     @extend_schema(
-        responses={200: inline_serializer(
-            name="CodigosUesDre",
-            fields={
-                "codigos": serializers.ListField(
-                    child=serializers.CharField()
-                )
-            },
-        )},
+        responses={
+            200: inline_serializer(
+                name="CodigosUesDre",
+                fields={
+                    "codigos": serializers.ListField(
+                        child=serializers.CharField()
+                    )
+                },
+            )
+        },
         description="Códigos de UEs de uma DRE (D08).",
         tags=_TAG_DRE,
         operation_id="D08_codigos_ues_dre",
@@ -564,3 +569,56 @@ class DreSupervisoresView(BaseAPIView):
     )
     def get(self, _request: Request, codigo_eol_dre: str) -> Response:
         return self.cross_domain("professores")
+
+
+class DreEscolasConsolidadasView(BaseAPIView):
+    """Lista escolas de uma DRE, opcionalmente filtradas por tipo."""
+
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name="EscolaPorDreConsolidada",
+                fields=_ESCOLA_FIELDS,
+                many=True,
+            ),
+            204: None,
+        },
+        description=(
+            "Escolas Vinculadas a um DRE,"
+            " com filtro opcional por tipo de escola (D12)."
+        ),
+        parameters=[DreEscolasQuerySerializer],
+        tags=_TAG_DRE,
+        operation_id="D12_escolas_dre_filtro_tipo",
+    )
+    def get(
+        self,
+        request: Request,
+        codigo_eol_dre: str,
+    ) -> Response:
+        """Lista escolas de uma DRE com filtro opcional por tipo.
+
+        Args:
+            request: Requisição com o filtro opcional tipo_escola_id na query.
+            codigo_eol_dre: Código EOL da DRE.
+
+        Returns:
+            Escolas da DRE, ou 204 se a consulta não retornar escolas.
+            Consultas filtradas sem resultados retornam 200 com lista vazia.
+
+        Raises:
+            ValidationError: Se o código EOL da DRE for inválido.
+        """
+        if not codigo_eol_dre.strip():
+            raise ValidationError(
+                {"detail": "Código EOL da DRE é obrigatório."}
+            )
+
+        parametros = DreEscolasQuerySerializer(data=request.query_params)
+        parametros.is_valid(raise_exception=True)
+        tipo_escola_id = parametros.validated_data.get("tipo_escola_id")
+
+        escolas = listar_escolas_por_dre(codigo_eol_dre, tipo_escola_id)
+        if tipo_escola_id is None and not escolas:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(escolas)

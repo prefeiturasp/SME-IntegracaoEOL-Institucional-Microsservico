@@ -6,6 +6,7 @@ from apps.dre.api.views import (
     CodigosDresAbrangenciaView,
     DreCodigosIntegracaoView,
     DreDetalheView,
+    DreEscolasConsolidadasView,
     DreEscolasSigpaeView,
     DreEscolasTipoView,
     DreEscolasView,
@@ -40,6 +41,11 @@ urlpatterns = [
         "<str:codigo_eol_dre>/escola/Sigpae/",
         DreEscolasSigpaeView.as_view(),
         name="dre-escolas-sigpae",
+    ),
+    path(
+        "<str:codigo_eol_dre>/escolas/",
+        DreEscolasConsolidadasView.as_view(),
+        name="dre-escolas-consolidadas",
     ),
     path(
         "<str:codigo_eol_dre>/escola/",
