@@ -324,6 +324,7 @@ class DreEscolasTipoView(BaseAPIView):
     """Lista escolas de uma DRE filtradas por tipo."""
 
     @extend_schema(
+        deprecated=True,
         responses={
             200: inline_serializer(
                 name="EscolaPorDreTipo",
@@ -331,7 +332,9 @@ class DreEscolasTipoView(BaseAPIView):
                 many=True,
             ),
         },
-        description="Escolas filtradas por tipo de escola (D05).",
+        description="Use `GET dres/{codigo_eol_dre}/escolas/" \
+        "?tipo_escola_id={tipo_escola_id}`. \n\n"
+        "Escolas filtradas por tipo de escola (D05).",
         tags=_TAG_DRE,
         operation_id="D05_escolas_filtradas_por_tipo",
     )
@@ -364,6 +367,7 @@ class DreEscolasView(BaseAPIView):
     """Lista todas as escolas de uma DRE."""
 
     @extend_schema(
+        deprecated=True,
         responses={
             200: inline_serializer(
                 name="EscolaPorDre",
@@ -372,7 +376,9 @@ class DreEscolasView(BaseAPIView):
             ),
             204: None,
         },
-        description="Escolas vinculadas a uma DRE (D06).",
+        description="Use `GET dres/{codigo_eol_dre}/escolas/" \
+        "?tipo_escola_id={tipo_escola_id}`. \n\n"
+        "Escolas vinculadas a uma DRE (D06).",
         tags=_TAG_DRE,
         operation_id="D06_escolas_vinculadas_dre",
     )
@@ -465,6 +471,7 @@ class DreEscolasSigpaeView(BaseAPIView):
     """Lista escolas de uma DRE no formato SIGPAE."""
 
     @extend_schema(
+        deprecated=True,
         responses={
             200: inline_serializer(
                 name="EscolaSigpae",
@@ -473,7 +480,9 @@ class DreEscolasSigpaeView(BaseAPIView):
             ),
             204: None,
         },
-        description="Escolas para o SIGPAE (D09).",
+        description="Use `GET dres/{codigo_eol_dre}/escolas/" \
+        "?tipo_escola_id={tipo_escola_id}`. \n\n"
+        "Escolas para o SIGPAE (D09).",
         tags=_TAG_DRE,
         operation_id="D09_escolas_sigpae",
     )
