@@ -465,6 +465,7 @@ class UnidadeEducacionalListPostView(BaseAPIView):
         return _paginar_ues_basicas(request)
 
     @extend_schema(
+        deprecated=True,
         request={
             "application/json": {
                 "type": "array",
@@ -477,7 +478,11 @@ class UnidadeEducacionalListPostView(BaseAPIView):
             ),
             400: _PROBLEM_DETAILS_SCHEMA,
         },
-        description="Busca UEs por lista de códigos (E06).",
+        description=(
+            "Use `GET /api/v1/institucional/escolas/unidades/"
+            "?codigos=019251&codigos=019252&apenasParceiras=false`.\n\n"
+            "Busca UEs por lista de códigos (E06)."
+        ),
         tags=_TAG_UE,
         operation_id="E06_buscar_ues_lista_codigos",
         examples=[
@@ -1362,6 +1367,7 @@ class UnidadesParceirasView(BaseAPIView):
     """Retorna unidades parceiras pelos códigos informados."""
 
     @extend_schema(
+        deprecated=True,
         request={"application/json": {"type": "array", "items": {"type": "string"}}},
         responses={
             200: inline_serializer(
@@ -1371,7 +1377,11 @@ class UnidadesParceirasView(BaseAPIView):
             ),
             400: _PROBLEM_DETAILS_SCHEMA,
         },
-        description="Unidades parceiras por lista de códigos (E26).",
+        description=(
+            "Use `GET /api/v1/institucional/escolas/unidades/"
+            "?codigos=019251&codigos=019252&apenasParceiras=true`.\n\n"
+            "Unidades parceiras por lista de códigos (E26)."
+        ),
         examples=[
             OpenApiExample(
                 "Exemplo de Requisição (E26)",
