@@ -438,6 +438,7 @@ class DreUesView(BaseAPIView):
     """Lista os códigos das UEs de uma DRE."""
 
     @extend_schema(
+        deprecated=True,
         responses={
             200: inline_serializer(
                 name="CodigosUesDre",
@@ -448,7 +449,11 @@ class DreUesView(BaseAPIView):
                 },
             )
         },
-        description="Códigos de UEs de uma DRE (D08).",
+        description=(
+            "Use `GET dres/{codigo_eol_dre}/unidades/consolidadas/"
+            "?retorno=codigos`.\n\n"
+            "Códigos de UEs de uma DRE (D08)."
+        ),
         tags=_TAG_DRE,
         operation_id="D08_codigos_ues_dre",
     )
@@ -514,6 +519,7 @@ class DreUnidadesView(BaseAPIView):
     """Retorna unidades prediais completas de uma DRE."""
 
     @extend_schema(
+        deprecated=True,
         responses={
             200: inline_serializer(
                 name="UnidadePredial",
@@ -521,7 +527,11 @@ class DreUnidadesView(BaseAPIView):
                 many=True,
             ),
         },
-        description="Unidades de gestão predial (D10).",
+        description=(
+            "Use `GET dres/{codigo_eol_dre}/unidades/consolidadas/"
+            "?retorno=completo`.\n\n"
+            "Unidades de gestão predial (D10)."
+        ),
         tags=_TAG_DRE,
         operation_id="D10_unidades_gestao_predial",
     )
@@ -542,6 +552,7 @@ class DreCodigosIntegracaoView(BaseAPIView):
     """Lista os códigos de integração das UEs de uma DRE."""
 
     @extend_schema(
+        deprecated=True,
         responses={
             200: inline_serializer(
                 name="CodigoIntegracao",
@@ -549,7 +560,11 @@ class DreCodigosIntegracaoView(BaseAPIView):
                 many=True,
             ),
         },
-        description="UEs com código de integração (D11).",
+        description=(
+            "Use `GET dres/{codigo_eol_dre}/unidades/consolidadas/"
+            "?retorno=integracao`.\n\n"
+            "UEs com código de integração (D11)."
+        ),
         tags=_TAG_DRE,
         operation_id="D11_ues_codigo_integracao",
     )
