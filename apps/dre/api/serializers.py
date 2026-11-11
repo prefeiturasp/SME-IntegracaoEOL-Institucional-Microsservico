@@ -12,3 +12,13 @@ class DreEscolasQuerySerializer(serializers.Serializer):
         help_text="ID do tipo de escola. Quando ausente,"
         " lista todas as escolas da DRE.",
     )
+
+
+class DreUnidadesQuerySerializer(serializers.Serializer):
+    """Valida o formato da consulta consolidada de unidades por DRE."""
+
+    retorno = serializers.ChoiceField(
+        choices=("completo", "codigos", "integracao"),
+        default="completo",
+        help_text=("Define o formato da resposta."),
+    )

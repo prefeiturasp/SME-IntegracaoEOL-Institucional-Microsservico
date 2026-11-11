@@ -18,7 +18,10 @@ from apps.core.views import (
     _PROBLEM_DETAILS_SCHEMA,
     BaseAPIView,
 )
-from apps.dre.api.serializers import DreEscolasQuerySerializer
+from apps.dre.api.serializers import (
+    DreEscolasQuerySerializer,
+    DreUnidadesQuerySerializer,
+)
 from apps.dre.selectors import (
     filtrar_dres_por_codigos,
     listar_codigos_dres_abrangencia,
@@ -332,7 +335,7 @@ class DreEscolasTipoView(BaseAPIView):
                 many=True,
             ),
         },
-        description="Use `GET dres/{codigo_eol_dre}/escolas/" \
+        description="Use `GET dres/{codigo_eol_dre}/escolas/"
         "?tipo_escola_id={tipo_escola_id}`. \n\n"
         "Escolas filtradas por tipo de escola (D05).",
         tags=_TAG_DRE,
@@ -376,7 +379,7 @@ class DreEscolasView(BaseAPIView):
             ),
             204: None,
         },
-        description="Use `GET dres/{codigo_eol_dre}/escolas/" \
+        description="Use `GET dres/{codigo_eol_dre}/escolas/"
         "?tipo_escola_id={tipo_escola_id}`. \n\n"
         "Escolas vinculadas a uma DRE (D06).",
         tags=_TAG_DRE,
@@ -480,7 +483,7 @@ class DreEscolasSigpaeView(BaseAPIView):
             ),
             204: None,
         },
-        description="Use `GET dres/{codigo_eol_dre}/escolas/" \
+        description="Use `GET dres/{codigo_eol_dre}/escolas/"
         "?tipo_escola_id={tipo_escola_id}`. \n\n"
         "Escolas para o SIGPAE (D09).",
         tags=_TAG_DRE,
@@ -633,3 +636,146 @@ class DreEscolasConsolidadasView(BaseAPIView):
         if tipo_escola_id is None and not escolas:
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(escolas)
+
+
+class DreUnidadesConsolidadasView(BaseAPIView):
+    """Consulta unidades de uma DRE em três formatos de resposta."""
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(
+                response={
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/UnidadePredial"
+                            },
+                        },
+                        {"type": "array", "items": {"type": "string"}},
+                        {
+                            "type": "array",
+                            "items": {
+                                "$ref": (
+                                    "#/components/schemas/CodigoIntegracao"
+                                )
+                            },
+                        },
+                    ]
+                },
+                description=(
+                    "Lista no formato selecionado por retorno. "
+                    "Consultas sem resultados retornam uma lista vazia."
+                ),
+            ),
+            400: inline_serializer(
+                name="DreUnidadesErroValidacao",
+                fields={
+                    "detail": serializers.CharField(required=False),
+                    "retorno": serializers.ListField(
+                        child=serializers.CharField(), required=False
+                    ),
+                },
+            ),
+        },
+        description=(
+            "Consulta de unidades de associadas a uma DRE. (D13). "
+            "Cobre os retornos de D10(`retorno=completo`); "
+            "D08(`retorno=codigos`) e D11 "
+        ),
+        parameters=[DreUnidadesQuerySerializer],
+        tags=_TAG_DRE,
+        operation_id="D13_unidades_dre_consolidadas",
+        examples=[
+            OpenApiExample(
+                "Completo",
+                value=[
+                    {
+                        "codigoEol": "019251",
+                        "nomeOficial": "EMEF EXEMPLO",
+                        "nomeNaoOficial": None,
+                        "tipoUnidadeAdmin": "DIRETORIA REGIONAL DE EDUCACAO",
+                        "tipoUE": "ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL",
+                        "logadouro": "RUA EXEMPLO",
+                        "numero": "100",
+                        "bairro": "IPIRANGA",
+                        "cep": 1310100,
+                        "distrito": "IPIRANGA",
+                        "subPrefeitura": "IPIRANGA",
+                        "nomeDre": "DRE IPIRANGA",
+                        "email": None,
+                        "telefone1": None,
+                        "telefone2": None,
+                        "anoConstrucao": None,
+                        "propriedade": None,
+                        "capacidadeVagasMatutino": 100,
+                        "capacidadeVagasVespertino": 100,
+                        "capacidadeVagasNoturno": 0,
+                        "capacidadeVagasIntermediario": 0,
+                        "capacidadeVagasIntegral": 0,
+                        "capacidadeVagasTotal": 200,
+                        "organizacaoParceira": False,
+                        "quantidadeDeFuncionarios": 20,
+                        "status": "ATIVO",
+                        "subprefeituraId": 13,
+                        "tipoUnidadeAdmId": 24,
+                    }
+                ],
+                response_only=True,
+                status_codes=["200"],
+            ),
+            OpenApiExample(
+                "Codigos",
+                value=["019251", "019252"],
+                response_only=True,
+                status_codes=["200"],
+            ),
+            OpenApiExample(
+                "Integracao",
+                value=[
+                    {
+                        "codigoUe": "019251",
+                        "nomeUe": "EMEF EXEMPLO",
+                        "codigoIntegracao": "INT001",
+                        "tipoEscolaId": 1,
+                        "tipoUnidadeId": 1,
+                        "subprefeituraId": 13,
+                        "dreId": "108100",
+                    }
+                ],
+                response_only=True,
+                status_codes=["200"],
+            ),
+        ],
+    )
+    def get(
+        self,
+        request: Request,
+        codigo_eol_dre: str,
+    ) -> Response:
+        """Lista dados prediais, códigos EOL ou dados de integração.
+
+        Args:
+            request: Requisição com o formato opcional retorno na query.
+            codigo_eol_dre: Código EOL da DRE.
+
+        Returns:
+            Lista no formato solicitado, vazia se não houver resultados.
+
+        Raises:
+            ValidationError: Se o código da DRE ou o formato for inválido.
+        """
+        if not codigo_eol_dre.strip():
+            raise ValidationError(
+                {"detail": "Código EOL da DRE é obrigatório."}
+            )
+        parametros = DreUnidadesQuerySerializer(
+            data=request.query_params.dict()
+        )
+        parametros.is_valid(raise_exception=True)
+        funcoes_retorno = {
+            "completo": listar_unidades_por_dre,
+            "codigos": listar_codigos_ues_por_dre,
+            "integracao": listar_codigos_integracao_por_dre,
+        }[parametros.validated_data["retorno"]]
+        return Response(funcoes_retorno(codigo_eol_dre))
