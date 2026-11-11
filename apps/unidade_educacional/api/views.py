@@ -3,6 +3,7 @@
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
+    OpenApiResponse,
     OpenApiTypes,
     extend_schema,
     inline_serializer,
@@ -12,7 +13,12 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.views import BaseAPIView, _CROSS_DOMAIN_SCHEMA, _PROBLEM_DETAILS_SCHEMA
+from apps.core.views import (
+    _CROSS_DOMAIN_SCHEMA,
+    _PROBLEM_DETAILS_SCHEMA,
+    BaseAPIView,
+)
+from apps.unidade_educacional.api.serializers import UnidadesQuerySerializer
 from apps.unidade_educacional.contracts import (
     EquipamentoContract,
     SincronizacaoUeContract,
@@ -30,8 +36,8 @@ from apps.unidade_educacional.selectors import (
     listar_ues_basicas,
     listar_ues_recorte_fund_medio,
     listar_unidades_parceiras,
-    obter_subprefeituras_ue,
     obter_sincronizacao_ue,
+    obter_subprefeituras_ue,
     obter_ue_basica_por_codigo,
     obter_ue_completa,
     obter_ue_eol,
@@ -500,6 +506,124 @@ class UnidadeEducacionalListPostView(BaseAPIView):
         items, _ = listar_ues_basicas(codigos)
         return Response(items)
 
+
+class UnidadesConsolidadasView(BaseAPIView):
+    """Consulta unidades por códigos EOL, com filtro opcional de parceiras."""
+
+    @extend_schema(
+        parameters=[UnidadesQuerySerializer],
+        responses={
+            200: OpenApiResponse(
+                response={
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/UeBasicaDetalhe"
+                            },
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "$ref": (
+                                    "#/components/schemas/UnidadeParceiraList"
+                                )
+                            },
+                        },
+                    ]
+                },
+                description=(
+                    "Com apenasParceiras=false ou ausente, retorna dados "
+                    "básicos da escola, DRE, tipo e identificadores. Com "
+                    "true, retorna codigo, nome com sigla do tipo e email. "
+                    "Consultas sem resultados retornam uma lista vazia."
+                ),
+            ),
+            400: _PROBLEM_DETAILS_SCHEMA,
+        },
+        description=(
+            "Consulta unidades pelos códigos EOL informados na query (E28). "
+            "Repita codigos para consultar várias unidades. O filtro "
+            "apenasParceiras é opcional e tem padrão false."
+        ),
+        tags=_TAG_UE,
+        operation_id="E28_unidades_consolidadas",
+        examples=[
+            OpenApiExample(
+                "TodasUnidades",
+                summary="apenasParceiras = false",
+                description=(
+                    "Dados básicos das unidades dos códigos informados, "
+                    "incluindo parceiras e não parceiras."
+                ),
+                value=[
+                    {
+                        "codigoEscola": "019251",
+                        "nomeEscola": "ESCOLA EXEMPLO",
+                        "nomeDRE": "DIRETORIA REGIONAL DE EDUCACAO EXEMPLO",
+                        "siglaDRE": "DRE-EX",
+                        "codigoDRE": "108100",
+                        "tipoEscola": "ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL",
+                        "siglaTipoEscola": "EMEF",
+                        "codigoTipoEscola": 1,
+                        "tipoEscolaId": 1,
+                        "tipoUnidadeId": 1,
+                        "subprefeituraId": 13,
+                        "dreId": "108100",
+                        "codigoIntegracao": "INT001",
+                    }
+                ],
+                response_only=True,
+                status_codes=["200"],
+            ),
+            OpenApiExample(
+                "ApenasParceiras",
+                summary="apenasParceiras = true",
+                description=(
+                    "Somente unidades parceiras dos códigos informados. "
+                    "O nome inclui a sigla do tipo e o email pode ser nulo."
+                ),
+                value=[
+                    {
+                        "codigo": "019252",
+                        "nome": "CEI UNIDADE PARCEIRA EXEMPLO",
+                        "email": "cei.exemplo@example.com",
+                    },
+                    {
+                        "codigo": "019253",
+                        "nome": "CEI OUTRA UNIDADE EXEMPLO",
+                        "email": None,
+                    },
+                ],
+                response_only=True,
+                status_codes=["200"],
+            ),
+        ],
+    )
+    def get(self, request: Request) -> Response:
+        """Retorna unidades nos contratos básico ou de parceiras.
+
+        Args:
+            request: Requisição com codigos e apenasParceiras na query.
+
+        Returns:
+            Lista de unidades, vazia quando não houver correspondências.
+
+        Raises:
+            ValidationError: Se os códigos ou o booleano forem inválidos.
+        """
+        dados: dict[str, object] = {
+            "codigos": request.query_params.getlist("codigos")
+        }
+        if "apenasParceiras" in request.query_params:
+            dados["apenasParceiras"] = request.query_params["apenasParceiras"]
+        parametros = UnidadesQuerySerializer(data=dados)
+        parametros.is_valid(raise_exception=True)
+        codigos = parametros.validated_data["codigos"]
+        if parametros.validated_data["apenasParceiras"]:
+            return Response(listar_unidades_parceiras(codigos))
+        unidades, _ = listar_ues_basicas(codigos)
+        return Response(unidades)
 
 class UnidadeEducacionalRecorteFundMedioView(BaseAPIView):
     """Filtra UEs por lista de códigos ao recorte de tipo (Fund/Médio)."""
