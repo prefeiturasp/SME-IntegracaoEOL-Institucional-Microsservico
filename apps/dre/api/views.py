@@ -37,6 +37,7 @@ from apps.dre.selectors import (
 
 _TAG_ABRANGENCIA = ["Abrangencia"]
 _TAG_DRE = ["DiretoriaRegionalEducacao"]
+_MSG_CODIGO_EOL_DRE_OBRIGATORIO = "Código EOL da DRE é obrigatório."
 
 _DRE_FIELDS = {
     "codigoDRE": serializers.CharField(),
@@ -361,7 +362,7 @@ class DreEscolasTipoView(BaseAPIView):
             ValidationError: Se o código EOL da DRE for vazio.
         """
         if not codigo_eol_dre.strip():
-            raise ValidationError("Código EOL da DRE é obrigatório.")
+            raise ValidationError(_MSG_CODIGO_EOL_DRE_OBRIGATORIO)
         escolas = listar_escolas_por_dre(codigo_eol_dre, tipo_escola_id)
         return Response(escolas)
 
@@ -508,7 +509,7 @@ class DreEscolasSigpaeView(BaseAPIView):
             ValidationError: Se o código EOL da DRE for vazio.
         """
         if not codigo_eol_dre.strip():
-            raise ValidationError("Código EOL da DRE é obrigatório.")
+            raise ValidationError(_MSG_CODIGO_EOL_DRE_OBRIGATORIO)
         escolas = listar_escolas_por_dre(codigo_eol_dre)
         if not escolas:
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -637,9 +638,7 @@ class DreEscolasConsolidadasView(BaseAPIView):
             ValidationError: Se o código EOL da DRE for inválido.
         """
         if not codigo_eol_dre.strip():
-            raise ValidationError(
-                {"detail": "Código EOL da DRE é obrigatório."}
-            )
+            raise ValidationError({"detail": _MSG_CODIGO_EOL_DRE_OBRIGATORIO})
 
         parametros = DreEscolasQuerySerializer(
             data=request.query_params.dict()
@@ -781,9 +780,7 @@ class DreUnidadesConsolidadasView(BaseAPIView):
             ValidationError: Se o código da DRE ou o formato for inválido.
         """
         if not codigo_eol_dre.strip():
-            raise ValidationError(
-                {"detail": "Código EOL da DRE é obrigatório."}
-            )
+            raise ValidationError({"detail": _MSG_CODIGO_EOL_DRE_OBRIGATORIO})
         parametros = DreUnidadesQuerySerializer(
             data=request.query_params.dict()
         )
