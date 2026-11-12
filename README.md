@@ -21,14 +21,16 @@ apps/
     models.py             ← managed=False, leitura do banco institucional
     contracts.py          ← TypedDicts do contrato EOL para DRE
     selectors.py          ← queries otimizadas (sem N+1)
-    api/views.py          ← views D01-D11
+    api/views.py          ← views D01-D13
+    api/serializers.py    ← validação dos parâmetros das consultas consolidadas
     api/urls.py
     tests/
   unidade_educacional/    ← UnidadeEducacional
     models.py             ← managed=False
     contracts.py          ← TypedDicts do contrato EOL para UE
     selectors.py          ← queries otimizadas
-    api/views.py          ← views E01-E27 (institucionais + placeholders cross-domain)
+    api/views.py          ← views E01-E28 (institucionais + placeholders cross-domain)
+    api/serializers.py    ← validação dos parâmetros das consultas consolidadas
     api/urls.py
     tests/
 tests/
@@ -196,13 +198,15 @@ Extensões ativas:
 | D02 | POST | `/api/dres/` | ✅ Banco real |
 | D03 | GET | `/api/dres/{codigoEolDRE}/supervisores/` | ⚠️ Cross-domain Professores (501) |
 | D04 | GET | `/api/dres/{codigoEolDRE}/` | ✅ Banco real |
-| D05 | GET | `/api/dres/{codigoEolDRE}/escolas/{tipoEscola}/` | ✅ Banco real |
-| D06 | GET | `/api/dres/{codigoEolDRE}/escola/` | ✅ Banco real |
+| D05 | GET | `/api/dres/{codigoEolDRE}/escolas/{tipoEscola}/` | Depreciado; usar D12 com `tipo_escola_id` |
+| D06 | GET | `/api/dres/{codigoEolDRE}/escola/` | Depreciado; usar D12 sem filtro |
 | D07 | GET | `/api/dres/{dreCodigo}/subprefeituras/` | ✅ Banco real |
-| D08 | GET | `/api/dres/{dreCodigo}/ues/` | ✅ Banco real |
-| D09 | GET | `/api/dres/{codigoEolDRE}/escola/Sigpae/` | ✅ Banco real |
-| D10 | GET | `/api/dres/{dreCodigo}/unidades/` | ✅ Banco real |
-| D11 | GET | `/api/dres/{dreCodigo}/unidades/codigo-integracao/` | ✅ Banco real |
+| D08 | GET | `/api/dres/{dreCodigo}/ues/` | Depreciado; usar D13 com `retorno=codigos` |
+| D09 | GET | `/api/dres/{codigoEolDRE}/escola/Sigpae/` | Depreciado; usar D12 sem filtro |
+| D10 | GET | `/api/dres/{dreCodigo}/unidades/` | Depreciado; usar D13 com `retorno=completo` |
+| D11 | GET | `/api/dres/{dreCodigo}/unidades/codigo-integracao/` | Depreciado; usar D13 com `retorno=integracao` |
+| D12 | GET | `/api/v1/institucional/dres/{codigo_eol_dre}/escolas/` | ✅ Banco real; filtro opcional `tipo_escola_id` |
+| D13 | GET | `/api/v1/institucional/dres/{codigo_eol_dre}/unidades/consolidadas/` | ✅ Banco real; `retorno=completo` (padrão), `codigos` ou `integracao` |
 
 ### Escola/UE — `/api/escolas/`
 
@@ -213,7 +217,7 @@ Extensões ativas:
 | E03 | GET | `/api/escolas/unidade-eol/{codigoEol}/` | ✅ Banco real |
 | E04 | GET | `/api/escolas/dados/{codigoEscolaEol}/` | ✅ Banco real |
 | E05 | GET | `/api/escolas/{codigoEscola}/alunos/quantidade/` | ⚠️ Cross-domain Alunos (501) |
-| E06 | POST | `/api/escolas/` | ✅ Banco real |
+| E06 | POST | `/api/escolas/` | Depreciado; usar E28 com `apenasParceiras=false` |
 | E07-E08 | GET | `.../professores/...` | ⚠️ Cross-domain Professores (501) |
 | E09 | GET | `/api/escolas/modalidades_ensino/` | ⚠️ Cross-domain Pedagógico (501) |
 | E10 | GET | `/api/escolas/tipos_unidade_educacao/` | ✅ Banco real |
@@ -225,10 +229,14 @@ Extensões ativas:
 | E23 | GET | `/api/escolas/{ueCodigo}/sincronizacoes-institucionais/` | ✅ Banco real |
 | E24 | GET | `.../aluno/.../matriculas/` | ⚠️ Cross-domain Alunos (501) |
 | E25 | GET | `/api/escolas/equipamentos/` | ✅ Banco real |
-| E26 | POST | `/api/escolas/unidades-parceiras/` | ✅ Banco real |
+| E26 | POST | `/api/escolas/unidades-parceiras/` | Depreciado; usar E28 com `apenasParceiras=true` |
 | E27 | GET | `/api/escolas/todas-unidades/` | ✅ Banco real |
+| E28 | GET | `/api/v1/institucional/escolas/unidades/` | ✅ Banco real; `codigos` obrigatório e repetível; `apenasParceiras=false` por padrão |
 
 Ver `docs/cross_domain_endpoints.md` para detalhes dos endpoints cross-domain.
+
+Veja os parâmetros, exemplos de resposta e a migração das rotas depreciadas em
+[`docs/endpoints.rst`](docs/endpoints.rst).
 
 ---
 
@@ -236,8 +244,8 @@ Ver `docs/cross_domain_endpoints.md` para detalhes dos endpoints cross-domain.
 
 | Código | Significado |
 |---|---|
-| 200 | Sucesso com dados |
-| 204 | Consulta válida, sem registros |
+| 200 | Sucesso; pode retornar lista vazia conforme o contrato |
+| 204 | Consulta válida sem registros, quando previsto no contrato |
 | 400 | Parâmetros inválidos |
 | 401/403 | API key ausente ou inválida |
 | 404 | Recurso não encontrado |

@@ -1,7 +1,8 @@
 Unidade Educacional
 ===================
 
-Domínio responsável pelos endpoints E01-E27.
+Domínio responsável pelos endpoints E01-E28, incluindo a consulta consolidada
+:ref:`endpoint-e28`.
 
 Models
 ------
@@ -19,6 +20,12 @@ Selectors
 ---------
 
 .. automodule:: apps.unidade_educacional.selectors
+   :members:
+
+Serializers de entrada
+------------------------
+
+.. automodule:: apps.unidade_educacional.api.serializers
    :members:
 
 Views

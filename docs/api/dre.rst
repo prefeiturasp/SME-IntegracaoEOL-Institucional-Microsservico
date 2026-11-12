@@ -1,7 +1,8 @@
 DRE — Diretoria Regional de Educação
 =====================================
 
-Domínio responsável pelos endpoints D01-D11.
+Domínio responsável pelos endpoints D01-D13, incluindo as consultas consolidadas
+:ref:`endpoint-d12` e :ref:`endpoint-d13`.
 
 Models
 ------
@@ -19,6 +20,12 @@ Selectors
 ---------
 
 .. automodule:: apps.dre.selectors
+   :members:
+
+Serializers de entrada
+------------------------
+
+.. automodule:: apps.dre.api.serializers
    :members:
 
 Views
