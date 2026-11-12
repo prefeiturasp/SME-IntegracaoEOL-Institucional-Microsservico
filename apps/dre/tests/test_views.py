@@ -1,18 +1,18 @@
-"""Testes comportamentais e de contrato — domínio DRE (D01-D11)."""
+"""Testes comportamentais e de contrato — domínio DRE (D01-D13)."""
 
 from collections.abc import Callable
 
 import pytest
+from django.urls import reverse
 from pytest_django.fixtures import DjangoAssertNumQueries
 from rest_framework.test import APIClient
 
+from apps.dre.models import DRE
 from apps.unidade_educacional.models import UnidadeEducacional
 
 pytestmark = pytest.mark.django_db
 
-_URL_CODIGOS_ABRANGENCIA = (
-    "/api/v1/institucional/abrangencia/codigos-dres/"
-)
+_URL_CODIGOS_ABRANGENCIA = "/api/v1/institucional/abrangencia/codigos-dres/"
 _URL_NOMES_ABRANGENCIA = (
     "/api/v1/institucional/abrangencia/nome-abreviacao-dres/"
 )
@@ -115,17 +115,21 @@ class TestAutenticacaoDre:
     def test_sem_api_key_retorna_401(self):
         """Requisição sem credencial retorna 401 ou 403."""
         from rest_framework.test import APIClient
+
         resp = APIClient().get("/api/v1/institucional/dres/")
         assert resp.status_code in (401, 403)
 
     def test_api_key_errada_retorna_403(self):
         """Requisição com chave inválida retorna 401 ou 403."""
-        from rest_framework.test import APIClient
         from django.conf import settings
+        from rest_framework.test import APIClient
+
         client = APIClient()
-        client.credentials(**{
-            f"HTTP_{settings.API_KEY_HEADER.upper().replace('-', '_')}": "chave-errada"
-        })
+        client.credentials(
+            **{
+                f"HTTP_{settings.API_KEY_HEADER.upper().replace('-', '_')}": "chave-errada"
+            }
+        )
         resp = client.get("/api/v1/institucional/dres/")
         assert resp.status_code in (401, 403)
 
@@ -236,7 +240,9 @@ class TestD05EscolasTipo:
         assert isinstance(resp.data, list)
         assert len(resp.data) >= 1
 
-    def test_tipo_inexistente_retorna_lista_vazia(self, api_client, ue_factory):
+    def test_tipo_inexistente_retorna_lista_vazia(
+        self, api_client, ue_factory
+    ):
         """Tipo sem escolas vinculadas retorna lista vazia."""
         ue = ue_factory()
         url = f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/999999/"
@@ -271,9 +277,15 @@ class TestD06EscolasPorDre:
         assert resp.status_code == 200
         item = resp.data[0]
         for campo in [
-            "codigoEscola", "nomeEscola", "codigoDRE",
-            "tipoEscola", "siglaTipoEscola", "nomeDRE",
-            "siglaDRE", "codigoSubprefeitura", "nomeSubprefeitura",
+            "codigoEscola",
+            "nomeEscola",
+            "codigoDRE",
+            "tipoEscola",
+            "siglaTipoEscola",
+            "nomeDRE",
+            "siglaDRE",
+            "codigoSubprefeitura",
+            "nomeSubprefeitura",
         ]:
             assert campo in item, f"Campo '{campo}' ausente no contrato D06"
 
@@ -309,9 +321,7 @@ class TestD07Subprefeituras:
 
     def test_codigo_vazio_retorna_400(self, api_client, db):
         """Código vazio retorna 400."""
-        resp = api_client.get(
-            "/api/v1/institucional/dres/%20/subprefeituras/"
-        )
+        resp = api_client.get("/api/v1/institucional/dres/%20/subprefeituras/")
         assert resp.status_code == 400
 
 
@@ -362,9 +372,7 @@ class TestD09EscolasSigpae:
 
     def test_codigo_vazio_retorna_400(self, api_client, db):
         """Código vazio retorna 400."""
-        resp = api_client.get(
-            "/api/v1/institucional/dres/%20/escola/Sigpae/"
-        )
+        resp = api_client.get("/api/v1/institucional/dres/%20/escola/Sigpae/")
         assert resp.status_code == 400
 
 
@@ -381,14 +389,31 @@ class TestD10UnidadesPrediais:
         assert len(resp.data) >= 1
         item = resp.data[0]
         for campo in [
-            "codigoEol", "nomeOficial", "nomeNaoOficial", "tipoUE",
-            "logadouro", "numero", "bairro", "cep", "distrito",
-            "subPrefeitura", "nomeDre", "email", "telefone1", "telefone2",
-            "anoConstrucao", "propriedade", "capacidadeVagasMatutino",
-            "capacidadeVagasVespertino", "capacidadeVagasNoturno",
-            "capacidadeVagasIntermediario", "capacidadeVagasIntegral",
-            "capacidadeVagasTotal", "organizacaoParceira",
-            "quantidadeDeFuncionarios", "status",
+            "codigoEol",
+            "nomeOficial",
+            "nomeNaoOficial",
+            "tipoUE",
+            "logadouro",
+            "numero",
+            "bairro",
+            "cep",
+            "distrito",
+            "subPrefeitura",
+            "nomeDre",
+            "email",
+            "telefone1",
+            "telefone2",
+            "anoConstrucao",
+            "propriedade",
+            "capacidadeVagasMatutino",
+            "capacidadeVagasVespertino",
+            "capacidadeVagasNoturno",
+            "capacidadeVagasIntermediario",
+            "capacidadeVagasIntegral",
+            "capacidadeVagasTotal",
+            "organizacaoParceira",
+            "quantidadeDeFuncionarios",
+            "status",
         ]:
             assert campo in item, f"Campo '{campo}' ausente no contrato D10"
 
@@ -428,7 +453,9 @@ class TestD11CodigosIntegracao:
 class TestD05D06D09CamposExpandidos:
     """Valida campos institucionais expandidos nos endpoints D05/D06/D09."""
 
-    def test_d06_contem_campos_ids_institucionais(self, api_client, ue_factory):
+    def test_d06_contem_campos_ids_institucionais(
+        self, api_client, ue_factory
+    ):
         """D06 inclui campos de IDs institucionais."""
         ue = ue_factory()
         resp = api_client.get(
@@ -443,7 +470,7 @@ class TestD05D06D09CamposExpandidos:
         assert "codigoIntegracao" in item
 
     def test_d06_dre_id_igual_codigo_dre(self, api_client, ue_factory):
-        """dreId coincide com o código EOL da DRE."""
+        """DreId coincide com o código EOL da DRE."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -454,7 +481,7 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_tipo_unidade_id_igual_tipo_escola_id(
         self, api_client, ue_factory
     ):
-        """tipoUnidadeId e tipoEscolaId têm o mesmo valor."""
+        """TipoUnidadeId e tipoEscolaId têm o mesmo valor."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -465,7 +492,7 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_tipo_escola_id_eh_inteiro_ou_null(
         self, api_client, ue_factory
     ):
-        """tipoEscolaId é inteiro ou None."""
+        """TipoEscolaId é inteiro ou None."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -478,7 +505,7 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_subprefeitura_id_eh_inteiro_ou_null(
         self, api_client, ue_factory
     ):
-        """subprefeituraId é inteiro ou None."""
+        """SubprefeituraId é inteiro ou None."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/escola/"
@@ -496,15 +523,23 @@ class TestD05D06D09CamposExpandidos:
         )
         item = resp.data[0]
         for campo in [
-            "codigoEscola", "nomeEscola", "codigoDRE",
-            "tipoEscola", "siglaTipoEscola", "nomeDRE",
-            "siglaDRE", "codigoSubprefeitura", "nomeSubprefeitura",
+            "codigoEscola",
+            "nomeEscola",
+            "codigoDRE",
+            "tipoEscola",
+            "siglaTipoEscola",
+            "nomeDRE",
+            "siglaDRE",
+            "codigoSubprefeitura",
+            "nomeSubprefeitura",
         ]:
-            assert campo in item, (
-                f"Campo legado '{campo}' removido — violação de contrato"
-            )
+            assert (
+                campo in item
+            ), f"Campo legado '{campo}' removido — violação de contrato"
 
-    def test_d05_contem_campos_ids_institucionais(self, api_client, ue_factory):
+    def test_d05_contem_campos_ids_institucionais(
+        self, api_client, ue_factory
+    ):
         """D05 retorna 200 com campos expandidos."""
         ue = ue_factory()
         resp = api_client.get(
@@ -513,7 +548,9 @@ class TestD05D06D09CamposExpandidos:
         )
         assert resp.status_code == 200
 
-    def test_d09_contem_campos_ids_institucionais(self, api_client, ue_factory):
+    def test_d09_contem_campos_ids_institucionais(
+        self, api_client, ue_factory
+    ):
         """D09 inclui campos de IDs institucionais quando há resultados."""
         ue = ue_factory()
         resp = api_client.get(
@@ -528,13 +565,21 @@ class TestD05D06D09CamposExpandidos:
     def test_d06_ue_sem_tipo_escola_id_null(self, api_client, dre_factory, db):
         """UE sem tipo de escola tem tipoEscolaId e subprefeituraId nulos."""
         from apps.unidade_educacional.models import UnidadeEducacional
+
         dre = dre_factory(codigo_dre="999001")
         UnidadeEducacional.objects.create(
-            codigo_ue="900001", nome="UE SEM TIPO",
-            codigo_dre=dre.codigo_dre, codigo_tipo_escola=None,
-            codigo_sub_prefeitura=None, organizacao_parceira=False,
-            vagas_matutino=0, vagas_vespertino=0, vagas_noturno=0,
-            vagas_intermediario=0, vagas_integral=0, vagas_total=0,
+            codigo_ue="900001",
+            nome="UE SEM TIPO",
+            codigo_dre=dre.codigo_dre,
+            codigo_tipo_escola=None,
+            codigo_sub_prefeitura=None,
+            organizacao_parceira=False,
+            vagas_matutino=0,
+            vagas_vespertino=0,
+            vagas_noturno=0,
+            vagas_intermediario=0,
+            vagas_integral=0,
+            vagas_total=0,
             quantidade_funcionarios=0,
         )
         resp = api_client.get(
@@ -568,15 +613,19 @@ class TestD10CamposExpandidos:
         )
         item = resp.data[0]
         for campo in [
-            "codigoEol", "nomeOficial", "subPrefeitura", "nomeDre",
-            "capacidadeVagasTotal", "organizacaoParceira",
+            "codigoEol",
+            "nomeOficial",
+            "subPrefeitura",
+            "nomeDre",
+            "capacidadeVagasTotal",
+            "organizacaoParceira",
         ]:
             assert campo in item, f"Campo legado '{campo}' removido"
 
     def test_d10_tipo_unidade_adm_id_inteiro_ou_null(
         self, api_client, ue_factory
     ):
-        """tipoUnidadeAdmId é inteiro ou None."""
+        """TipoUnidadeAdmId é inteiro ou None."""
         ue = ue_factory()
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}/unidades/"
@@ -607,7 +656,7 @@ class TestD11CamposExpandidos:
         assert "dreId" in item
 
     def test_d11_dre_id_igual_codigo_dre(self, api_client, ue_factory):
-        """dreId coincide com o código EOL da DRE."""
+        """DreId coincide com o código EOL da DRE."""
         ue = ue_factory(codigo_ue_integracao="INT003")
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}"
@@ -619,7 +668,7 @@ class TestD11CamposExpandidos:
     def test_d11_tipo_unidade_id_igual_tipo_escola_id(
         self, api_client, ue_factory
     ):
-        """tipoUnidadeId e tipoEscolaId têm o mesmo valor."""
+        """TipoUnidadeId e tipoEscolaId têm o mesmo valor."""
         ue = ue_factory(codigo_ue_integracao="INT004")
         resp = api_client.get(
             f"/api/v1/institucional/dres/{ue.codigo_dre}"
@@ -650,3 +699,392 @@ class TestD03Supervisores:
         )
         assert resp.status_code == 501
         assert resp.data["dominio"] == "professores"
+
+
+class TestD12EscolasConsolidadas:
+    """D12 — GET /api/v1/institucional/dres/{codigoEolDRE}/escolas/."""
+
+    def test_retorna_todas_as_escolas_apenas_da_dre_informada(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """Sem filtro, lista escolas de tipos distintos apenas da DRE pedida."""
+        primeira = ue_factory()
+        segunda = ue_factory(codigo_dre=primeira.codigo_dre)
+        ue_factory()
+        url = reverse(
+            "dre-escolas-consolidadas",
+            kwargs={"codigo_eol_dre": primeira.codigo_dre},
+        )
+        resp = api_client.get(url)
+        assert url == (
+            f"/api/v1/institucional/dres/{primeira.codigo_dre}/escolas/"
+        )
+        assert resp.status_code == 200
+        assert [item["codigoEscola"] for item in resp.data] == [
+            primeira.codigo_ue,
+            segunda.codigo_ue,
+        ]
+
+    @pytest.mark.parametrize("tipo_escola_id", [0, 1])
+    def test_retorna_escolas_filtradas_por_tipo(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+        tipo_escola_id: int,
+    ) -> None:
+        """O filtro inclui somente escolas do tipo e da DRE informados."""
+        ue = ue_factory(codigo_tipo_escola=tipo_escola_id)
+        ue_factory(codigo_dre=ue.codigo_dre, codigo_tipo_escola=2)
+        ue_factory(codigo_tipo_escola=tipo_escola_id)
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/",
+            {"tipo_escola_id": str(tipo_escola_id)},
+        )
+        assert resp.status_code == 200
+        assert [item["codigoEscola"] for item in resp.data] == [ue.codigo_ue]
+        assert resp.data[0]["tipoEscolaId"] == tipo_escola_id
+
+    def test_tipo_inexistente_retorna_lista_vazia(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """Um tipo sem escolas correspondentes retorna 200 com lista vazia."""
+        ue = ue_factory()
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/",
+            {"tipo_escola_id": "999999"},
+        )
+        assert resp.status_code == 200
+        assert resp.data == []
+
+    @pytest.mark.parametrize(
+        ("parametros", "status_esperado"),
+        [
+            ({}, 204),
+            ({"tipo_escola_id": "1"}, 200),
+            ({"tipo_escola_id": "0"}, 200),
+        ],
+    )
+    def test_dre_sem_escolas_preserva_status_por_filtro(
+        self,
+        api_client: APIClient,
+        dre_factory: Callable[..., DRE],
+        parametros: dict[str, str],
+        status_esperado: int,
+    ) -> None:
+        """DRE sem escolas retorna 204 sem filtro ou 200 com lista vazia."""
+        dre = dre_factory()
+
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{dre.codigo_dre}/escolas/", parametros
+        )
+
+        assert resp.status_code == status_esperado
+        if status_esperado == 204:
+            assert resp.data is None
+            assert resp.content == b""
+        else:
+            assert resp.data == []
+
+    @pytest.mark.parametrize(
+        ("parametros", "status_esperado"),
+        [({}, 204), ({"tipo_escola_id": "1"}, 200)],
+    )
+    def test_dre_inexistente_preserva_status_por_filtro(
+        self,
+        api_client: APIClient,
+        parametros: dict[str, str],
+        status_esperado: int,
+    ) -> None:
+        """DRE inexistente também respeita o contrato de resultado vazio."""
+        resp = api_client.get(
+            "/api/v1/institucional/dres/999999/escolas/", parametros
+        )
+
+        assert resp.status_code == status_esperado
+        assert resp.data == (None if status_esperado == 204 else [])
+
+    @pytest.mark.parametrize("com_filtro", [False, True])
+    def test_contrato_campos_legados_e_expandidos(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+        com_filtro: bool,
+    ) -> None:
+        """Preserva campos, IDs, tipos e código de integração da escola."""
+        ue = ue_factory(codigo_ue_integracao="INT001")
+        parametros = (
+            {"tipo_escola_id": str(ue.codigo_tipo_escola)}
+            if com_filtro
+            else {}
+        )
+
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/", parametros
+        )
+
+        assert resp.status_code == 200
+        assert len(resp.data) == 1
+        item = resp.data[0]
+        assert set(item) == {
+            "codigoEscola",
+            "nomeEscola",
+            "codigoDRE",
+            "tipoEscola",
+            "siglaTipoEscola",
+            "nomeDRE",
+            "siglaDRE",
+            "codigoSubprefeitura",
+            "nomeSubprefeitura",
+            "tipoEscolaId",
+            "tipoUnidadeId",
+            "subprefeituraId",
+            "dreId",
+            "codigoIntegracao",
+        }
+        assert item["codigoEscola"] == ue.codigo_ue
+        assert item["nomeEscola"] == ue.nome
+        assert item["codigoDRE"] == item["dreId"] == ue.codigo_dre
+        assert item["tipoEscolaId"] == ue.codigo_tipo_escola
+        assert item["tipoUnidadeId"] == item["tipoEscolaId"]
+        assert isinstance(item["tipoEscolaId"], int)
+        assert item["subprefeituraId"] == ue.codigo_sub_prefeitura
+        assert isinstance(item["subprefeituraId"], int)
+        assert item["codigoSubprefeitura"] == str(ue.codigo_sub_prefeitura)
+        assert item["codigoIntegracao"] == "INT001"
+
+    def test_ue_sem_tipo_subprefeitura_e_integracao_preserva_nulos(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """Dados opcionais ausentes mantêm IDs nulos e descrições vazias."""
+        ue = ue_factory(
+            codigo_tipo_escola=None,
+            codigo_sub_prefeitura=None,
+            codigo_ue_integracao=None,
+        )
+
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}/escolas/"
+        )
+
+        assert resp.status_code == 200
+        assert len(resp.data) == 1
+        item = resp.data[0]
+        for campo in (
+            "tipoEscolaId",
+            "tipoUnidadeId",
+            "subprefeituraId",
+            "codigoIntegracao",
+        ):
+            assert item[campo] is None
+        for campo in (
+            "tipoEscola",
+            "siglaTipoEscola",
+            "codigoSubprefeitura",
+            "nomeSubprefeitura",
+        ):
+            assert item[campo] == ""
+
+    @pytest.mark.parametrize("parametros", [{}, {"tipo_escola_id": "1"}])
+    def test_codigo_dre_vazio_retorna_400(
+        self, api_client: APIClient, parametros: dict[str, str]
+    ) -> None:
+        """Rejeita código de DRE em branco com e sem filtro por tipo."""
+        resp = api_client.get(
+            "/api/v1/institucional/dres/%20/escolas/", parametros
+        )
+
+        assert resp.status_code == 400
+        assert resp.json() == {"detail": "Código EOL da DRE é obrigatório."}
+
+    @pytest.mark.parametrize(
+        "tipo_escola_id", ["", " ", "abc", "1.5", "-1", "null", "true"]
+    )
+    def test_tipo_invalido_retorna_400_sem_consultar_banco(
+        self,
+        api_client: APIClient,
+        django_assert_num_queries: DjangoAssertNumQueries,
+        tipo_escola_id: str,
+    ) -> None:
+        """Rejeita filtro vazio, negativo ou não inteiro antes de consultar."""
+        with django_assert_num_queries(0):
+            resp = api_client.get(
+                "/api/v1/institucional/dres/108100/escolas/",
+                {"tipo_escola_id": tipo_escola_id},
+            )
+
+        assert resp.status_code == 400
+        assert resp.json()["tipo_escola_id"]
+
+    def test_sem_api_key_retorna_401_ou_403(self) -> None:
+        """Exige API key na listagem consolidada de escolas."""
+        resp = APIClient().get("/api/v1/institucional/dres/108100/escolas/")
+
+        assert resp.status_code in (401, 403)
+
+
+class TestD13UnidadesConsolidadas:
+    """D13 — GET /api/dres/{codigoEolDRE}/unidades/consolidadas/."""
+
+    @pytest.mark.parametrize("parametros", [{}, {"retorno": "completo"}])
+    def test_retorna_200_com_contrato_completo(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+        parametros: dict[str, str],
+    ) -> None:
+        """O retorno padrão e o completo preservam o contrato predial."""
+        ue = ue_factory()
+        url = reverse(
+            "dre-unidades-consolidadas",
+            kwargs={"codigo_eol_dre": ue.codigo_dre},
+        )
+
+        resp = api_client.get(url, parametros)
+
+        assert resp.status_code == 200
+        assert resp.data == [
+            {
+                "codigoEol": ue.codigo_ue,
+                "nomeOficial": ue.nome,
+                "nomeNaoOficial": ue.nome_nao_oficial,
+                "tipoUnidadeAdmin": "DIRETORIA REGIONAL DE EDUCACAO",
+                "tipoUE": "ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL 1",
+                "logadouro": ue.logradouro,
+                "numero": ue.numero,
+                "bairro": ue.bairro,
+                "cep": 1310100,
+                "distrito": ue.distrito,
+                "subPrefeitura": "SUBPREFEITURA 1",
+                "nomeDre": "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA 1",
+                "email": ue.email,
+                "telefone1": ue.telefone_1,
+                "telefone2": None,
+                "anoConstrucao": ue.ano_construcao,
+                "propriedade": ue.propriedade,
+                "capacidadeVagasMatutino": ue.vagas_matutino,
+                "capacidadeVagasVespertino": ue.vagas_vespertino,
+                "capacidadeVagasNoturno": ue.vagas_noturno,
+                "capacidadeVagasIntermediario": ue.vagas_intermediario,
+                "capacidadeVagasIntegral": ue.vagas_integral,
+                "capacidadeVagasTotal": ue.vagas_total,
+                "organizacaoParceira": ue.organizacao_parceira,
+                "quantidadeDeFuncionarios": ue.quantidade_funcionarios,
+                "status": ue.status,
+                "subprefeituraId": ue.codigo_sub_prefeitura,
+                "tipoUnidadeAdmId": 24,
+            }
+        ]
+
+    def test_retorna_lista_de_codigos(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """O formato codigos retorna somente uma lista de códigos EOL."""
+        ue = ue_factory()
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}"
+            "/unidades/consolidadas/",
+            {"retorno": "codigos"},
+        )
+
+        assert resp.status_code == 200
+        assert resp.data == [ue.codigo_ue]
+
+    def test_retorna_200_com_contrato_de_integracao(
+        self,
+        api_client: APIClient,
+        ue_factory: Callable[..., UnidadeEducacional],
+    ) -> None:
+        """O formato integracao retorna os campos de integração e IDs."""
+        ue = ue_factory(codigo_ue_integracao="INT001")
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{ue.codigo_dre}"
+            "/unidades/consolidadas/",
+            {"retorno": "integracao"},
+        )
+
+        assert resp.status_code == 200
+        assert resp.data == [
+            {
+                "codigoUe": ue.codigo_ue,
+                "nomeUe": ue.nome,
+                "codigoIntegracao": "INT001",
+                "tipoEscolaId": ue.codigo_tipo_escola,
+                "tipoUnidadeId": ue.codigo_tipo_escola,
+                "subprefeituraId": ue.codigo_sub_prefeitura,
+                "dreId": ue.codigo_dre,
+            }
+        ]
+
+    @pytest.mark.parametrize(
+        "parametros",
+        [
+            {},
+            {"retorno": "completo"},
+            {"retorno": "codigos"},
+            {"retorno": "integracao"},
+        ],
+    )
+    def test_dre_sem_unidades_retorna_lista_vazia(
+        self,
+        api_client: APIClient,
+        dre_factory: Callable[..., DRE],
+        parametros: dict[str, str],
+    ) -> None:
+        """DRE sem unidades retorna 200 com lista vazia em todos os formatos."""
+        dre = dre_factory()
+        resp = api_client.get(
+            f"/api/v1/institucional/dres/{dre.codigo_dre}"
+            "/unidades/consolidadas/",
+            parametros,
+        )
+
+        assert resp.status_code == 200
+        assert resp.data == []
+
+    def test_dre_inexistente_retorna_lista_vazia(
+        self, api_client: APIClient
+    ) -> None:
+        """DRE inexistente retorna 200 com lista vazia."""
+        resp = api_client.get(
+            "/api/v1/institucional/dres/999999/unidades/consolidadas/"
+        )
+
+        assert resp.status_code == 200
+        assert resp.data == []
+
+    def test_codigo_vazio_retorna_400(self, api_client: APIClient) -> None:
+        """Código de DRE em branco retorna 400."""
+        resp = api_client.get(
+            "/api/v1/institucional/dres/%20/unidades/consolidadas/"
+        )
+
+        assert resp.status_code == 400
+
+    @pytest.mark.parametrize("retorno", ["", "invalido"])
+    def test_retorno_invalido_retorna_400(
+        self, api_client: APIClient, retorno: str
+    ) -> None:
+        """Formato vazio ou desconhecido retorna 400."""
+        resp = api_client.get(
+            "/api/v1/institucional/dres/108100/unidades/consolidadas/",
+            {"retorno": retorno},
+        )
+
+        assert resp.status_code == 400
+        assert resp.data["retorno"]
+
+    def test_sem_api_key_retorna_401_ou_403(self) -> None:
+        """Exige API key na consulta consolidada de unidades."""
+        resp = APIClient().get(
+            "/api/v1/institucional/dres/108100/unidades/consolidadas/"
+        )
+
+        assert resp.status_code in (401, 403)

@@ -6,6 +6,7 @@ from apps.dre.api.views import (
     CodigosDresAbrangenciaView,
     DreCodigosIntegracaoView,
     DreDetalheView,
+    DreEscolasConsolidadasView,
     DreEscolasSigpaeView,
     DreEscolasTipoView,
     DreEscolasView,
@@ -13,6 +14,7 @@ from apps.dre.api.views import (
     DreSubprefeiturasView,
     DreSupervisoresView,
     DreUesView,
+    DreUnidadesConsolidadasView,
     DreUnidadesView,
     NomesAbreviacoesDresView,
 )
@@ -42,6 +44,11 @@ urlpatterns = [
         name="dre-escolas-sigpae",
     ),
     path(
+        "<str:codigo_eol_dre>/escolas/",
+        DreEscolasConsolidadasView.as_view(),
+        name="dre-escolas-consolidadas",
+    ),
+    path(
         "<str:codigo_eol_dre>/escola/",
         DreEscolasView.as_view(),
         name="dre-escolas",
@@ -50,6 +57,11 @@ urlpatterns = [
         "<str:codigo_eol_dre>/supervisores/",
         DreSupervisoresView.as_view(),
         name="dre-supervisores",
+    ),
+    path(
+        "<str:codigo_eol_dre>/unidades/consolidadas/",
+        DreUnidadesConsolidadasView.as_view(),
+        name="dre-unidades-consolidadas",
     ),
     path(
         "<str:dre_codigo>/unidades/codigo-integracao/",
