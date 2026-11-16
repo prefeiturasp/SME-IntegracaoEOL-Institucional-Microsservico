@@ -5,8 +5,8 @@ from django.urls import path
 from apps.unidade_educacional.api.views import (
     DadosUnidadeEducacionalView,
     EquipamentosView,
-    FuncionariosCargoView,
     FuncionariosCargosListView,
+    FuncionariosCargoView,
     FuncionariosFuncaoAtividadeView,
     FuncionariosFuncaoExternaView,
     FuncionariosFuncoesAtividadesListView,
@@ -32,6 +32,7 @@ from apps.unidade_educacional.api.views import (
     UnidadeEducacionalRecorteFundMedioView,
     UnidadeEducacionalRecorteTipoSgpView,
     UnidadeEolView,
+    UnidadesConsolidadasView,
     UnidadesParceirasView,
 )
 
@@ -65,6 +66,11 @@ urlpatterns = [
         "equipamentos/",
         EquipamentosView.as_view(),
         name="ue-equipamentos",
+    ),
+    path(
+        "unidades/",
+        UnidadesConsolidadasView.as_view(),
+        name="ue-unidades-consolidadas",
     ),
     path(
         "unidades-parceiras/",
